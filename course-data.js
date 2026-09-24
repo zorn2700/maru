@@ -254,7 +254,9 @@ export const lessons = [
       vocab("مين؟", "miin?", "кто?"),
       vocab("خال / خالة", "khaal / khaala", "дядя по матери / тётя по матери"), vocab("عم / عمّة", "ʿamm / ʿamma", "дядя по отцу / тётя по отцу"),
       vocab("ابن عم", "ebn ʿamm", "двоюродный брат по отцу"), vocab("جد / جدّة", "gidd / gidda", "дедушка / бабушка"),
-      vocab("عريس / عروسة", "ʿariis / ʿaruusa", "жених / невеста"), vocab("ولاد", "wilaad", "дети; сыновья")
+      vocab("عريس / عروسة", "ʿariis / ʿaruusa", "жених / невеста"), vocab("ولاد", "wilaad", "дети; сыновья"),
+      vocab("زوجة", "zawga", "жена (официальный стиль)"), vocab("قريب / قريبة", "ʔariib / ʔariiba", "родственник м. / родственница ж."),
+      vocab("خطيب / خطيبة", "khaṭiib / khaṭiiba", "жених обручённый / невеста")
     ],
     grammar: [
       grammar("Притяжательные суффиксы", "К существительному можно присоединить -i мой, -ak твой м., -ik твой ж., -u его, -ha её, -na наш, -hom их. Форма слова иногда меняется.", [
@@ -414,7 +416,8 @@ export const lessons = [
       vocab("دايماً", "daayman", "всегда"), vocab("غالباً", "ghaaliban", "часто; обычно"), vocab("ساعات", "saaʿaat", "иногда"),
       vocab("نادراً", "naadiran", "редко"), vocab("الأول", "el-awwil", "сначала"), vocab("بعدين", "baʿdēn", "потом"),
       vocab("بتمرن", "batmarran", "я тренируюсь"), vocab("بذاكر", "bazākir", "я учусь; делаю уроки"),
-      vocab("بشوف", "bashuuf", "я вижу; смотрю"), vocab("بيجري", "biyigri", "он бегает"), vocab("مرة وحدة", "marra waḥda", "однажды; за один раз")
+      vocab("بشوف", "bashuuf", "я вижу; смотрю"), vocab("بيجري", "biyigri", "он бегает"), vocab("مرة وحدة", "marra waḥda", "однажды; за один раз"),
+      vocab("باخد دوش", "baakhod dush", "я принимаю душ"), vocab("بتعشّى", "bataʿsha", "я ужинаю"), vocab("بسمع", "basmaʿ", "я слушаю")
     ],
     grammar: [
       grammar("Связки последовательности", "El-awwil вводит первое действие, baʿdēn — следующее, fi-l-aakhir — последнее. Глаголы остаются в нужном времени.", [
@@ -821,7 +824,8 @@ goals: ["Назвать виды транспорта", "Объяснить ад
       vocab("خدني لـ…", "khodni li…", "отвезите меня в…"), vocab("شغّل العداد", "shaghghal el-ʿaddaad", "включите счётчик"),
       vocab("الأجرة", "el-ogra", "плата за проезд"), vocab("هنا كويس", "hina kwayyis", "здесь хорошо"), vocab("مستعجل", "mistaʿgil", "спешу м."),
       vocab("أول محطة", "awwil maḥaṭṭa", "первая остановка"), vocab("آخر محطة", "aakhir maḥaṭṭa", "конечная остановка"), vocab("تذكرة", "tazkara", "билет"),
-      vocab("مطار", "maṭaar", "аэропорт")
+      vocab("مطار", "maṭaar", "аэропорт"), vocab("ترام", "tram", "трамвай"),
+      vocab("سوّاق", "sawwaaʔ", "водитель"), vocab("مركب", "markab", "лодка; паром")
     ],
     grammar: [
       grammar("Объектный суффикс -ni", "Суффикс -ni означает «меня» после глагола: khodni — возьмите меня, nazzilni — высадите меня, istannaani — подождите меня.", [
@@ -886,7 +890,8 @@ goals: ["Назвать виды транспорта", "Объяснить ад
       vocab("غالي", "ghaali", "дорого"), vocab("رخيص", "rakhiiṣ", "дёшево"), vocab("خصم", "khaṣm", "скидка"),
       vocab("فكة", "fakka", "мелочь; сдача"), vocab("ميزان", "miizaan", "весы"),
       vocab("خضار", "khoḍaar", "овощи"), vocab("فاكهة", "faakha", "фрукты"), vocab("طماطم", "ṭamaaṭim", "помидоры"),
-      vocab("تفاح", "tuffāḥ", "яблоки"), vocab("جنيه", "gineeh", "фунт (валюта)")
+      vocab("تفاح", "tuffāḥ", "яблоки"), vocab("جنيه", "gineeh", "фунт (валюта)"),
+      vocab("موز", "moz", "бананы"), vocab("عنب", "ʿenab", "виноград"), vocab("فراولة", "faraawla", "клубника")
     ],
     grammar: [
       grammar("Цена", "Bikaam используется отдельно или перед указательным словом. Цена может отвечать без глагола.", [
@@ -951,7 +956,8 @@ goals: ["Назвать виды транспорта", "Объяснить ад
       vocab("بصلّح", "baṣallaḥ", "я ремонтирую"), vocab("بصمّم", "baṣammim", "я проектирую"), vocab("بركّب", "barakkib", "я устанавливаю"),
       vocab("اجتماع", "igtimaaʿ", "совещание"), vocab("مرتب", "morattab", "зарплата"),
       vocab("دور", "dor", "очередь; роль"), vocab("فريق", "fariir", "команда"), vocab("دوام", "dawaam", "график; смена"),
-      vocab("يدّي", "yiddi", "даёт"), vocab("بياخد", "biyaakhod", "берёт"), vocab("أرجّع", "argiʿ", "возвращаю")
+      vocab("يدّي", "yiddi", "даёт"), vocab("بياخد", "biyaakhod", "берёт"), vocab("أرجّع", "argiʿ", "возвращаю"),
+      vocab("وظيفة", "waẓiifa", "должность"), vocab("مكتب", "maktab", "офис; кабинет"), vocab("مقابلة", "moqaabala", "собеседование")
     ],
     grammar: [
       grammar("Профессия и место работы", "Bitishtighal eeh спрашивает профессию, bitishtighal fēn — место. Ответ может быть bashtighal + профессия или fi + организация.", [
@@ -1209,7 +1215,8 @@ goals: ["Купить лекарство по назначению", "Понят
       vocab("مفتاح", "miftaaḥ", "ключ"), vocab("الفطار شامل", "el-fiṭaar shaamil", "завтрак включён"), vocab("تسجيل دخول", "tasgiil dokhuul", "регистрация заезда"),
       vocab("ميعاد المغادرة", "miiʿaad el-mughaadara", "время выезда"), vocab("الحجز باسم…", "el-ḥagz bi-ism…", "бронь на имя…"),
       vocab("أوضة دبل", "ooḍa doble", "двухместный номер"), vocab("الخروج", "el-khoruug", "выезд; выселение"), vocab("حقيبة", "ḥagiiba", "чемодан; багаж"),
-      vocab("الرحلة", "er-riḥla", "поездка"), vocab("الميدان", "el-medaan", "площадь"), vocab("جولة", "gawla", "экскурсия; прогулка")
+      vocab("الرحلة", "er-riḥla", "поездка"), vocab("الميدان", "el-medaan", "площадь"), vocab("جولة", "gawla", "экскурсия; прогулка"),
+      vocab("فيزا", "viiza", "виза"), vocab("شرفة", "sharfa", "балкон"), vocab("حمّام", "ḥammaam", "ванная; душ в номере")
     ],
     grammar: [
       grammar("Рассказ о проблеме", "Дайте информацию в порядке: что было запланировано, что произошло, что нужно сейчас. Используйте الماضي для события, كان для фона и عايز или محتاج для решения.", [
@@ -1233,6 +1240,7 @@ export const mediaLessons = [
   { id: "video-basics", title: "Первые фразы", subtitle: "Приветствие и знакомство", file: "assets/videos/01-first-phrases.mp4", poster: "assets/images/module-01.svg", captions: "assets/captions/01-first-phrases.vtt", lessonId: "m1l2" },
   { id: "video-cafe", title: "В кафе", subtitle: "Заказ и счёт", file: "assets/videos/02-cafe.mp4", poster: "assets/images/module-09.svg", captions: "assets/captions/02-cafe.vtt", lessonId: "m9l1" },
   { id: "video-directions", title: "Как спросить дорогу", subtitle: "Прямо направо налево", file: "assets/videos/03-directions.mp4", poster: "assets/images/module-08.svg", captions: "assets/captions/03-directions.vtt", lessonId: "m8l2" },
+  { id: "video-buying", title: "На рынке", subtitle: "Цена и покупка", file: "assets/videos/04-buying.mp4", poster: "assets/images/module-09.svg", captions: "assets/captions/04-buying.vtt", lessonId: "m9l2" },
 ];
 
 export const survivalPhrases = [
@@ -1246,7 +1254,13 @@ export const survivalPhrases = [
   vocab("مافيش مشكلة", "mafiish moshkila", "Нет проблем"), vocab("خلاص تمام", "khalaas tamaam", "Хорошо, договорились"),
   vocab("محتاج أوضة", "miḥtaag ooḍa", "Мне нужен номер м."), vocab("هات الحساب", "haat el-ḥisaab", "Принесите счёт"),
   vocab("دي غالية", "di ghalya", "Это дорого ж."), vocab("إزاي أبدّل تذاكر؟", "izzaay abaddil tazaakir?", "Как поменять билеты?"),
-  vocab("في خدمة", "fi khedma", "готов помочь; к вашим услугам"), vocab("معنديش فكة", "ma-ʿandīsh fakka", "У меня нет мелочи")
+  vocab("في خدمة", "fi khedma", "готов помочь; к вашим услугам"), vocab("معنديش فكة", "ma-ʿandīsh fakka", "У меня нет мелочи"),
+  vocab("فين صيدلية؟", "fēn ṣaydaliyya?", "Где аптека?"), vocab("أنا تعبان", "ana taʿbaan", "Я плохо себя чувствую м."),
+  vocab("أنا تعبانة", "ana taʿbaana", "Я плохо себя чувствую ж."), vocab("محتاج دكتور", "miḥtaag doktor", "Мне нужен врач м."),
+  vocab("عندي ألم هنا", "ʿandi alam hina", "У меня здесь болит"), vocab("فين الواي فاي؟", "fēn el-wifi?", "Где Wi-Fi?"),
+  vocab("المفتاح مش شغال", "el-miftaaḥ mish shaghaal", "Ключ не работает"), vocab("إزاي أوصل هناك؟", "izzaay awṣal hunaak?", "Как мне туда добраться?"),
+  vocab("ده قريب من هنا؟", "da ʔariib min hina?", "Это близко отсюда?"), vocab("ده بعيد؟", "da baʿiid?", "Это далеко?"),
+  vocab("أنا متأخر", "ana mitʔakhkhar", "Я опаздываю м."), vocab("استنى شوية", "istanna shwayya", "Подожди немного")
 ];
 
 export const studyPlan = [

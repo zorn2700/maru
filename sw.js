@@ -12,9 +12,11 @@ const CORE = [
   "./assets/videos/01-first-phrases.mp4",
   "./assets/videos/02-cafe.mp4",
   "./assets/videos/03-directions.mp4",
+  "./assets/videos/04-buying.mp4",
   "./assets/captions/01-first-phrases.vtt",
   "./assets/captions/02-cafe.vtt",
-  "./assets/captions/03-directions.vtt"
+  "./assets/captions/03-directions.vtt",
+  "./assets/captions/04-buying.vtt"
 ];
 
 self.addEventListener("install", (event) => {
