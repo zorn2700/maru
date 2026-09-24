@@ -8,7 +8,7 @@ const CORE = [
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  ...Array.from({ length: 10 }, (_, index) => `./assets/images/module-${String(index + 1).padStart(2, "0")}.svg`),
+  ...Array.from({ length: 12 }, (_, index) => `./assets/images/module-${String(index + 1).padStart(2, "0")}.svg`),
   "./assets/videos/01-first-phrases.mp4",
   "./assets/videos/02-cafe.mp4",
   "./assets/videos/03-directions.mp4",

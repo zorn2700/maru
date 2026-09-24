@@ -7,6 +7,7 @@ import {
   survivalPhrases,
   studyPlan,
   transcriptionGuide,
+  verbDrills,
 } from "./course-data.js";
 
 const main = document.querySelector("#main");
@@ -35,6 +36,8 @@ const defaultState = {
 let state = loadState();
 let deferredInstallPrompt = null;
 let quizState = null;
+let drillState = null;
+let listenState = null;
 
 function loadState() {
   try {
@@ -246,7 +249,7 @@ function lessonView(lessonId) {
         <section class="lesson-section"><h2>Грамматика без перегруза</h2>${grammarBlocks}</section>
         <section class="lesson-section"><h2>Живой диалог</h2><div class="dialogue">${dialogue}</div></section>
         <section class="lesson-section"><h2>Контекст и культура</h2><p class="culture-note">${escapeHtml(lesson.culture)}</p></section>
-        <section class="lesson-section"><h2>Закрепление</h2><p>Пройдите короткий тест по словам этого урока. Ответ показывается сразу, а вопросы меняются при повторе.</p><div class="lesson-actions"><button class="primary-button" type="button" data-lesson-quiz="${lesson.id}">Начать тест</button><button class="primary-button complete-button ${complete ? "completed" : ""}" type="button" data-toggle-complete="${lesson.id}">${complete ? "✓ Урок завершён" : "Отметить завершённым"}</button></div></section>
+        <section class="lesson-section"><h2>Закрепление</h2><p>Пройдите короткий тест по словам этого урока или проверьте понимание на слух. Ответ показывается сразу, а вопросы меняются при повторе.</p>${[6, 7].includes(lesson.module) ? `<p class="muted" style="margin-top:.5rem">Для уроков о глаголах здесь же тренируется спряжение.</p>` : ""}<div class="lesson-actions"><button class="primary-button" type="button" data-lesson-quiz="${lesson.id}">Начать тест</button><button class="primary-button" type="button" data-lesson-listen="${lesson.id}">Аудирование</button>${[6, 7].includes(lesson.module) ? `<button class="primary-button" type="button" data-lesson-drill="${lesson.id}">Спряжение</button>` : ""}<button class="primary-button complete-button ${complete ? "completed" : ""}" type="button" data-toggle-complete="${lesson.id}">${complete ? "✓ Урок завершён" : "Отметить завершённым"}</button></div>${[6, 7].includes(lesson.module) ? `<div id="lessonDrill">${drillView(true)}</div>` : ""}</section>
       </div>
       <aside class="card">
         <h3>Как пройти урок</h3>
@@ -259,12 +262,14 @@ function lessonView(lessonId) {
 function practiceView(mode = state.practiceMode) {
   state.practiceMode = mode;
   saveState();
-  const modeButtons = `<div class="practice-controls"><button class="${mode === "cards" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="cards">Карточки</button><button class="${mode === "quiz" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="quiz">Общий тест</button><button class="${mode === "phrases" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="phrases">Нужные фразы</button></div>`;
+  const modeButtons = `<div class="practice-controls"><button class="${mode === "cards" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="cards">Карточки</button><button class="${mode === "quiz" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="quiz">Общий тест</button><button class="${mode === "phrases" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="phrases">Нужные фразы</button><button class="${mode === "drill" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="drill">Спряжение</button><button class="${mode === "listen" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="listen">Аудирование</button></div>`;
   let body = "";
   if (mode === "quiz") body = quizView(null);
   else if (mode === "phrases") body = survivalView();
+  else if (mode === "drill") body = drillView(true);
+  else if (mode === "listen") body = listeningView(true);
   else body = flashcardView();
-  return `<header class="page-head"><div><p class="eyebrow">Активное повторение</p><h1>Практика</h1><p>Карточки, тест и фразы для реальных ситуаций</p></div></header>${modeButtons}<section class="section">${body}</section>`;
+  return `<header class="page-head"><div><p class="eyebrow">Активное повторение</p><h1>Практика</h1><p>Карточки, тест, спряжение и фразы для реальных ситуаций</p></div></header>${modeButtons}<section class="section">${body}</section>`;
 }
 
 function allVocab() {
@@ -285,39 +290,48 @@ function flashcardView() {
   </div>`;
 }
 
-function buildQuiz(lessonId = null, count = 10) {
+function buildQuiz(lessonId = null, count = 10, direction = "ar") {
   const source = lessonId ? lessons.find((item) => item.id === lessonId).vocabulary : allVocab();
   const pool = lessonId ? source : shuffle([...source]).slice(0, Math.min(60, source.length));
   const selected = shuffle([...pool]).slice(0, Math.min(count, pool.length));
   const globalMeanings = [...new Set(allVocab().map((item) => item.ru))];
+  const globalArabic = [...new Set(allVocab().map((item) => item.ar))];
   const questions = selected.map((item) => {
-    const distractors = shuffle(globalMeanings.filter((meaning) => meaning !== item.ru)).slice(0, 3);
-    return { item, options: shuffle([item.ru, ...distractors]) };
+    const distractors = direction === "ru"
+      ? shuffle(globalArabic.filter((value) => value !== item.ar)).slice(0, 3)
+      : shuffle(globalMeanings.filter((meaning) => meaning !== item.ru)).slice(0, 3);
+    const answer = direction === "ru" ? item.ar : item.ru;
+    return { item, direction, answer, options: shuffle([...new Set([answer, ...distractors])]) };
   });
-  return { lessonId, questions, index: 0, score: 0, answered: false, selected: null, finished: false };
+  return { lessonId, direction, questions, index: 0, score: 0, answered: false, selected: null, finished: false };
 }
 
 function quizView(lessonId = null) {
-  if (!quizState || quizState.lessonId !== lessonId) quizState = buildQuiz(lessonId, lessonId ? 8 : 12);
+  if (!quizState || quizState.lessonId !== lessonId) quizState = buildQuiz(lessonId, lessonId ? 8 : 12, "ar");
   if (quizState.finished) {
     const total = quizState.questions.length;
     return `<div class="card quiz-card"><p class="eyebrow">Результат</p><h2>${quizState.score} из ${total}</h2><p>${quizState.score >= Math.ceil(total * .75) ? "Хороший результат. Повторите ошибки и двигайтесь дальше." : "Повторите карточки и попробуйте ещё раз."}</p><div class="lesson-actions"><button class="primary-button" type="button" data-restart-quiz="${lessonId || "all"}">Пройти снова</button>${lessonId ? `<button class="soft-button" type="button" data-open-lesson="${lessonId}">Вернуться к уроку</button>` : ""}</div></div>`;
   }
-  const question = quizState.questions[quizState.index];
+  const { item, answer, direction, options } = quizState.questions[quizState.index];
+  const readingArabic = direction === "ru";
+  const optionButtons = options.map((option) => {
+    let className = "choice-button";
+    if (quizState.answered && option === answer) className += " correct";
+    else if (quizState.answered && option === quizState.selected) className += " wrong";
+    const label = readingArabic ? `<span class="arabic" lang="ar">${escapeHtml(option)}</span>` : escapeHtml(option);
+    return `<button class="${className}" type="button" data-quiz-choice="${escapeHtml(option)}" ${quizState.answered ? "disabled" : ""}>${label}</button>`;
+  }).join("");
   return `<div class="card quiz-card">
     <p class="eyebrow">Вопрос ${quizState.index + 1} из ${quizState.questions.length}</p>
-    <div class="quiz-prompt">Выберите правильный перевод</div>
-    <div class="quiz-ar arabic" lang="ar">${escapeHtml(question.item.ar)}</div>
-    ${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(question.item.tr)}</p>` : ""}
-    <div class="choice-grid">
-      ${question.options.map((option) => {
-        let className = "choice-button";
-        if (quizState.answered && option === question.item.ru) className += " correct";
-        else if (quizState.answered && option === quizState.selected) className += " wrong";
-        return `<button class="${className}" type="button" data-quiz-choice="${escapeHtml(option)}" ${quizState.answered ? "disabled" : ""}>${escapeHtml(option)}</button>`;
-      }).join("")}
+    <div class="quiz-direction" role="group" aria-label="Направление теста">
+      <button class="${readingArabic ? "" : "active-soft-button"}" type="button" data-quiz-direction="ar">Слова → Перевод</button>
+      <button class="${readingArabic ? "active-soft-button" : ""}" type="button" data-quiz-direction="ru">Перевод → Слова</button>
     </div>
-    <div class="quiz-feedback">${quizState.answered ? (quizState.selected === question.item.ru ? "✓ Верно" : `Правильный ответ: ${escapeHtml(question.item.ru)}`) : ""}</div>
+    <div class="quiz-prompt">${readingArabic ? "Как это по-арабски?" : "Выберите правильный перевод"}</div>
+    ${readingArabic ? `<div class="quiz-ru">${escapeHtml(item.ru)}${quizState.answered ? " " + speakButton(answer) : ""}</div>` : `<div class="quiz-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(item.tr)}</p>` : ""}`}
+    ${readingArabic && !quizState.answered ? `<p class="muted">Выберите арабскую запись фразы</p>` : ""}
+    <div class="choice-grid">${optionButtons}</div>
+    <div class="quiz-feedback">${quizState.answered ? (quizState.selected === answer ? "✓ Верно" : `Правильный ответ: ${readingArabic ? `<span class="arabic" lang="ar">${escapeHtml(answer)}</span>${state.showTranscription ? ` <span class="vocab-tr">${escapeHtml(item.tr)}</span>` : ""}` : escapeHtml(item.ru)}`) : ""}</div>
     ${quizState.answered ? `<button class="primary-button" type="button" data-next-question>${quizState.index + 1 === quizState.questions.length ? "Показать результат" : "Следующий вопрос"}</button>` : ""}
   </div>`;
 }
@@ -326,12 +340,92 @@ function survivalView() {
   return `<div class="card"><h2>Фразы первой необходимости</h2><p class="muted">Сохраните этот раздел офлайн и потренируйте произношение заранее.</p><div class="vocab-list">${survivalPhrases.map((item) => `<article class="vocab-item"><div><div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(item.tr)}</div>` : ""}<div>${escapeHtml(item.ru)}</div></div>${speakButton(item.ar)}</article>`).join("")}</div></div>`;
 }
 
+function buildDrill(verbIndex = 0) {
+  const verb = verbDrills[verbIndex];
+  const correct = verb.forms[Math.floor(Math.random() * verb.forms.length)];
+  const distractors = shuffle(verb.forms.filter((form) => form.person !== correct.person)).slice(0, 3);
+  const options = shuffle([correct, ...distractors]);
+  return { verb, correct, options, answered: false, selected: null };
+}
+
+function drillView(embedded = false) {
+  if (!drillState) {
+    drillState = buildDrill(Math.floor(Math.random() * verbDrills.length));
+  }
+  const { verb, correct, options, answered, selected } = drillState;
+  const body = `<div class="card quiz-card">
+    <p class="eyebrow">Потренируй спряжение · ${escapeHtml(verb.verb)}</p>
+    <div class="quiz-prompt">${escapeHtml(correct.person)} — выбери правильную форму</div>
+    <div class="choice-grid">
+      ${options.map((form) => {
+        let className = "choice-button";
+        if (answered && form === correct) className += " correct";
+        else if (answered && form === selected) className += " wrong";
+        return `<button class="${className}" type="button" data-drill-choice="${escapeHtml(form.ar)}" ${answered ? "disabled" : ""}><span class="arabic" lang="ar">${escapeHtml(form.ar)}</span>${state.showTranscription ? `<small class="vocab-tr">${escapeHtml(form.tr)}</small>` : ""}</button>`;
+      }).join("")}
+    </div>
+    <div class="quiz-feedback">${answered ? (selected === correct ? "✓ Верно" : `Правильный ответ: ${escapeHtml(correct.ar)}`) : ""}</div>
+    ${answered ? `<div class="lesson-actions"><button class="primary-button" type="button" data-next-drill>Следующий глагол</button>${speakButton(correct.ar)}</div>` : ""}
+  </div>`;
+  if (embedded) return body;
+  return `<section class="section"><h2>Спряжение глаголов</h2><p class="muted">Проверьте форму настоящего времени для разных лиц.</p>${body}</section>`;
+}
+
+function buildListening(lessonId = null) {
+  const scope = lessonId ? lessons.find((item) => item.id === lessonId).vocabulary : allVocab();
+  const pool = lessonId ? scope : shuffle([...scope]).slice(0, 60);
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  const localMeanings = [...new Set(scope.map((entry) => entry.ru))];
+  const globalMeanings = [...new Set(allVocab().map((entry) => entry.ru))];
+  const distractors = shuffle(lessonId ? localMeanings : globalMeanings).filter((meaning) => meaning !== item.ru).slice(0, 3);
+  return { lessonId, item, options: shuffle([item.ru, ...distractors]), answered: false, selected: null };
+}
+
+function listeningView(embedded = false) {
+  if (!listenState) listenState = buildListening(null);
+  const { item, options, answered, selected } = listenState;
+  const body = `<div class="card quiz-card">
+    <p class="eyebrow">Тренировка аудирования</p>
+    <div class="quiz-prompt">Послушайте фразу и выберите её значение</div>
+    <button class="listen-play" type="button" data-listen-play="${escapeHtml(item.ar)}">🔊 <span>Прослушать ещё раз</span></button>
+    ${answered ? `<div class="quiz-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(item.tr)}</p>` : ""}` : ""}
+    <div class="choice-grid">
+      ${options.map((option) => {
+        let className = "choice-button";
+        if (answered && option === item.ru) className += " correct";
+        else if (answered && option === selected) className += " wrong";
+        return `<button class="${className}" type="button" data-listen-choice="${escapeHtml(option)}" ${answered ? "disabled" : ""}>${escapeHtml(option)}</button>`;
+      }).join("")}
+    </div>
+    <div class="quiz-feedback">${answered ? (selected === item.ru ? "✓ Верно" : `Правильный ответ: ${escapeHtml(item.ru)}`) : ""}</div>
+    ${answered ? `<div class="lesson-actions"><button class="primary-button" type="button" data-next-listen>Следующая фраза</button>${speakButton(item.ar)}</div>` : ""}
+  </div>`;
+  if (embedded) return body;
+  return `<section class="section"><h2>Аудирование</h2><p class="muted">Слушайте и определяйте значение услышанной фразы.</p>${body}</section>`;
+}
+
+function renderListen(backLessonId = null, play = true) {
+  const back = backLessonId ? `<button class="soft-button back-button" type="button" data-open-lesson="${backLessonId}">← Вернуться к уроку</button>` : "";
+  main.innerHTML = `${back}<section class="section">${listeningView(true)}</section>`;
+  if (play) setTimeout(() => speakArabic(listenState.item.ar), 150);
+}
+
+function refreshListen() {
+  const [route, lessonId] = getRoute();
+  if (route === "practice") {
+    main.innerHTML = practiceView("listen");
+    setTimeout(() => speakArabic(listenState.item.ar), 150);
+    return;
+  }
+  renderListen(lessonId || listenState.lessonId, false);
+}
+
 function mediaCard(media) {
   return `<button class="card media-card" type="button" data-open-media="${media.id}"><div class="media-thumb"><img src="${media.poster}" alt="" loading="lazy"><span class="play-mark" aria-hidden="true">▶</span></div><div class="media-copy"><h3>${escapeHtml(media.title)}</h3><p>${escapeHtml(media.subtitle)}</p></div></button>`;
 }
 
 function mediaView() {
-  return `<header class="page-head"><div><p class="eyebrow">Визуальное повторение</p><h1>Видео</h1><p>Короткие субтитрованные сцены. Для произношения используйте кнопку звука в уроках.</p></div></header><div class="media-grid">${mediaLessons.map(mediaCard).join("")}</div>`;
+  return `<header class="page-head"><div><p class="eyebrow">Визуальное повторение</p><h1>Видео</h1><p>Короткие озвученные сцены с субтитрами. Для тренировки произношения используйте кнопку звука в уроках.</p></div></header><div class="media-grid">${mediaLessons.map(mediaCard).join("")}</div>`;
 }
 
 function settingsView() {
@@ -365,6 +459,20 @@ function renderRoute() {
   else main.innerHTML = notFoundView();
   main.focus({ preventScroll: true });
   window.scrollTo(0, 0);
+}
+
+function refreshDrill() {
+  const anchor = document.querySelector("#lessonDrill");
+  if (anchor) {
+    anchor.innerHTML = drillView(true);
+    return;
+  }
+  const [route, lessonId] = getRoute();
+  if (route === "practice") {
+    main.innerHTML = practiceView("drill");
+    return;
+  }
+  main.innerHTML = `<button class="soft-button back-button" type="button" data-open-lesson="${lessonId}">← Вернуться к уроку</button>${drillView(true)}`;
 }
 
 function shuffle(items) {
@@ -445,7 +553,10 @@ document.addEventListener("click", (event) => {
     routeTo("practice");
   } else if (target.dataset.practiceMode) {
     quizState = null;
+    drillState = null;
+    listenState = null;
     main.innerHTML = practiceView(target.dataset.practiceMode);
+    if (target.dataset.practiceMode === "listen") setTimeout(() => speakArabic(listenState.item.ar), 150);
   } else if (target.hasAttribute("data-flip-card")) {
     state.flashcardFlipped = !state.flashcardFlipped;
     saveState();
@@ -467,7 +578,7 @@ document.addEventListener("click", (event) => {
     if (quizState?.answered) return;
     quizState.selected = target.dataset.quizChoice;
     quizState.answered = true;
-    if (quizState.selected === quizState.questions[quizState.index].item.ru) quizState.score += 1;
+    if (quizState.selected === quizState.questions[quizState.index].answer) quizState.score += 1;
     const [route] = getRoute();
     if (route === "practice") main.innerHTML = practiceView("quiz");
     else main.innerHTML = `<button class="soft-button back-button" type="button" data-open-lesson="${quizState.lessonId}">← Вернуться к уроку</button><section class="section">${quizView(quizState.lessonId)}</section>`;
@@ -477,11 +588,46 @@ document.addEventListener("click", (event) => {
     const [route] = getRoute();
     if (route === "practice") main.innerHTML = practiceView("quiz");
     else main.innerHTML = `<button class="soft-button back-button" type="button" data-open-lesson="${quizState.lessonId}">← Вернуться к уроку</button><section class="section">${quizView(quizState.lessonId)}</section>`;
+  } else if (target.dataset.quizDirection) {
+    quizState = buildQuiz(quizState.lessonId, quizState.lessonId ? 8 : 12, target.dataset.quizDirection);
+    const [route] = getRoute();
+    if (route === "practice") main.innerHTML = practiceView("quiz");
+    else main.innerHTML = `<button class="soft-button back-button" type="button" data-open-lesson="${quizState.lessonId}">← Вернуться к уроку</button><section class="section">${quizView(quizState.lessonId)}</section>`;
   } else if (target.dataset.restartQuiz) {
     const id = target.dataset.restartQuiz === "all" ? null : target.dataset.restartQuiz;
-    quizState = buildQuiz(id, id ? 8 : 12);
+    quizState = buildQuiz(id, id ? 8 : 12, quizState?.direction || "ar");
     if (id) main.innerHTML = `<button class="soft-button back-button" type="button" data-open-lesson="${id}">← Вернуться к уроку</button><section class="section">${quizView(id)}</section>`;
     else main.innerHTML = practiceView("quiz");
+  } else if (target.dataset.lessonDrill) {
+    drillState = buildDrill(Math.floor(Math.random() * verbDrills.length));
+    const anchor = document.querySelector("#lessonDrill");
+    if (anchor) {
+      anchor.innerHTML = drillView(true);
+    } else {
+      main.innerHTML = `<button class="soft-button back-button" type="button" data-open-lesson="${target.dataset.lessonDrill}">← Вернуться к уроку</button>${drillView(true)}`;
+    }
+  } else if (target.dataset.lessonListen) {
+    listenState = buildListening(target.dataset.lessonListen);
+    renderListen(target.dataset.lessonListen, true);
+  } else if (target.dataset.listenPlay) {
+    speakArabic(target.dataset.listenPlay);
+  } else if (target.dataset.listenChoice) {
+    if (listenState?.answered) return;
+    listenState.selected = target.dataset.listenChoice;
+    listenState.answered = true;
+    refreshListen();
+  } else if (target.hasAttribute("data-next-listen")) {
+    listenState = buildListening(listenState?.lessonId ?? null);
+    refreshListen();
+  } else if (target.dataset.drillChoice) {
+    if (!drillState?.answered) {
+      drillState.selected = target.dataset.drillChoice;
+      drillState.answered = true;
+      refreshDrill();
+    }
+  } else if (target.hasAttribute("data-next-drill")) {
+    drillState = buildDrill(Math.floor(Math.random() * verbDrills.length));
+    refreshDrill();
   } else if (target.hasAttribute("data-reset-progress")) {
     if (confirm("Сбросить весь учебный прогресс на этом устройстве?")) {
       state = { ...defaultState, theme: state.theme };
