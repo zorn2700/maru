@@ -1,10 +1,12 @@
-const CACHE = "masri-ru-v1";
+const CACHE = "masri-ru-v2";
 const CORE = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./course-data.js",
+  "./extra-data.js",
+  "./verb-data.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
