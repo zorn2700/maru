@@ -1,20 +1,14 @@
 import {
   alphabetGuide,
   courseMeta,
-  lessons as freeLessons,
+  lessons,
   modules,
   mediaLessons,
-  survivalPhrases as freeSurvivalPhrases,
+  survivalPhrases,
   studyPlan,
   transcriptionGuide,
-  verbDrills as freeVerbDrills,
+  verbDrills,
 } from "./course-data.js";
-import {
-  textbookFrontMatter,
-  textbookMeta,
-  textbookParts,
-  textbookUnits,
-} from "./textbook-data.js";
 
 const main = document.querySelector("#main");
 const nav = document.querySelector(".bottom-nav");
@@ -26,7 +20,6 @@ const lessonVideo = document.querySelector("#lessonVideo");
 const mediaDialogTitle = document.querySelector("#mediaDialogTitle");
 const toast = document.querySelector("#toast");
 const installButton = document.querySelector("#installButton");
-const accountButton = document.querySelector("#accountButton");
 
 const STORAGE_KEY = "masri-ru-state-v1";
 const defaultState = {
@@ -45,170 +38,6 @@ let deferredInstallPrompt = null;
 let quizState = null;
 let drillState = null;
 let listenState = null;
-
-let lessons = [...freeLessons];
-let verbDrills = [...freeVerbDrills];
-let survivalPhrases = [...freeSurvivalPhrases];
-let contentLoaded = false;
-let auth = { authenticated: false, active: false, email: null, accessUntil: null };
-
-async function apiJson(path, options = {}) {
-  const response = await fetch(path, {
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    ...options,
-  });
-  const data = await response.json().catch(() => ({}));
-  return { ok: response.ok, status: response.status, data };
-}
-
-async function loadProtectedContent() {
-  const { ok, data } = await apiJson("/api/content");
-  if (ok && Array.isArray(data.lessons)) {
-    lessons = data.lessons;
-    verbDrills = Array.isArray(data.verbDrills) ? data.verbDrills : [];
-    survivalPhrases = Array.isArray(data.survivalPhrases) ? data.survivalPhrases : [];
-    contentLoaded = true;
-  }
-}
-
-function resetToFreeContent() {
-  lessons = [...freeLessons];
-  verbDrills = [...freeVerbDrills];
-  survivalPhrases = [...freeSurvivalPhrases];
-  contentLoaded = false;
-}
-
-function updateAccountButton() {
-  if (accountButton) accountButton.textContent = auth.authenticated ? "Кабинет" : "Войти";
-}
-
-async function refreshAuth() {
-  try {
-    const { ok, data } = await apiJson("/api/me");
-    auth = ok ? { error: "", ...data } : { error: "", authenticated: false, active: false, email: null, accessUntil: null };
-  } catch {
-    auth = { error: "", authenticated: false, active: false, email: null, accessUntil: null };
-  }
-  if (auth.active) await loadProtectedContent().catch(() => {});
-  else resetToFreeContent();
-  updateAccountButton();
-  return auth;
-}
-
-function lessonIsFree(lessonId) {
-  return freeLessons.some((lesson) => lesson.id === lessonId);
-}
-
-function moduleIsLocked(moduleId) {
-  return !auth.active && Number(moduleId) !== 1;
-}
-
-function mediaIsLocked(media) {
-  return Boolean(media.paid) && !auth.active;
-}
-
-function paywallView(kind = "course") {
-  const titles = {
-    module: "Этот модуль доступен по подписке",
-    lesson: "Этот урок доступен по подписке",
-    media: "Это видео доступно по подписке",
-    practice: "Эта практика доступна по подписке",
-    course: "Полный курс доступен по подписке",
-  };
-  const pending = auth.authenticated && auth.active;
-  const intro = pending
-    ? "Не удалось загрузить материалы. Проверьте интернет и обновите данные."
-    : auth.authenticated
-      ? "Ваша подписка не активна. Оформите ежемесячную подписку, чтобы открыть все 36 уроков, тренировки и видео."
-      : "Создайте аккаунт и оформите ежемесячную подписку — откроются все 36 уроков, тренировки спряжения и озвученные видео. Модуль 1 доступен бесплатно.";
-  const action = pending
-    ? `<button class="primary-button" type="button" data-refresh-access>Обновить</button>`
-    : auth.authenticated
-      ? `<button class="primary-button" type="button" data-start-checkout>Оформить подписку</button>`
-      : `<button class="primary-button" type="button" data-route="account">Войти или зарегистрироваться</button>`;
-  return `<div class="card paywall">
-    <p class="eyebrow">🔒 Подписка</p>
-    <h2>${titles[kind] || titles.course}</h2>
-    <p>${intro}</p>
-    <div class="lesson-actions">${action}<button class="soft-button" type="button" data-route="course">К модулям</button></div>
-  </div>`;
-}
-
-function accountView() {
-  if (!auth.authenticated) {
-    const error = auth.error ? `<p class="auth-error">${escapeHtml(auth.error)}</p>` : "";
-    return `<header class="page-head"><div><p class="eyebrow">Аккаунт</p><h1>Вход и регистрация</h1><p>Модуль 1 бесплатный. Оформите подписку, чтобы открыть остальные модули на всех устройствах.</p></div></header>
-      ${error}
-      <form class="card auth-form" data-auth-form="register">
-        <h3>Создать аккаунт</h3>
-        <label><span>Email</span><input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
-        <label><span>Пароль</span><input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="минимум 8 символов"></label>
-        <button class="primary-button" type="submit">Зарегистрироваться</button>
-      </form>
-      <form class="card auth-form" data-auth-form="login">
-        <h3>Уже есть аккаунт</h3>
-        <label><span>Email</span><input type="email" name="email" required autocomplete="email"></label>
-        <label><span>Пароль</span><input type="password" name="password" required autocomplete="current-password"></label>
-        <button class="primary-button" type="submit">Войти</button>
-      </form>`;
-  }
-  const until = auth.accessUntil ? new Date(auth.accessUntil).toLocaleDateString("ru-RU") : "";
-  return `<header class="page-head"><div><p class="eyebrow">Аккаунт</p><h1>Моя подписка</h1></div></header>
-    <div class="card account-card">
-      <h3>${escapeHtml(auth.email || "")}</h3>
-      ${auth.active
-        ? `<p class="text-success">✓ Подписка активна${until ? ` до ${escapeHtml(until)}` : ""}</p><p class="muted">Все 36 уроков, тренировки спряжения и озвученные видео открыты.</p><div class="lesson-actions"><button class="primary-button" type="button" data-open-portal>Управление подпиской</button><button class="soft-button" type="button" data-auth-logout>Выйти</button></div>`
-        : `<p class="muted">Подписка не активна. Оформите ежемесячную подписку, чтобы открыть весь курс.</p><div class="lesson-actions"><button class="primary-button" type="button" data-start-checkout>Оформить подписку</button><button class="soft-button" type="button" data-auth-logout>Выйти</button></div>`}
-    </div>
-    ${auth.active ? "" : `<div class="card paywall"><h3>Что входит в подписку</h3><ul class="goal-list"><li>Все 36 уроков от A0 до B1</li><li>Тесты, карточки и спряжение глаголов</li><li>Озвученные видео с субтитрами</li><li>Фразы для путешествий</li><li>Доступ на всех устройствах</li></ul></div>`}`;
-}
-
-async function submitAuth(mode, form) {
-  const email = form.querySelector('input[name="email"]')?.value || "";
-  const password = form.querySelector('input[name="password"]')?.value || "";
-  const button = form.querySelector("button");
-  if (button) button.disabled = true;
-  const { ok, data } = await apiJson(`/api/auth/${mode}`, {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  }).catch(() => ({ ok: false, data: { error: "Нет соединения с сервером" } }));
-  if (button) button.disabled = false;
-  if (!ok) {
-    auth = { ...auth, error: data.error || "Не удалось выполнить вход" };
-    main.innerHTML = accountView();
-    return;
-  }
-  auth = { error: "", ...data };
-  if (auth.active) await loadProtectedContent().catch(() => {});
-  updateAccountButton();
-  renderRoute();
-  showToast(auth.active ? "Подписка активна" : "Вы вошли в аккаунт");
-}
-
-async function startCheckout() {
-  const { ok, data } = await apiJson("/api/checkout", { method: "POST" }).catch(() => ({ ok: false, data: {} }));
-  if (ok && data.url) location.href = data.url;
-  else showToast(data.error || "Не удалось начать оформление подписки");
-}
-
-async function openPortal() {
-  const { ok, data } = await apiJson("/api/portal", { method: "POST" }).catch(() => ({ ok: false, data: {} }));
-  if (ok && data.url) location.href = data.url;
-  else showToast(data.error || "Не удалось открыть портал подписки");
-}
-
-async function logout() {
-  await apiJson("/api/auth/logout", { method: "POST" }).catch(() => {});
-  auth = { error: "", authenticated: false, active: false, email: null, accessUntil: null };
-  resetToFreeContent();
-  quizState = null;
-  drillState = null;
-  listenState = null;
-  updateAccountButton();
-  renderRoute();
-  showToast("Вы вышли из аккаунта");
-}
 
 function loadState() {
   try {
@@ -276,14 +105,11 @@ function moduleCard(module) {
   const items = moduleLessons(module.id);
   const done = completedCount(items);
   const value = percent(done, items.length);
-  const locked = moduleIsLocked(module.id);
-  const metaRight = locked ? "🔒 Подписка" : `${done}/${items.length}`;
   return `
     <button class="module-card" type="button" data-open-module="${module.id}" style="--module-color:${module.color}">
       <img src="${module.image}" alt="" loading="lazy">
-      ${module.id === 1 ? `<span class="free-badge">Бесплатно</span>` : ""}
       <span class="module-card-body">
-        <span class="module-card-meta"><span>${escapeHtml(module.level)}</span><span>${metaRight}</span></span>
+        <span class="module-card-meta"><span>${escapeHtml(module.level)}</span><span>${done}/${items.length}</span></span>
         <h3>${escapeHtml(module.title)}</h3>
         <span class="arabic" lang="ar">${escapeHtml(module.ar)}</span>
         <span class="progress-track" aria-label="Прогресс ${value}%"><span class="progress-fill" style="width:${value}%"></span></span>
@@ -307,8 +133,6 @@ function homeView() {
       <div class="hero-actions">
         <button class="primary-button" type="button" data-open-lesson="${nextLesson.id}">${done ? "Продолжить" : "Начать курс"}</button>
         <button class="soft-button" type="button" data-route="course">Все уроки</button>
-        <button class="soft-button" type="button" data-route="textbook">Учебник</button>
-        ${auth.active ? "" : `<button class="soft-button" type="button" data-route="account">Полная версия</button>`}
       </div>
     </section>
 
@@ -345,7 +169,6 @@ function courseView() {
 function moduleView(moduleId) {
   const module = modules.find((item) => item.id === Number(moduleId));
   if (!module) return notFoundView();
-  if (moduleIsLocked(module.id)) return paywallView("module");
   const items = moduleLessons(module.id);
   const done = completedCount(items);
   return `
@@ -375,8 +198,15 @@ function speakButton(text, label = "Прослушать") {
   return `<button class="speak-button" type="button" data-speak="${escapeHtml(text)}" aria-label="${label}" title="${label}">🔊</button>`;
 }
 
-function vocabularyList(lesson) {
-  return lesson.vocabulary.map((item) => `
+function lessonView(lessonId) {
+  const lesson = lessons.find((item) => item.id === lessonId);
+  if (!lesson) return notFoundView();
+  const module = modules.find((item) => item.id === lesson.module);
+  const complete = state.completed.includes(lesson.id);
+  state.lastLesson = lesson.id;
+  saveState();
+
+  const vocabulary = lesson.vocabulary.map((item) => `
     <article class="vocab-item">
       <div>
         <div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>
@@ -386,10 +216,8 @@ function vocabularyList(lesson) {
       </div>
       ${speakButton(item.ar)}
     </article>`).join("");
-}
 
-function grammarBlocks(lesson) {
-  return lesson.grammar.map((item) => `
+  const grammarBlocks = lesson.grammar.map((item) => `
     <section class="grammar-block">
       <h3>${escapeHtml(item.title)}</h3>
       <p>${escapeHtml(item.explanation)}</p>
@@ -397,28 +225,13 @@ function grammarBlocks(lesson) {
         ${item.examples.map((ex) => `<div class="example-row"><span class="arabic" lang="ar">${escapeHtml(ex.ar)}</span><small>${escapeHtml(ex.tr)}</small><div>${escapeHtml(ex.ru)}</div></div>`).join("")}
       </div>
     </section>`).join("");
-}
 
-function dialogueLines(lesson) {
-  return lesson.dialogue.map((item) => `
+  const dialogue = lesson.dialogue.map((item) => `
     <div class="dialogue-line">
       <span class="avatar" aria-hidden="true">${escapeHtml(item.speaker.trim().slice(0, 1).toUpperCase())}</span>
       <div class="bubble"><strong>${escapeHtml(item.speaker)}</strong><div class="arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="transcription">${escapeHtml(item.tr)}</div>` : ""}<p>${escapeHtml(item.ru)}</p></div>
       ${speakButton(item.ar, `Прослушать реплику ${item.speaker}`)}
     </div>`).join("");
-}
-
-function lessonView(lessonId) {
-  const lesson = lessons.find((item) => item.id === lessonId);
-  if (!lesson) return lessonIsFree(lessonId) ? notFoundView() : paywallView("lesson");
-  const module = modules.find((item) => item.id === lesson.module);
-  const complete = state.completed.includes(lesson.id);
-  state.lastLesson = lesson.id;
-  saveState();
-
-  const vocabulary = vocabularyList(lesson);
-  const grammar = grammarBlocks(lesson);
-  const dialogue = dialogueLines(lesson);
 
   return `
     <button class="soft-button back-button" type="button" data-open-module="${module.id}">← Модуль ${module.id}</button>
@@ -433,7 +246,7 @@ function lessonView(lessonId) {
       <div class="lesson-content">
         <section class="lesson-section"><h2>Цели урока</h2><ul class="goal-list">${lesson.goals.map((goal) => `<li>${escapeHtml(goal)}</li>`).join("")}</ul></section>
         <section class="lesson-section"><h2>Слова и фразы</h2><div class="vocab-list">${vocabulary}</div></section>
-        <section class="lesson-section"><h2>Грамматика без перегруза</h2>${grammar}</section>
+        <section class="lesson-section"><h2>Грамматика без перегруза</h2>${grammarBlocks}</section>
         <section class="lesson-section"><h2>Живой диалог</h2><div class="dialogue">${dialogue}</div></section>
         <section class="lesson-section"><h2>Контекст и культура</h2><p class="culture-note">${escapeHtml(lesson.culture)}</p></section>
         <section class="lesson-section"><h2>Закрепление</h2><p>Пройдите короткий тест по словам этого урока или проверьте понимание на слух. Ответ показывается сразу, а вопросы меняются при повторе.</p>${[6, 7].includes(lesson.module) ? `<p class="muted" style="margin-top:.5rem">Для уроков о глаголах здесь же тренируется спряжение.</p>` : ""}<div class="lesson-actions"><button class="primary-button" type="button" data-lesson-quiz="${lesson.id}">Начать тест</button><button class="primary-button" type="button" data-lesson-listen="${lesson.id}">Аудирование</button>${[6, 7].includes(lesson.module) ? `<button class="primary-button" type="button" data-lesson-drill="${lesson.id}">Спряжение</button>` : ""}<button class="primary-button complete-button ${complete ? "completed" : ""}" type="button" data-toggle-complete="${lesson.id}">${complete ? "✓ Урок завершён" : "Отметить завершённым"}</button></div>${[6, 7].includes(lesson.module) ? `<div id="lessonDrill">${drillView(true)}</div>` : ""}</section>
@@ -453,7 +266,7 @@ function practiceView(mode = state.practiceMode) {
   let body = "";
   if (mode === "quiz") body = quizView(null);
   else if (mode === "phrases") body = survivalView();
-  else if (mode === "drill") body = verbDrills.length ? drillView(true) : paywallView("practice");
+  else if (mode === "drill") body = drillView(true);
   else if (mode === "listen") body = listeningView(true);
   else body = flashcardView();
   return `<header class="page-head"><div><p class="eyebrow">Активное повторение</p><h1>Практика</h1><p>Карточки, тест, спряжение и фразы для реальных ситуаций</p></div></header>${modeButtons}<section class="section">${body}</section>`;
@@ -524,7 +337,6 @@ function quizView(lessonId = null) {
 }
 
 function survivalView() {
-  if (!survivalPhrases.length) return paywallView("practice");
   return `<div class="card"><h2>Фразы первой необходимости</h2><p class="muted">Сохраните этот раздел офлайн и потренируйте произношение заранее.</p><div class="vocab-list">${survivalPhrases.map((item) => `<article class="vocab-item"><div><div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(item.tr)}</div>` : ""}<div>${escapeHtml(item.ru)}</div></div>${speakButton(item.ar)}</article>`).join("")}</div></div>`;
 }
 
@@ -609,87 +421,11 @@ function refreshListen() {
 }
 
 function mediaCard(media) {
-  const locked = mediaIsLocked(media);
-  return `<button class="card media-card" type="button" data-open-media="${media.id}"><div class="media-thumb"><img src="${media.poster}" alt="" loading="lazy"><span class="play-mark" aria-hidden="true">▶</span></div><div class="media-copy"><h3>${escapeHtml(media.title)} ${locked ? `<span class="lock-badge" aria-hidden="true">🔒</span>` : ""}</h3><p>${escapeHtml(media.subtitle)}${locked ? " · Подписка" : ""}</p></div></button>`;
+  return `<button class="card media-card" type="button" data-open-media="${media.id}"><div class="media-thumb"><img src="${media.poster}" alt="" loading="lazy"><span class="play-mark" aria-hidden="true">▶</span></div><div class="media-copy"><h3>${escapeHtml(media.title)}</h3><p>${escapeHtml(media.subtitle)}</p></div></button>`;
 }
 
 function mediaView() {
   return `<header class="page-head"><div><p class="eyebrow">Визуальное повторение</p><h1>Видео</h1><p>Короткие озвученные сцены с субтитрами. Для тренировки произношения используйте кнопку звука в уроках.</p></div></header><div class="media-grid">${mediaLessons.map(mediaCard).join("")}</div>`;
-}
-
-function textbookUnitIsLocked(unit) {
-  return !unit.free && !auth.active;
-}
-
-function textbookAudioPlayer(label, src) {
-  return `<div class="textbook-audio"><span>${escapeHtml(label)}</span><audio controls preload="none" src="${src}"></audio></div>`;
-}
-
-function textbookView() {
-  const frontMatter = textbookFrontMatter.map((item) => {
-    const locked = !item.free && !auth.active;
-    const actions = locked
-      ? `<button class="soft-button" type="button" data-route="account">🔒 По подписке</button>`
-      : `${item.pdf ? `<a class="soft-button" href="${item.pdf}" download>Скачать PDF</a>` : ""}${item.audio ? textbookAudioPlayer("Аудио", item.audio) : ""}`;
-    return `<article class="textbook-front card">
-      <div><h3>${escapeHtml(item.title)}</h3><p class="muted">${escapeHtml(item.subtitle)}</p></div>
-      <div class="textbook-front-actions">${actions}</div>
-    </article>`;
-  }).join("");
-
-  const partsHtml = textbookParts.map((part) => {
-    const rows = part.modules.map((moduleId) => {
-      const unit = textbookUnits.find((entry) => entry.module === moduleId);
-      const locked = textbookUnitIsLocked(unit);
-      const sections = unit.lessons.map((lesson) => `<li><button class="link-button" type="button" data-open-lesson="${lesson.id}">${lesson.order}. ${escapeHtml(lesson.title)}</button></li>`).join("");
-      const files = locked
-        ? `<div class="textbook-locked">🔒 <button class="soft-button" type="button" data-route="account">Оформить подписку</button></div>`
-        : `<div class="textbook-files">
-            <div class="textbook-file-buttons"><a class="soft-button" href="${unit.chapter}" download>Глава PDF</a><button class="primary-button" type="button" data-open-textbook-unit="${unit.module}">Читать главу</button></div>
-            <div class="textbook-audio-list">${unit.lessons.map((lesson) => textbookAudioPlayer(lesson.title, lesson.audio)).join("")}</div>
-          </div>`;
-      return `<tr>
-        <td><strong>Модуль ${unit.module}. ${escapeHtml(unit.title)}</strong><div class="arabic toc-ar" lang="ar">${escapeHtml(unit.ar)}</div><ul class="toc-lessons">${sections}</ul></td>
-        <td>${files}</td>
-      </tr>`;
-    }).join("");
-    return `<section class="section">
-      <div class="section-head"><div><h2>${escapeHtml(part.title)}. ${escapeHtml(part.subtitle)}</h2><p>Модули ${part.modules[0]}–${part.modules[part.modules.length - 1]}</p></div></div>
-      <div class="toc-table"><table><thead><tr><th>Содержание</th><th>Файлы и аудио</th></tr></thead><tbody>${rows}</tbody></table></div>
-    </section>`;
-  }).join("");
-
-  return `<header class="page-head"><div><p class="eyebrow">Онлайн-учебник</p><h1>${escapeHtml(textbookMeta.title)}</h1><p>${escapeHtml(textbookMeta.subtitle)}</p></div></header>
-    <section class="section"><div class="section-head"><div><h2>Введение и справочники</h2><p>Транскрипция, алфавит и фразы для путешествий</p></div></div><div class="textbook-front-grid">${frontMatter}</div></section>
-    ${partsHtml}`;
-}
-
-function textbookUnitView(moduleId) {
-  const unit = textbookUnits.find((entry) => entry.module === Number(moduleId));
-  if (!unit) return notFoundView();
-  if (textbookUnitIsLocked(unit)) return paywallView("module");
-  const module = modules.find((entry) => entry.id === unit.module);
-  const items = lessons.filter((lesson) => lesson.module === unit.module);
-  const sections = items.map((lesson) => {
-    const audio = unit.lessons.find((entry) => entry.id === lesson.id);
-    return `<section class="lesson-section textbook-section">
-      <h2>${lesson.order}. ${escapeHtml(lesson.title)} <span class="arabic" lang="ar">${escapeHtml(lesson.arTitle)}</span></h2>
-      ${audio ? textbookAudioPlayer("Аудио урока", audio.audio) : ""}
-      <h3>Слова и фразы</h3><div class="vocab-list">${vocabularyList(lesson)}</div>
-      <h3>Грамматика</h3>${grammarBlocks(lesson)}
-      <h3>Живой диалог</h3><div class="dialogue">${dialogueLines(lesson)}</div>
-      <h3>Контекст и культура</h3><p class="culture-note">${escapeHtml(lesson.culture)}</p>
-    </section>`;
-  }).join("");
-  return `<button class="soft-button back-button" type="button" data-route="textbook">← К учебнику</button>
-    <section class="lesson-hero section" style="--module-color:${module.color}">
-      <p class="eyebrow">Модуль ${unit.module} · ${escapeHtml(module.level)}</p>
-      <h1>${escapeHtml(unit.title)}</h1>
-      <div class="arabic-display" lang="ar">${escapeHtml(unit.ar)}</div>
-      <div class="lesson-meta"><span class="chip">${items.length} урока</span><span class="chip">Аудио</span><span class="chip">Глава PDF</span></div>
-      <div class="lesson-actions"><a class="soft-button" href="${unit.chapter}" download>Скачать главу PDF</a><button class="soft-button" type="button" data-open-module="${unit.module}">К урокам модуля</button></div>
-    </section>
-    ${sections}`;
 }
 
 function settingsView() {
@@ -720,8 +456,6 @@ function renderRoute() {
   else if (route === "lesson") main.innerHTML = lessonView(value);
   else if (route === "practice") main.innerHTML = practiceView();
   else if (route === "media") main.innerHTML = mediaView();
-  else if (route === "textbook") main.innerHTML = value === "unit" ? textbookUnitView(getRoute()[2]) : textbookView();
-  else if (route === "account") main.innerHTML = accountView();
   else if (route === "settings") main.innerHTML = settingsView();
   else main.innerHTML = notFoundView();
   main.focus({ preventScroll: true });
@@ -767,11 +501,6 @@ function speakArabic(text) {
 function openMedia(mediaId) {
   const media = mediaLessons.find((item) => item.id === mediaId);
   if (!media) return;
-  if (mediaIsLocked(media)) {
-    main.innerHTML = paywallView("media");
-    window.scrollTo(0, 0);
-    return;
-  }
   mediaDialogTitle.textContent = media.title;
   lessonVideo.replaceChildren();
   lessonVideo.src = media.file;
@@ -808,7 +537,6 @@ document.addEventListener("click", (event) => {
   if (target.dataset.route) routeTo(target.dataset.route);
   else if (target.dataset.openModule) routeTo(`module/${target.dataset.openModule}`);
   else if (target.dataset.openLesson) routeTo(`lesson/${target.dataset.openLesson}`);
-  else if (target.dataset.openTextbookUnit) routeTo(`textbook/unit/${target.dataset.openTextbookUnit}`);
   else if (target.dataset.speak) speakArabic(target.dataset.speak);
   else if (target.dataset.openMedia) openMedia(target.dataset.openMedia);
   else if (target.dataset.toggleComplete) {
@@ -908,22 +636,7 @@ document.addEventListener("click", (event) => {
       renderRoute();
       showToast("Прогресс сброшен");
     }
-  } else if (target.dataset.startCheckout !== undefined) {
-    startCheckout();
-  } else if (target.dataset.openPortal !== undefined) {
-    openPortal();
-  } else if (target.dataset.authLogout !== undefined) {
-    logout();
-  } else if (target.hasAttribute("data-refresh-access")) {
-    refreshAuth().then(() => renderRoute());
   }
-});
-
-document.addEventListener("submit", (event) => {
-  const form = event.target.closest("[data-auth-form]");
-  if (!form) return;
-  event.preventDefault();
-  submitAuth(form.dataset.authForm, form);
 });
 
 document.addEventListener("keydown", (event) => {
@@ -987,17 +700,6 @@ else colorSchemeQuery.addListener(syncSystemTheme);
 setTheme();
 if (!location.hash) history.replaceState(null, "", "#/home");
 renderRoute();
-
-refreshAuth().then(() => renderRoute());
-
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && auth.authenticated) {
-    refreshAuth().then(() => renderRoute());
-  }
-});
-setInterval(() => {
-  if (auth.authenticated) refreshAuth().then(() => { if (!auth.active) renderRoute(); });
-}, 10 * 60 * 1000);
 
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
