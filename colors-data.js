@@ -1,0 +1,71 @@
+export const colorLesson = {
+  id: "colors",
+  title: "Цвета",
+  arTitle: "الألوان",
+  subtitle: "Как назвать цвет и описать вещь",
+  arSubtitle: "إزاي تقول اللون وتوصف الحاجة",
+  lessonId: "m9l3",
+  intro: "В египетском арабском цвет ставится после существительного и согласуется с ним в роде. Шесть базовых цветов имеют отдельную женскую форму, остальные чаще не меняются.",
+  colors: [
+    { ar: "أسود", tr: "iswid", ru: "чёрный", fem: "سودا", femTr: "sooda", hex: "#1f2937", dark: true },
+    { ar: "أبيض", tr: "abyaḍ", ru: "белый", fem: "بيضا", femTr: "bēḍa", hex: "#f8fafc" },
+    { ar: "أحمر", tr: "aḥmar", ru: "красный", fem: "حمرا", femTr: "ḥamra", hex: "#dc2626", dark: true },
+    { ar: "أزرق", tr: "azraʔ", ru: "синий", fem: "زرقا", femTr: "zarʔa", hex: "#2563eb", dark: true },
+    { ar: "أخضر", tr: "akhḍar", ru: "зелёный", fem: "خضرا", femTr: "khaḍra", hex: "#16a34a", dark: true },
+    { ar: "أصفر", tr: "aṣfar", ru: "жёлтый", fem: "صفرا", femTr: "ṣafra", hex: "#facc15" },
+    { ar: "برتقالي", tr: "bortoʔaani", ru: "оранжевый", hex: "#f97316", dark: true },
+    { ar: "بنفسجي", tr: "banafsagi", ru: "фиолетовый", hex: "#7c3aed", dark: true },
+    { ar: "وردي", tr: "wardi", ru: "розовый", hex: "#ec4899", dark: true },
+    { ar: "بني", tr: "bunni", ru: "коричневый", hex: "#92400e", dark: true },
+    { ar: "رمادي", tr: "ramaadi", ru: "серый", hex: "#6b7280", dark: true },
+    { ar: "سماوي", tr: "samaawi", ru: "голубой", hex: "#38bdf8" },
+    { ar: "كحلي", tr: "koḥli", ru: "тёмно-синий", hex: "#1e3a8a", dark: true },
+    { ar: "ذهبي", tr: "dahabi", ru: "золотой", hex: "#d4af37" },
+    { ar: "فضي", tr: "faḍḍi", ru: "серебряный", hex: "#9ca3af" },
+    { ar: "بيج", tr: "bēg", ru: "бежевый", hex: "#d8c3a5" },
+  ],
+  grammar: [
+    {
+      title: "Цвет после предмета",
+      text: "Сначала называется вещь, потом цвет. Цвет согласуется с существительным: мужской род — iswid, женский — sooda.",
+      examples: [
+        { ar: "قميص أبيض", tr: "ʔamiiṣ abyaḍ", ru: "белая рубашка" },
+        { ar: "جزمة سودا", tr: "gazma sooda", ru: "чёрная обувь" },
+        { ar: "عربية حمرا", tr: "ʿarabiyya ḥamra", ru: "красная машина" },
+      ],
+    },
+    {
+      title: "Женская форма",
+      text: "У шести основных цветов есть женская форма: iswid → sooda, abyaḍ → bēḍa, aḥmar → ḥamra, azraʔ → zarʔa, akhḍar → khaḍra, aṣfar → ṣafra. Остальные цвета чаще остаются неизменными.",
+      examples: [
+        { ar: "شنطة بيضا", tr: "shanṭa bēḍa", ru: "белая сумка" },
+        { ar: "وردة حمرا", tr: "warda ḥamra", ru: "красная роза" },
+      ],
+    },
+    {
+      title: "Оттенки",
+      text: "ghaamiʔ — тёмный, faatiḥ — светлый, zāhi — яркий. Эти слова ставятся после цвета.",
+      examples: [
+        { ar: "أزرق غامق", tr: "azraʔ ghaamiʔ", ru: "тёмно-синий" },
+        { ar: "أخضر فاتح", tr: "akhḍar faatiḥ", ru: "светло-зелёный" },
+      ],
+    },
+    {
+      title: "Спросить о цвете",
+      text: "loon — цвет. К нему добавляется местоимение: loono — его цвет, loonha — её цвет, loonak — твой цвет.",
+      examples: [
+        { ar: "إيه لونه؟", tr: "eeh loono?", ru: "Какого он цвета?" },
+        { ar: "إيه لونها؟", tr: "eeh loonha?", ru: "Какого она цвета?" },
+      ],
+    },
+  ],
+  phrases: [
+    { ar: "فيه لون تاني؟", tr: "fiih loon taani?", ru: "Есть другой цвет?" },
+    { ar: "عايز اللون ده", tr: "ʿaayiz el-loon da", ru: "Я хочу этот цвет (м.)" },
+    { ar: "عايزة اللون ده", tr: "ʿaayza el-loon da", ru: "Я хочу этот цвет (ж.)" },
+    { ar: "اللون ده حلو أوي", tr: "el-loon da ḥelw awi", ru: "Этот цвет очень красивый" },
+    { ar: "ممكن أشوف الألوان؟", tr: "momkin ashuuf el-alwaan?", ru: "Можно посмотреть цвета?" },
+    { ar: "اللون غامق شوية", tr: "el-loon ghaamiʔ shwayya", ru: "Цвет немного тёмный" },
+    { ar: "اللون فاتح أوي", tr: "el-loon faatiḥ awi", ru: "Цвет слишком светлый" },
+  ],
+};

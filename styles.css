@@ -602,10 +602,21 @@ body.has-audio main { padding-bottom: calc(11.6rem + var(--safe-bottom)); }
   font-size: .76rem;
   font-weight: 800;
 }
-.color-swatch span { display: block; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--swatch-a), var(--swatch-b)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.24); }
+.color-swatch .swatch-preview { display: block; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--swatch-a), var(--swatch-b)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.24); }
+.color-swatch .swatch-name { display: block; line-height: 1.2; }
+.color-swatch .swatch-ar { display: block; color: var(--muted); font-size: .72rem; font-weight: 600; line-height: 1.35; }
 .color-swatch.active { border-color: var(--blue); box-shadow: 0 6px 18px color-mix(in srgb, var(--blue) 20%, transparent); }
 .palette-group { margin-top: 1rem; }
 .palette-group > strong { display: block; margin-bottom: .45rem; color: var(--navy); }
+.color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 178px), 1fr)); gap: .7rem; }
+.color-card { display: flex; flex-direction: column; gap: .55rem; padding: .7rem; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--paper) 88%, var(--blue-soft)); }
+.color-chip { display: block; height: 64px; border-radius: 12px; background: var(--chip-color); box-shadow: inset 0 0 0 1px rgba(0,0,0,.14), 0 4px 12px color-mix(in srgb, var(--chip-color) 34%, transparent); }
+.color-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .4rem; }
+.color-card-ar { color: var(--navy); font-size: 1.45rem; font-weight: 800; line-height: 1.45; }
+.color-card-tr { color: var(--blue); font-size: .86rem; font-weight: 700; }
+.color-card-ru { margin-top: .12rem; }
+.color-card-fem { padding-top: .45rem; border-top: 1px dashed var(--line); color: var(--muted); font-size: .8rem; }
+.color-card-fem .arabic { color: var(--navy); font-size: 1rem; }
 .segmented { display: flex; flex-wrap: wrap; gap: .4rem; }
 .segmented button { flex: 1; min-width: 88px; min-height: 38px; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--muted); cursor: pointer; font-weight: 800; font-size: .82rem; }
 .segmented button.active { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); }

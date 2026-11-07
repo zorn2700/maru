@@ -10,6 +10,7 @@ import {
 } from "./course-data.js";
 import { phrasebook, quickReference } from "./extra-data.js";
 import { verbLibrary, verbTenses } from "./verb-data.js";
+import { colorLesson } from "./colors-data.js";
 import {
   audioById,
   audioLibrary,
@@ -374,48 +375,56 @@ const accents = [
   {
     id: "blue",
     name: "Средиземный",
+    ar: "أزرق متوسط",
     light: { blue: "#1565c0", soft: "#e8f1fb", navy: "#102a43", navy2: "#243b53", deep: "#0d3b66", hero: ["#102a43", "#155799", "#167d87"], glow: "#ffe0a5", sand: "#f6f1e8" },
     dark: { blue: "#73b4ff", soft: "#18324d", navy: "#d9eaf7", navy2: "#b6cbdc", deep: "#1e4b7a", hero: ["#0b1c2c", "#123f6b", "#135e66"], glow: "#ffe9b8", sand: "#111a22" },
   },
   {
     id: "teal",
     name: "Изумруд",
+    ar: "أخضر زمردي",
     light: { blue: "#00796b", soft: "#e0f2f1", navy: "#103b3a", navy2: "#1f5d59", deep: "#004d40", hero: ["#083b3a", "#0b6b63", "#2a9d8f"], glow: "#c8f7e8", sand: "#eef6f3" },
     dark: { blue: "#5de0cf", soft: "#123b38", navy: "#d6f5f1", navy2: "#a8d9d3", deep: "#176b63", hero: ["#062423", "#0a4b46", "#14756c"], glow: "#c8f7e8", sand: "#0e1b19" },
   },
   {
     id: "violet",
     name: "Фиалка",
+    ar: "بنفسجي",
     light: { blue: "#6a1b9a", soft: "#f3e8fb", navy: "#2f1b4a", navy2: "#4a2b6b", deep: "#4a148c", hero: ["#2b1246", "#5b2a86", "#8e44ad"], glow: "#f2d7ff", sand: "#f6f0f8" },
     dark: { blue: "#c58bff", soft: "#32204a", navy: "#eeddfb", navy2: "#cbb4df", deep: "#6d3d9e", hero: ["#1b0d2d", "#3d1c5c", "#64347f"], glow: "#f2d7ff", sand: "#17101f" },
   },
   {
     id: "amber",
     name: "Шафран",
+    ar: "أصفر زعفراني",
     light: { blue: "#b45309", soft: "#fff1dc", navy: "#3d2a12", navy2: "#5a3d1b", deep: "#92400e", hero: ["#3b2410", "#8a4b16", "#c27c2c"], glow: "#ffe4b0", sand: "#fbf3e5" },
     dark: { blue: "#fbbf24", soft: "#3d2a12", navy: "#fcebd0", navy2: "#dfc5a2", deep: "#a16207", hero: ["#241407", "#5a3210", "#8c5a1f"], glow: "#ffe4b0", sand: "#1b140c" },
   },
   {
     id: "rose",
     name: "Роза",
+    ar: "وردي",
     light: { blue: "#be185d", soft: "#fce7f0", navy: "#431025", navy2: "#63213b", deep: "#9d174d", hero: ["#3d0f22", "#8e1d4a", "#c94f7c"], glow: "#ffd6e5", sand: "#fbf0f4" },
     dark: { blue: "#ff8fbb", soft: "#42192b", navy: "#ffe0ec", navy2: "#e5b9cb", deep: "#9d174d", hero: ["#280815", "#5e132f", "#8d3151"], glow: "#ffd6e5", sand: "#1d1014" },
   },
   {
     id: "ocean",
     name: "Океан",
+    ar: "أزرق محيطي",
     light: { blue: "#0369a1", soft: "#e0f2fe", navy: "#0c2f44", navy2: "#174a63", deep: "#075985", hero: ["#082f49", "#075985", "#0e7490"], glow: "#bae6fd", sand: "#edf5f9" },
     dark: { blue: "#5cc8ff", soft: "#0d3145", navy: "#d7f0ff", navy2: "#a8cfe3", deep: "#0e6b9e", hero: ["#041e2f", "#064663", "#0a667a"], glow: "#bae6fd", sand: "#0b1720" },
   },
   {
     id: "forest",
     name: "Лес",
+    ar: "أخضر غامق",
     light: { blue: "#2f6f2f", soft: "#e8f4e5", navy: "#173b1c", navy2: "#2a5730", deep: "#1b5e20", hero: ["#102b14", "#1f5a28", "#3f7d3a"], glow: "#d7f5c9", sand: "#eff5eb" },
     dark: { blue: "#7ed87e", soft: "#17351b", navy: "#e1f7de", navy2: "#b8d9b5", deep: "#2f7a35", hero: ["#0a1b0d", "#153c1c", "#28602c"], glow: "#d7f5c9", sand: "#101810" },
   },
   {
     id: "graphite",
     name: "Графит",
+    ar: "رمادي فحمي",
     light: { blue: "#475569", soft: "#e9eef3", navy: "#1e293b", navy2: "#334155", deep: "#334155", hero: ["#111827", "#334155", "#546b82"], glow: "#e2e8f0", sand: "#f1f3f5" },
     dark: { blue: "#b6c7d9", soft: "#263442", navy: "#eef4f9", navy2: "#c4d2de", deep: "#475569", hero: ["#0b1119", "#1f2a37", "#3b4b5c"], glow: "#e2e8f0", sand: "#11161c" },
   },
@@ -454,7 +463,7 @@ function setTheme() {
 function paletteMarkup() {
   return accents.map((palette) => {
     const colors = palette.light;
-    return `<button class="color-swatch ${state.accent === palette.id ? "active" : ""}" type="button" data-accent-choice="${palette.id}" style="--swatch-a:${colors.blue};--swatch-b:${colors.deep}" aria-pressed="${state.accent === palette.id}"><span aria-hidden="true"></span>${escapeHtml(palette.name)}</button>`;
+    return `<button class="color-swatch ${state.accent === palette.id ? "active" : ""}" type="button" data-accent-choice="${palette.id}" style="--swatch-a:${colors.blue};--swatch-b:${colors.deep}" aria-pressed="${state.accent === palette.id}"><span class="swatch-preview" aria-hidden="true"></span><span class="swatch-name">${escapeHtml(palette.name)}</span><span class="swatch-ar arabic" lang="ar">${escapeHtml(palette.ar)}</span></button>`;
   }).join("");
 }
 
@@ -795,7 +804,7 @@ async function importBackup(file) {
 
 function activateNav(route) {
   let root = route;
-  if (["module", "lesson", "library"].includes(route)) root = "course";
+  if (["module", "lesson", "library", "colors"].includes(route)) root = "course";
   else if (route === "verb") root = "verbs";
   else if (["phrases", "reference"].includes(route)) root = "practice";
   else if (route === "recordings") root = "settings";
@@ -909,7 +918,7 @@ function homeView() {
         <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов · 5 времён · ${learnedVerbs} освоено</small></button>
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} готовых фраз по ситуациям</small></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Местоимения, предлоги, числа и формулы времён</small></button>
-        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎨</span><strong>Цвета и темы</strong><small>8 акцентов, светлый и тёмный режим</small></button>
+        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и фразы для покупок</small></button>
         <button class="card feature-card" type="button" data-route="settings"><span class="feature-icon">🏅</span><strong>Достижения</strong><small>${state.achievements.length} из ${achievementDefs.length} открыто</small></button>
       </div>
     </section>
@@ -927,7 +936,7 @@ function homeView() {
 
 function courseView() {
   return `
-    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioLibrary.length} аудиофайлов</p></div><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></header>
+    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioLibrary.length} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></div></header>
     <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
     <div class="module-grid">${modules.map(moduleCard).join("")}</div>
     <section class="section">
@@ -1038,6 +1047,11 @@ function lessonView(lessonId) {
         ${track ? `<button class="primary-button" type="button" data-play-audio="${track.id}">▶ Слушать урок</button>` : ""}
         ${chapter ? `<button class="soft-button" type="button" data-open-pdf="${chapter}" data-pdf-title="${escapeHtml(`Урок ${lesson.order} · ${lesson.title}`)}">📖 Открыть PDF</button>` : ""}
       </div>
+    </section>` : ""}
+
+    ${lesson.id === colorLesson.lessonId ? `<section class="lesson-audio-card color-callout">
+      <div><strong>🎨 Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы, грамматика и фразы для магазина</small></div>
+      <div class="lesson-actions"><button class="primary-button" type="button" data-route="colors">Открыть материал «Цвета»</button></div>
     </section>` : ""}
 
     <div class="lesson-layout">
@@ -1257,7 +1271,7 @@ function referenceView() {
     const arabic = /[\u0600-\u06FF]/.test(value);
     return `<td${arabic ? ` class="arabic ref-arabic" lang="ar"` : ""}>${escapeHtml(value)}</td>`;
   };
-  return `<header class="page-head"><div><p class="eyebrow">Быстрый справочник</p><h1>Шпаргалка</h1><p>Местоимения, суффиксы, вопросы, предлоги и формулы времён</p></div><button class="soft-button" type="button" data-route="phrases">Разговорник</button></header>
+  return `<header class="page-head"><div><p class="eyebrow">Быстрый справочник</p><h1>Шпаргалка</h1><p>Местоимения, суффиксы, вопросы, предлоги и формулы времён</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="phrases">Разговорник</button></div></header>
     ${quickReference.map((section) => `<section class="lesson-section ref-section"><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.intro)}</p><div class="plan-table"><table><thead><tr>${section.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${section.rows.map((row) => `<tr>${row.map(cell).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("")}`;
 }
 
@@ -1387,9 +1401,11 @@ function pdfCard(item) {
 
 function libraryView() {
   const tab = state.libraryTab || "audio";
-  const tabs = [["audio", "🎧 Аудиокурс"], ["text", "📖 Учебник PDF"], ["video", "🎬 Видео"]];
+  const tabs = [["audio", "🎧 Аудиокурс"], ["text", "📖 Учебник PDF"], ["colors", "🎨 Цвета"], ["video", "🎬 Видео"]];
   let body = "";
-  if (tab === "text") {
+  if (tab === "colors") {
+    body = colorsBody();
+  } else if (tab === "text") {
     body = `
       <div class="section-head"><div><h2>Введение и алфавит</h2><p>Бесплатные материалы для старта</p></div></div>
       <div class="library-grid">${textbookFrontMatter.map((item) => pdfCard({ ...item, audio: item.audio ? `front-${item.id}` : "" })).join("")}</div>
@@ -1417,7 +1433,7 @@ function libraryView() {
         <div class="audio-list">${tracks.map(audioRow).join("")}</div>
       </section>`).join("")}`;
   }
-  return `<header class="page-head"><div><p class="eyebrow">Аудио, учебник и видео</p><h1>Библиотека</h1><p>${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF-глав · ${mediaLessons.length} видео · всё доступно офлайн после загрузки</p></div><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></header>
+  return `<header class="page-head"><div><p class="eyebrow">Аудио, учебник и видео</p><h1>Библиотека</h1><p>${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF-глав · ${colorLesson.colors.length} цветов · ${mediaLessons.length} видео · всё доступно офлайн после загрузки</p></div><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></header>
     <div class="library-tabs">${tabs.map(([id, label]) => `<button class="${tab === id ? "primary-button" : "soft-button"}" type="button" data-library-tab="${id}">${label}</button>`).join("")}</div>
     ${body}`;
 }
@@ -1451,6 +1467,75 @@ async function loadRecordingsView() {
   refreshRecordingBadges();
 }
 
+function colorCard(item) {
+  return `<article class="color-card">
+    <span class="color-chip" style="--chip-color:${item.hex}" aria-hidden="true"></span>
+    <div class="color-card-head">
+      <div>
+        <div class="color-card-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>
+        ${state.showTranscription ? `<div class="color-card-tr">${escapeHtml(item.tr)}</div>` : ""}
+        <div class="color-card-ru">${escapeHtml(item.ru)}</div>
+      </div>
+      ${audioActions(item.ar, `Прослушать цвет: ${item.ru}`)}
+    </div>
+    ${item.fem ? `<div class="color-card-fem">Женская форма: <span class="arabic" lang="ar">${escapeHtml(item.fem)}</span>${state.showTranscription && item.femTr ? ` · <small>${escapeHtml(item.femTr)}</small>` : ""}</div>` : ""}
+  </article>`;
+}
+
+function colorsBody() {
+  const linkedLesson = lessons.find((item) => item.id === colorLesson.lessonId);
+  const grammar = colorLesson.grammar.map((item) => `
+    <section class="grammar-block">
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.text)}</p>
+      <div class="example-list">
+        ${item.examples.map((ex) => `<div class="example-row"><span class="arabic" lang="ar">${escapeHtml(ex.ar)}</span>${state.showTranscription ? `<small>${escapeHtml(ex.tr)}</small>` : ""}<div>${escapeHtml(ex.ru)}</div>${audioActions(ex.ar)}</div>`).join("")}
+      </div>
+    </section>`).join("");
+  const phrases = colorLesson.phrases.map((item) => `
+    <article class="vocab-item">
+      <div>
+        <div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>
+        ${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(item.tr)}</div>` : ""}
+        <div class="vocab-ru">${escapeHtml(item.ru)}</div>
+      </div>
+      ${audioActions(item.ar)}
+    </article>`).join("");
+  return `
+    <section class="section lesson-section">
+      <div class="section-head"><div><h2>Палитра цветов · لوحة الألوان</h2><p>${colorLesson.colors.length} цветов с произношением и женской формой</p></div><span class="chip">Модуль 9${linkedLesson ? ` · урок ${linkedLesson.order}` : ""}</span></div>
+      <div class="color-grid">${colorLesson.colors.map(colorCard).join("")}</div>
+    </section>
+    <section class="section lesson-section">
+      <h2>Грамматика цвета</h2>
+      <p class="muted">Как поставить цвет после существительного и согласовать его в роде.</p>
+      ${grammar}
+    </section>
+    <section class="section lesson-section">
+      <h2>Фразы про цвет и покупки</h2>
+      <div class="vocab-list">${phrases}</div>
+    </section>
+    <section class="section lesson-section">
+      <h2>Связанный урок курса</h2>
+      <p>Тема «Цвета» — часть урока «${escapeHtml(linkedLesson?.title || "Одежда размер и цвет")}». Там вы найдёте одежду, размеры и диалог в магазине.</p>
+      <div class="lesson-actions">
+        ${linkedLesson ? `<button class="primary-button" type="button" data-open-lesson="${linkedLesson.id}">📖 Открыть урок ${linkedLesson.order}</button>` : ""}
+        <button class="soft-button" type="button" data-route="practice">🃏 Карточки практики</button>
+        <button class="soft-button" type="button" data-open-palette>🎨 Сменить палитру</button>
+      </div>
+    </section>`;
+}
+
+function colorsView() {
+  const linkedLesson = lessons.find((item) => item.id === colorLesson.lessonId);
+  return `<header class="page-head">
+    <div><p class="eyebrow">Материал курса · Модуль 9 · Цвета</p><h1>${escapeHtml(colorLesson.title)} · <span class="arabic" lang="ar">${escapeHtml(colorLesson.arTitle)}</span></h1><p>${escapeHtml(colorLesson.subtitle)} · ${escapeHtml(colorLesson.arSubtitle)}</p></div>
+    <div class="lesson-actions">${linkedLesson ? `<button class="soft-button" type="button" data-open-lesson="${linkedLesson.id}">📖 Урок ${linkedLesson.order}</button>` : ""}<button class="soft-button" type="button" data-open-palette>🎨 Палитра</button></div>
+  </header>
+  <section class="section lesson-section"><p>${escapeHtml(colorLesson.intro)}</p></section>
+  ${colorsBody()}`;
+}
+
 function activityChart() {
   const days = [];
   for (let offset = 13; offset >= 0; offset -= 1) {
@@ -1470,7 +1555,7 @@ function settingsView() {
   return `<header class="page-head"><div><p class="eyebrow">Приложение</p><h1>Настройки и справка</h1><p>Изменения сохраняются только на этом устройстве</p></div><button class="soft-button" type="button" data-open-palette>🎨 Палитра</button></header>
 
     <section class="section lesson-section">
-      <div class="section-head"><div><h2>Цвета и оформление</h2><p>8 акцентов, светлый, тёмный и системный режим</p></div><span class="chip">${escapeHtml(accents.find((item) => item.id === state.accent)?.name || "Средиземный")}</span></div>
+      <div class="section-head"><div><h2>Цвета и оформление</h2><p>8 акцентов с названиями на русском и арабском · светлый, тёмный и системный режим</p></div><span class="chip">${escapeHtml(accents.find((item) => item.id === state.accent)?.name || "Средиземный")} · <span class="arabic" lang="ar">${escapeHtml(accents.find((item) => item.id === state.accent)?.ar || "أزرق متوسط")}</span></span></div>
       <div id="settingsPalette" class="palette-grid">${paletteMarkup()}</div>
       <label class="setting-row"><span><strong>Режим</strong><small>Светлая, тёмная или системная тема</small></span><select id="themeSelect"><option value="system" ${state.theme === "system" ? "selected" : ""}>Системная</option><option value="light" ${state.theme === "light" ? "selected" : ""}>Светлая</option><option value="dark" ${state.theme === "dark" ? "selected" : ""}>Тёмная</option></select></label>
     </section>
@@ -1521,7 +1606,8 @@ function settingsView() {
         <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов и 5 времён</small></button>
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} фраз и избранное</small></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Грамматика в таблицах</small></button>
-        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎨</span><strong>Цвета</strong><small>Сменить акцент и тему</small></button>
+        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и грамматика</small></button>
+        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎛</span><strong>Оформление</strong><small>8 акцентов, светлый и тёмный режим</small></button>
       </div>
     </section>
 
@@ -1549,6 +1635,7 @@ function renderRoute() {
   else if (route === "practice") main.innerHTML = practiceView();
   else if (route === "media") main.innerHTML = mediaView();
   else if (route === "library") main.innerHTML = libraryView();
+  else if (route === "colors") main.innerHTML = colorsView();
   else if (route === "recordings") main.innerHTML = recordingsView();
   else if (route === "settings") main.innerHTML = settingsView();
   else main.innerHTML = notFoundView();
@@ -1620,8 +1707,8 @@ function updateSearch(query) {
   if (!needle) {
     searchResults.innerHTML = `<div class="empty-state">
       <strong>Ищите по всему курсу</strong>
-      <p>Уроки · слова · разговорник · глаголы · аудио · PDF</p>
-      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${verbLibrary.length} глаголов · ${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF</p>
+      <p>Уроки · слова · разговорник · глаголы · цвета · аудио · PDF</p>
+      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${verbLibrary.length} глаголов · ${colorLesson.colors.length} цветов · ${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF</p>
       <p class="small"><span class="keyboard-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd> или <kbd>/</kbd> — открыть поиск</span></p>
     </div>`;
     return;
@@ -1640,6 +1727,17 @@ function updateSearch(query) {
   verbLibrary.forEach((verb) => {
     if (`${verb.ar} ${verb.tr} ${verb.ru} ${verb.root} ${verb.pattern}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Глаголы", type: "Глагол", verbId: verb.id, ar: verb.ar, ru: verb.ru, tr: verb.tr });
   });
+  if (`${colorLesson.title} ${colorLesson.arTitle} ${colorLesson.subtitle} ${colorLesson.arSubtitle} цвета цвет colours colors الألوان لون`.toLocaleLowerCase("ru").includes(needle)) {
+    found.push({ group: "Цвета", type: "Материал курса", searchRoute: "colors", ar: colorLesson.arTitle, ru: `${colorLesson.title} · ${colorLesson.colors.length} цветов`, tr: colorLesson.subtitle });
+  }
+  colorLesson.colors.forEach((color) => {
+    if (`${color.ar} ${color.tr} ${color.ru} ${color.fem || ""} ${color.femTr || ""} цвет`.toLocaleLowerCase("ru").includes(needle)) {
+      found.push({ group: "Цвета", type: "Цвет", searchRoute: "colors", ar: color.ar, ru: color.ru, tr: color.fem ? `${color.tr} · ж. ${color.femTr}` : color.tr });
+    }
+  });
+  colorLesson.phrases.forEach((item) => {
+    if (`${item.ar} ${item.tr} ${item.ru}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Цвета", type: "Фраза о цвете", searchRoute: "colors", ar: item.ar, ru: item.ru, tr: item.tr });
+  });
   audioLibrary.forEach((track) => {
     if (`${track.title} ${track.subtitle} ${track.ar || ""} ${track.group}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Аудио", type: "Аудио", audioId: track.id, ar: track.ar || "", ru: track.title, tr: track.subtitle });
   });
@@ -1657,7 +1755,8 @@ function updateSearch(query) {
   let lastGroup = "";
   searchResults.innerHTML = found.slice(0, 90).map((item) => {
     let attrs = `data-search-open="${item.lessonId || ""}"`;
-    if (item.phrase) attrs = `data-search-phrase="${escapeHtml(item.phrase)}" data-search-category="${escapeHtml(item.category)}"`;
+    if (item.searchRoute) attrs = `data-search-route="${item.searchRoute}"`;
+    else if (item.phrase) attrs = `data-search-phrase="${escapeHtml(item.phrase)}" data-search-category="${escapeHtml(item.category)}"`;
     else if (item.verbId) attrs = `data-search-verb="${item.verbId}"`;
     else if (item.pdf) attrs = `data-search-pdf="${item.pdf}" data-pdf-title="${escapeHtml(item.title)}"`;
     else if (item.audioId) attrs = `data-search-audio="${item.audioId}"`;
@@ -2027,9 +2126,12 @@ document.querySelector("#searchButton").addEventListener("click", () => {
 });
 searchInput.addEventListener("input", () => updateSearch(searchInput.value));
 searchResults.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-search-open], [data-search-phrase], [data-search-verb], [data-search-audio], [data-search-pdf]");
+  const button = event.target.closest("[data-search-open], [data-search-phrase], [data-search-verb], [data-search-audio], [data-search-pdf], [data-search-route]");
   if (!button) return;
-  if (button.dataset.searchPhrase) {
+  if (button.dataset.searchRoute) {
+    searchDialog.close();
+    routeTo(button.dataset.searchRoute);
+  } else if (button.dataset.searchPhrase) {
     if (button.dataset.searchCategory) state.phraseCategory = button.dataset.searchCategory;
     saveState();
     searchDialog.close();

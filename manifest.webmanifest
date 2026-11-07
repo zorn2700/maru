@@ -29,6 +29,12 @@
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
+      "name": "Цвета · الألوان",
+      "short_name": "Цвета",
+      "url": "./#/colors",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Мои аудиозаписи",
       "short_name": "Записи",
       "url": "./#/recordings",
