@@ -23,6 +23,8 @@
         <span><strong>Masri RU</strong><small>Египетский арабский</small></span>
       </button>
       <div class="top-actions">
+        <button id="libraryButton" class="icon-button" type="button" aria-label="Библиотека аудио и учебника" title="Аудио и учебник">🎧</button>
+        <button id="paletteButton" class="icon-button" type="button" aria-label="Цвета и тема" title="Цвета и тема">🎨</button>
         <button id="searchButton" class="icon-button" type="button" aria-label="Поиск" title="Поиск">⌕</button>
         <button id="installButton" class="pill-button hidden" type="button">Установить</button>
       </div>
@@ -55,6 +57,87 @@
     </form>
     <video id="lessonVideo" controls playsinline preload="metadata"></video>
   </dialog>
+
+  <dialog id="pdfDialog" class="pdf-dialog">
+    <form method="dialog" class="dialog-head">
+      <strong id="pdfDialogTitle">Учебник PDF</strong>
+      <span class="dialog-head-actions">
+        <a id="pdfOpenLink" class="link-button" href="#" target="_blank" rel="noopener">Открыть в новой вкладке ↗</a>
+        <button class="icon-button" value="close" aria-label="Закрыть">×</button>
+      </span>
+    </form>
+    <iframe id="pdfFrame" title="Страница учебника"></iframe>
+  </dialog>
+
+  <dialog id="audioDialog" class="sheet-dialog audio-dialog">
+    <form method="dialog" class="dialog-head">
+      <strong id="audioDialogTitle">Аудио фразы</strong>
+      <button class="icon-button" value="close" aria-label="Закрыть">×</button>
+    </form>
+    <div class="audio-dialog-body">
+      <div id="audioDialogPhrase" class="audio-dialog-phrase arabic" lang="ar"></div>
+      <p id="audioDialogRu" class="audio-dialog-ru"></p>
+      <p id="audioDialogStatus" class="muted"></p>
+      <div class="lesson-actions audio-dialog-actions">
+        <button id="audioPlayPhrase" class="primary-button" type="button">▶ Прослушать</button>
+        <button id="audioRecordPhrase" class="soft-button" type="button">● Записать</button>
+        <button id="audioUploadPhrase" class="soft-button" type="button">⬆ Загрузить файл</button>
+        <button id="audioDeletePhrase" class="soft-button danger-soft" type="button">Удалить запись</button>
+        <button id="audioTtsPhrase" class="soft-button" type="button">Системный голос</button>
+      </div>
+      <p class="muted small">Запишите своё произношение или загрузите mp3, m4a, ogg или wav. Файл хранится только на этом устройстве и работает офлайн.</p>
+    </div>
+  </dialog>
+
+  <dialog id="paletteDialog" class="sheet-dialog palette-dialog">
+    <form method="dialog" class="dialog-head">
+      <strong>Цвета приложения</strong>
+      <button class="icon-button" value="close" aria-label="Закрыть">×</button>
+    </form>
+    <div class="palette-body">
+      <p class="muted">Выберите акцент, фон и режим. Настройка сохраняется на устройстве.</p>
+      <div id="paletteGrid" class="palette-grid"></div>
+      <div class="palette-group">
+        <strong>Режим</strong>
+        <div id="themeSegment" class="segmented">
+          <button type="button" data-theme-choice="light">Светлый</button>
+          <button type="button" data-theme-choice="dark">Тёмный</button>
+          <button type="button" data-theme-choice="system">Системный</button>
+        </div>
+      </div>
+      <div class="palette-group">
+        <strong>Фон</strong>
+        <div id="surfaceSegment" class="segmented">
+          <button type="button" data-surface-choice="warm">Тёплый</button>
+          <button type="button" data-surface-choice="cool">Прохладный</button>
+          <button type="button" data-surface-choice="plain">Нейтральный</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="audioDock" class="audio-dock hidden" role="region" aria-label="Аудиоплеер">
+    <button id="audioPrev" class="audio-dock-button" type="button" aria-label="Предыдущий трек" title="Предыдущий">⏮</button>
+    <button id="audioToggle" class="audio-main-button" type="button" aria-label="Пауза" title="Пауза">⏸</button>
+    <button id="audioNext" class="audio-dock-button" type="button" aria-label="Следующий трек" title="Следующий">⏭</button>
+    <div class="audio-dock-info">
+      <strong id="audioTitle">Аудио</strong>
+      <small id="audioSubtitle"></small>
+      <div class="audio-progress-row">
+        <span id="audioTime">0:00</span>
+        <input id="audioSeek" type="range" min="0" max="1000" value="0" step="1" aria-label="Позиция аудио">
+        <span id="audioDuration">0:00</span>
+      </div>
+    </div>
+    <div class="audio-dock-actions">
+      <button id="audioRate" class="audio-dock-button" type="button" aria-label="Скорость воспроизведения" title="Скорость">1×</button>
+      <button id="audioLoop" class="audio-dock-button" type="button" aria-label="Повтор" title="Повтор">🔁</button>
+      <button id="audioClose" class="audio-dock-button" type="button" aria-label="Закрыть плеер" title="Закрыть">✕</button>
+    </div>
+  </div>
+  <audio id="audioPlayer" preload="metadata"></audio>
+  <input id="audioFileInput" type="file" accept="audio/*" hidden>
+  <input id="backupInput" type="file" accept="application/json,.json" hidden>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script type="module" src="app.js"></script>

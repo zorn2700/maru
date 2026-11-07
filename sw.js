@@ -1,4 +1,11 @@
-const CACHE = "masri-ru-v2";
+const CACHE = "masri-ru-v3";
+const LESSON_TRACKS = Array.from({ length: 12 }, (_, month) =>
+  Array.from({ length: 3 }, (__, index) => `./assets/textbook/audio/lesson-m${month + 1}l${index + 1}.mp3`),
+).flat();
+const CHAPTERS = Array.from(
+  { length: 12 },
+  (_, index) => `./assets/textbook/chapters/chapter-unit-${String(index + 1).padStart(2, "0")}.pdf`,
+);
 const CORE = [
   "./",
   "./index.html",
@@ -7,6 +14,9 @@ const CORE = [
   "./course-data.js",
   "./extra-data.js",
   "./verb-data.js",
+  "./textbook-data.js",
+  "./library-data.js",
+  "./audio-db.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
@@ -18,7 +28,13 @@ const CORE = [
   "./assets/captions/01-first-phrases.vtt",
   "./assets/captions/02-cafe.vtt",
   "./assets/captions/03-directions.vtt",
-  "./assets/captions/04-buying.vtt"
+  "./assets/captions/04-buying.vtt",
+  "./assets/textbook/audio/alphabet.mp3",
+  "./assets/textbook/audio/survival.mp3",
+  ...LESSON_TRACKS,
+  ...CHAPTERS,
+  "./assets/textbook/chapters/chapter-introduction.pdf",
+  "./assets/textbook/chapters/chapter-alphabet.pdf",
 ];
 
 self.addEventListener("install", (event) => {
@@ -26,14 +42,33 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
+  );
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-    const copy = response.clone();
-    caches.open(CACHE).then((cache) => cache.put(event.request, copy));
-    return response;
-  }).catch(() => caches.match("./index.html"))));
+  const request = event.request;
+  if (request.method !== "GET") return;
+  if (request.headers.has("range")) return;
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request)
+        .then((response) => {
+          if (response.ok && response.status === 200 && new URL(request.url).origin === self.location.origin) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
+          }
+          return response;
+        })
+        .catch(() => {
+          if (request.mode === "navigate") return caches.match("./index.html");
+          return Response.error();
+        });
+    }),
+  );
 });

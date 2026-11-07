@@ -1,7 +1,7 @@
 {
   "name": "Masri RU Египетский арабский",
   "short_name": "Masri RU",
-  "description": "Офлайн-курс египетского арабского для русскоговорящих",
+  "description": "Офлайн-курс египетского арабского для русскоговорящих: уроки, аудиофайлы, учебник PDF, запись своего голоса и тренажёры.",
   "lang": "ru",
   "dir": "ltr",
   "start_url": "./#/home",
@@ -14,5 +14,25 @@
   "icons": [
     { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Аудиокурс и учебник",
+      "short_name": "Библиотека",
+      "url": "./#/library",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Умное повторение",
+      "short_name": "Практика",
+      "url": "./#/practice",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Мои аудиозаписи",
+      "short_name": "Записи",
+      "url": "./#/recordings",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

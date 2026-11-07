@@ -10,6 +10,25 @@ import {
 } from "./course-data.js";
 import { phrasebook, quickReference } from "./extra-data.js";
 import { verbLibrary, verbTenses } from "./verb-data.js";
+import {
+  audioById,
+  audioLibrary,
+  lessonAudio,
+  lessonPdf,
+  modulePdfMap,
+  textbookFrontMatter,
+  textbookMeta,
+  textbookParts,
+  textbookPdfCount,
+  textbookUnits,
+} from "./library-data.js";
+import {
+  clearRecordings,
+  deleteRecording,
+  getRecording,
+  listRecordings,
+  putRecording,
+} from "./audio-db.js";
 
 const main = document.querySelector("#main");
 const nav = document.querySelector(".bottom-nav");
@@ -19,15 +38,57 @@ const searchResults = document.querySelector("#searchResults");
 const mediaDialog = document.querySelector("#mediaDialog");
 const lessonVideo = document.querySelector("#lessonVideo");
 const mediaDialogTitle = document.querySelector("#mediaDialogTitle");
+const pdfDialog = document.querySelector("#pdfDialog");
+const pdfDialogTitle = document.querySelector("#pdfDialogTitle");
+const pdfFrame = document.querySelector("#pdfFrame");
+const pdfOpenLink = document.querySelector("#pdfOpenLink");
+const audioDialog = document.querySelector("#audioDialog");
+const audioDialogTitle = document.querySelector("#audioDialogTitle");
+const audioDialogPhrase = document.querySelector("#audioDialogPhrase");
+const audioDialogRu = document.querySelector("#audioDialogRu");
+const audioDialogStatus = document.querySelector("#audioDialogStatus");
+const audioPlayer = document.querySelector("#audioPlayer");
+const audioDock = document.querySelector("#audioDock");
+const audioTitle = document.querySelector("#audioTitle");
+const audioSubtitle = document.querySelector("#audioSubtitle");
+const audioToggle = document.querySelector("#audioToggle");
+const audioSeek = document.querySelector("#audioSeek");
+const audioTime = document.querySelector("#audioTime");
+const audioDuration = document.querySelector("#audioDuration");
+const audioRateButton = document.querySelector("#audioRate");
+const audioLoopButton = document.querySelector("#audioLoop");
+const audioPrev = document.querySelector("#audioPrev");
+const audioNext = document.querySelector("#audioNext");
+const audioClose = document.querySelector("#audioClose");
+const audioPlayPhrase = document.querySelector("#audioPlayPhrase");
+const audioRecordPhrase = document.querySelector("#audioRecordPhrase");
+const audioUploadPhrase = document.querySelector("#audioUploadPhrase");
+const audioDeletePhrase = document.querySelector("#audioDeletePhrase");
+const audioTtsPhrase = document.querySelector("#audioTtsPhrase");
+const audioFileInput = document.querySelector("#audioFileInput");
+const backupInput = document.querySelector("#backupInput");
+const paletteGrid = document.querySelector("#paletteGrid");
+const themeSegment = document.querySelector("#themeSegment");
+const surfaceSegment = document.querySelector("#surfaceSegment");
+const paletteButton = document.querySelector("#paletteButton");
+const paletteDialog = document.querySelector("#paletteDialog");
+const libraryButton = document.querySelector("#libraryButton");
 const toast = document.querySelector("#toast");
 const installButton = document.querySelector("#installButton");
 
-const STORAGE_KEY = "masri-ru-state-v2";
+const STORAGE_KEY = "masri-ru-state-v3";
+const LEGACY_STORAGE_KEY = "masri-ru-state-v2";
 const defaultState = {
   completed: [],
   lastLesson: "m1l1",
   theme: "system",
+  accent: "blue",
+  surface: "warm",
   speechRate: 0.82,
+  audioMode: "auto",
+  audioRate: 1,
+  audioLoop: false,
+  autoplayCards: false,
   showTranscription: true,
   flashcardIndex: 0,
   flashcardFlipped: false,
@@ -47,6 +108,13 @@ const defaultState = {
   favorites: [],
   achievements: [],
   phraseCategory: "greetings",
+  libraryTab: "audio",
+  lastAudio: "",
+  audioPlays: 0,
+  recordingsMade: 0,
+  pdfOpens: 0,
+  listenPlays: 0,
+  history: {},
 };
 
 let state = loadState();
@@ -59,6 +127,17 @@ let drillTense = "present";
 let verbFilter = "all";
 let reviewRevealed = false;
 let reviewKey = "";
+let currentAudioTrack = null;
+let audioQueue = [];
+let audioQueueIndex = -1;
+let currentObjectUrl = "";
+let audioDialogText = "";
+let audioDialogRuText = "";
+let mediaRecorder = null;
+let recordChunks = [];
+let recordStream = null;
+let isRecording = false;
+
 
 const achievementDefs = [
   { id: "first-lesson", icon: "🎯", title: "Первый шаг", desc: "Завершите первый урок", test: () => state.completed.length >= 1 },
@@ -74,11 +153,20 @@ const achievementDefs = [
   { id: "perfect-quiz", icon: "✅", title: "Без ошибок", desc: "Пройдите тест без ошибок", test: () => state.perfectQuiz },
   { id: "level-5", icon: "🏅", title: "Пятый уровень", desc: "Наберите 600 XP", test: () => state.xp >= 600 },
   { id: "collector", icon: "⭐", title: "Коллекционер фраз", desc: "Добавьте 5 фраз в избранное", test: () => state.favorites.length >= 5 },
+  { id: "first-audio", icon: "🎧", title: "Слушатель", desc: "Запустите аудиоматериал", test: () => state.audioPlays >= 1 },
+  { id: "audio-25", icon: "🔊", title: "Аудиокурс", desc: "25 запусков аудио", test: () => state.audioPlays >= 25 },
+  { id: "own-voice", icon: "🎙", title: "Свой голос", desc: "Запишите первую фразу", test: () => state.recordingsMade >= 1 },
+  { id: "voice-10", icon: "🎤", title: "Постановка голоса", desc: "Запишите 10 фраз", test: () => state.recordingsMade >= 10 },
+  { id: "bookworm", icon: "📖", title: "Учебник открыт", desc: "Откройте 5 PDF-глав", test: () => state.pdfOpens >= 5 },
+  { id: "listener-50", icon: "👂", title: "Тонкий слух", desc: "50 ответов в аудировании", test: () => state.listenPlays >= 50 },
+  { id: "reviews-400", icon: "🧠", title: "Глубокая память", desc: "400 повторений слов", test: () => state.totalReviews >= 400 },
+  { id: "level-10", icon: "👑", title: "Десятый уровень", desc: "Наберите 1080 XP", test: () => state.xp >= 1080 },
 ];
 
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || "{}";
+    const saved = JSON.parse(raw);
     return {
       ...defaultState,
       ...saved,
@@ -87,6 +175,7 @@ function loadState() {
       verbStats: saved.verbStats && typeof saved.verbStats === "object" ? saved.verbStats : {},
       favorites: Array.isArray(saved.favorites) ? saved.favorites : [],
       achievements: Array.isArray(saved.achievements) ? saved.achievements : [],
+      history: saved.history && typeof saved.history === "object" ? saved.history : {},
     };
   } catch {
     return { ...defaultState };
@@ -181,6 +270,8 @@ function awardXp(amount) {
   touchStreak();
   state.xp = (Number(state.xp) || 0) + amount;
   state.todayXp = (Number(state.todayXp) || 0) + amount;
+  bumpHistory("xp", amount);
+  pruneHistory();
   saveState();
   checkAchievements();
 }
@@ -212,8 +303,7 @@ function rateWord(item, quality) {
     stat.due = Date.now() + stat.interval * 86400000;
   }
   state.wordStats[key] = stat;
-  state.totalReviews = (Number(state.totalReviews) || 0) + 1;
-  state.todayReviews = (Number(state.todayReviews) || 0) + 1;
+  recordReviewActivity();
   awardXp(quality === "again" ? 2 : 6);
   saveState();
 }
@@ -280,9 +370,111 @@ function verbOfTheDay() {
   return verbLibrary[day % verbLibrary.length];
 }
 
+const accents = [
+  {
+    id: "blue",
+    name: "Средиземный",
+    light: { blue: "#1565c0", soft: "#e8f1fb", navy: "#102a43", navy2: "#243b53", deep: "#0d3b66", hero: ["#102a43", "#155799", "#167d87"], glow: "#ffe0a5", sand: "#f6f1e8" },
+    dark: { blue: "#73b4ff", soft: "#18324d", navy: "#d9eaf7", navy2: "#b6cbdc", deep: "#1e4b7a", hero: ["#0b1c2c", "#123f6b", "#135e66"], glow: "#ffe9b8", sand: "#111a22" },
+  },
+  {
+    id: "teal",
+    name: "Изумруд",
+    light: { blue: "#00796b", soft: "#e0f2f1", navy: "#103b3a", navy2: "#1f5d59", deep: "#004d40", hero: ["#083b3a", "#0b6b63", "#2a9d8f"], glow: "#c8f7e8", sand: "#eef6f3" },
+    dark: { blue: "#5de0cf", soft: "#123b38", navy: "#d6f5f1", navy2: "#a8d9d3", deep: "#176b63", hero: ["#062423", "#0a4b46", "#14756c"], glow: "#c8f7e8", sand: "#0e1b19" },
+  },
+  {
+    id: "violet",
+    name: "Фиалка",
+    light: { blue: "#6a1b9a", soft: "#f3e8fb", navy: "#2f1b4a", navy2: "#4a2b6b", deep: "#4a148c", hero: ["#2b1246", "#5b2a86", "#8e44ad"], glow: "#f2d7ff", sand: "#f6f0f8" },
+    dark: { blue: "#c58bff", soft: "#32204a", navy: "#eeddfb", navy2: "#cbb4df", deep: "#6d3d9e", hero: ["#1b0d2d", "#3d1c5c", "#64347f"], glow: "#f2d7ff", sand: "#17101f" },
+  },
+  {
+    id: "amber",
+    name: "Шафран",
+    light: { blue: "#b45309", soft: "#fff1dc", navy: "#3d2a12", navy2: "#5a3d1b", deep: "#92400e", hero: ["#3b2410", "#8a4b16", "#c27c2c"], glow: "#ffe4b0", sand: "#fbf3e5" },
+    dark: { blue: "#fbbf24", soft: "#3d2a12", navy: "#fcebd0", navy2: "#dfc5a2", deep: "#a16207", hero: ["#241407", "#5a3210", "#8c5a1f"], glow: "#ffe4b0", sand: "#1b140c" },
+  },
+  {
+    id: "rose",
+    name: "Роза",
+    light: { blue: "#be185d", soft: "#fce7f0", navy: "#431025", navy2: "#63213b", deep: "#9d174d", hero: ["#3d0f22", "#8e1d4a", "#c94f7c"], glow: "#ffd6e5", sand: "#fbf0f4" },
+    dark: { blue: "#ff8fbb", soft: "#42192b", navy: "#ffe0ec", navy2: "#e5b9cb", deep: "#9d174d", hero: ["#280815", "#5e132f", "#8d3151"], glow: "#ffd6e5", sand: "#1d1014" },
+  },
+  {
+    id: "ocean",
+    name: "Океан",
+    light: { blue: "#0369a1", soft: "#e0f2fe", navy: "#0c2f44", navy2: "#174a63", deep: "#075985", hero: ["#082f49", "#075985", "#0e7490"], glow: "#bae6fd", sand: "#edf5f9" },
+    dark: { blue: "#5cc8ff", soft: "#0d3145", navy: "#d7f0ff", navy2: "#a8cfe3", deep: "#0e6b9e", hero: ["#041e2f", "#064663", "#0a667a"], glow: "#bae6fd", sand: "#0b1720" },
+  },
+  {
+    id: "forest",
+    name: "Лес",
+    light: { blue: "#2f6f2f", soft: "#e8f4e5", navy: "#173b1c", navy2: "#2a5730", deep: "#1b5e20", hero: ["#102b14", "#1f5a28", "#3f7d3a"], glow: "#d7f5c9", sand: "#eff5eb" },
+    dark: { blue: "#7ed87e", soft: "#17351b", navy: "#e1f7de", navy2: "#b8d9b5", deep: "#2f7a35", hero: ["#0a1b0d", "#153c1c", "#28602c"], glow: "#d7f5c9", sand: "#101810" },
+  },
+  {
+    id: "graphite",
+    name: "Графит",
+    light: { blue: "#475569", soft: "#e9eef3", navy: "#1e293b", navy2: "#334155", deep: "#334155", hero: ["#111827", "#334155", "#546b82"], glow: "#e2e8f0", sand: "#f1f3f5" },
+    dark: { blue: "#b6c7d9", soft: "#263442", navy: "#eef4f9", navy2: "#c4d2de", deep: "#475569", hero: ["#0b1119", "#1f2a37", "#3b4b5c"], glow: "#e2e8f0", sand: "#11161c" },
+  },
+];
+
+function isDarkMode() {
+  return state.theme === "dark" || (state.theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+}
+
 function setTheme() {
-  const dark = state.theme === "dark" || (state.theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  const dark = isDarkMode();
+  const palette = accents.find((item) => item.id === state.accent) || accents[0];
+  const colors = dark ? palette.dark : palette.light;
+  const root = document.documentElement;
+  root.dataset.theme = dark ? "dark" : "light";
+  root.dataset.accent = palette.id;
+  root.dataset.surface = state.surface || "warm";
+  const set = (name, value) => root.style.setProperty(name, value);
+  set("--blue", colors.blue);
+  set("--blue-soft", colors.soft);
+  set("--navy", colors.navy);
+  set("--navy-2", colors.navy2);
+  set("--accent-deep", colors.deep);
+  set("--hero-a", colors.hero[0]);
+  set("--hero-b", colors.hero[1]);
+  set("--hero-c", colors.hero[2]);
+  set("--hero-glow", colors.glow);
+  let sand = colors.sand;
+  if (state.surface === "cool") sand = dark ? "#0e1720" : "#eef3f7";
+  else if (state.surface === "plain") sand = dark ? "#121212" : "#f6f6f6";
+  set("--sand", sand);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? sand : colors.navy);
+  renderPaletteChoices();
+}
+
+function paletteMarkup() {
+  return accents.map((palette) => {
+    const colors = palette.light;
+    return `<button class="color-swatch ${state.accent === palette.id ? "active" : ""}" type="button" data-accent-choice="${palette.id}" style="--swatch-a:${colors.blue};--swatch-b:${colors.deep}" aria-pressed="${state.accent === palette.id}"><span aria-hidden="true"></span>${escapeHtml(palette.name)}</button>`;
+  }).join("");
+}
+
+function renderPaletteChoices() {
+  if (!paletteGrid) return;
+  paletteGrid.innerHTML = paletteMarkup();
+  const settingsPalette = document.querySelector("#settingsPalette");
+  if (settingsPalette) settingsPalette.innerHTML = paletteMarkup();
+  themeSegment?.querySelectorAll("[data-theme-choice]").forEach((button) => {
+    const active = button.dataset.themeChoice === state.theme;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  surfaceSegment?.querySelectorAll("[data-surface-choice]").forEach((button) => {
+    const active = button.dataset.surfaceChoice === (state.surface || "warm");
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const themeSelect = document.querySelector("#themeSelect");
+  if (themeSelect) themeSelect.value = state.theme;
 }
 
 function showToast(message) {
@@ -292,11 +484,321 @@ function showToast(message) {
   showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200);
 }
 
+function historyEntry(key = dayKey()) {
+  if (!state.history[key]) state.history[key] = { xp: 0, reviews: 0, audio: 0 };
+  return state.history[key];
+}
+
+function bumpHistory(field, amount = 1) {
+  const entry = historyEntry();
+  entry[field] = (Number(entry[field]) || 0) + amount;
+}
+
+function pruneHistory() {
+  const cutoff = dayKey(new Date(Date.now() - 120 * 86400000));
+  Object.keys(state.history).forEach((key) => {
+    if (key < cutoff) delete state.history[key];
+  });
+}
+
+function recordReviewActivity() {
+  bumpHistory("reviews", 1);
+  state.todayReviews = (Number(state.todayReviews) || 0) + 1;
+  state.totalReviews = (Number(state.totalReviews) || 0) + 1;
+}
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const total = Math.floor(seconds);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function showAudioDock() {
+  audioDock.classList.remove("hidden");
+  document.body.classList.add("has-audio");
+}
+
+function hideAudioDock() {
+  audioDock.classList.add("hidden");
+  document.body.classList.remove("has-audio");
+}
+
+function updateAudioDock() {
+  const playing = !audioPlayer.paused && !audioPlayer.ended;
+  audioToggle.textContent = playing ? "⏸" : "▶";
+  audioToggle.setAttribute("aria-label", playing ? "Пауза" : "Играть");
+  audioToggle.title = playing ? "Пауза" : "Играть";
+  audioTime.textContent = formatTime(audioPlayer.currentTime);
+  audioDuration.textContent = formatTime(audioPlayer.duration);
+  const progress = audioPlayer.duration ? (audioPlayer.currentTime / audioPlayer.duration) * 1000 : 0;
+  audioSeek.value = String(Math.min(1000, Math.max(0, progress)));
+  audioRateButton.textContent = `${Number(state.audioRate).toFixed(2).replace(/0+$/, "").replace(/\.$/, "")}×`;
+  audioRateButton.classList.toggle("active", Number(state.audioRate) !== 1);
+  audioLoopButton.classList.toggle("active", !!state.audioLoop);
+  document.querySelectorAll(".audio-row").forEach((row) => {
+    const active = !!currentAudioTrack && row.dataset.audioId === currentAudioTrack.id;
+    row.classList.toggle("playing", active);
+    const icon = row.querySelector(".audio-row-play");
+    if (icon) icon.textContent = active && playing ? "⏸" : "▶";
+  });
+}
+
+function playTrack(track, queue = null) {
+  if (!track?.src) return;
+  if (queue) {
+    audioQueue = queue;
+    audioQueueIndex = audioQueue.findIndex((item) => item.id === track.id);
+  } else if (!audioQueue.some((item) => item.id === track.id)) {
+    audioQueue = [track];
+    audioQueueIndex = 0;
+  } else {
+    audioQueueIndex = audioQueue.findIndex((item) => item.id === track.id);
+  }
+  if (currentObjectUrl && currentObjectUrl !== track.src) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = "";
+  }
+  if (track.objectUrl) currentObjectUrl = track.objectUrl;
+  currentAudioTrack = track;
+  audioTitle.textContent = track.title || "Аудио";
+  audioSubtitle.textContent = track.subtitle || "";
+  audioPlayer.src = track.src;
+  audioPlayer.loop = !!state.audioLoop;
+  audioPlayer.playbackRate = Number(state.audioRate) || 1;
+  showAudioDock();
+  audioPlayer.play().catch(() => showToast("Не удалось запустить аудиофайл"));
+  state.audioPlays = (Number(state.audioPlays) || 0) + 1;
+  if (!String(track.id || "").startsWith("rec:")) state.lastAudio = track.id || "";
+  bumpHistory("audio", 1);
+  saveState();
+  checkAchievements();
+  updateAudioDock();
+}
+
+function playTrackById(trackId, queue = audioLibrary) {
+  const track = queue.find((item) => item.id === trackId) || audioById[trackId];
+  if (track) playTrack(track, queue);
+}
+
+function playAdjacentTrack(step) {
+  if (!audioQueue.length) return;
+  if (audioQueueIndex < 0) audioQueueIndex = 0;
+  const nextIndex = (audioQueueIndex + step + audioQueue.length) % audioQueue.length;
+  playTrack(audioQueue[nextIndex], audioQueue);
+}
+
+function closeAudioPlayer() {
+  audioPlayer.pause();
+  audioPlayer.removeAttribute("src");
+  audioPlayer.load();
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = "";
+  }
+  currentAudioTrack = null;
+  hideAudioDock();
+  updateAudioDock();
+}
+
+function meaningFor(text) {
+  const vocab = allVocab().find((item) => item.ar === text);
+  if (vocab) return vocab.ru;
+  const phrase = allPhrases().find((item) => item.ar === text);
+  if (phrase) return phrase.ru;
+  const verb = verbLibrary.find((item) => item.ar === text);
+  if (verb) return verb.ru;
+  return "";
+}
+
+async function playPhrase(text, options = {}) {
+  if (state.audioMode !== "tts") {
+    const record = await getRecording(text);
+    if (record) {
+      const url = URL.createObjectURL(record.blob);
+      playTrack({ id: `rec:${text}`, src: url, title: text, subtitle: "Ваша запись", objectUrl: url, isRecording: true });
+      return true;
+    }
+  }
+  if (options.onlyRecording) {
+    showToast("Для этой фразы пока нет записанного аудио");
+    return false;
+  }
+  if (state.audioMode === "files") {
+    showToast("Нет аудиофайла. Запишите фразу или загрузите файл.");
+    if (options.openDialog !== false) openAudioDialog(text);
+    return false;
+  }
+  speakArabic(text);
+  return true;
+}
+
+function maybeAutoplayCard() {
+  if (!state.autoplayCards) return;
+  const deck = allVocab();
+  if (!deck.length) return;
+  const index = ((state.flashcardIndex % deck.length) + deck.length) % deck.length;
+  setTimeout(() => playPhrase(deck[index].ar, { openDialog: false }), 140);
+}
+
+async function refreshAudioDialogStatus() {
+  if (!audioDialogText) return;
+  const record = await getRecording(audioDialogText);
+  if (record) {
+    const updated = new Date(record.updated || Date.now());
+    audioDialogStatus.textContent = `Есть ваша запись · ${Math.max(1, Math.round((record.size || 0) / 1024))} КБ · ${updated.toLocaleDateString("ru-RU")} · ${updated.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`;
+    audioDeletePhrase.disabled = false;
+  } else {
+    audioDialogStatus.textContent = "Записи пока нет. Можно записать голос или загрузить готовый аудиофайл.";
+    audioDeletePhrase.disabled = true;
+  }
+  await refreshRecordingBadges();
+}
+
+async function refreshRecordingBadges() {
+  const buttons = [...document.querySelectorAll("[data-say], [data-record-say]")];
+  if (!buttons.length) return;
+  const records = await listRecordings();
+  const keys = new Set(records.map((item) => item.key));
+  buttons.forEach((button) => {
+    const key = button.dataset.say || button.dataset.recordSay || "";
+    button.classList.toggle("has-recording", keys.has(key));
+  });
+}
+
+function openAudioDialog(text) {
+  if (isRecording) stopRecording();
+  audioDialogText = text;
+  audioDialogRuText = meaningFor(text);
+  audioDialogTitle.textContent = "Аудио фразы";
+  audioDialogPhrase.textContent = text;
+  audioDialogRu.textContent = audioDialogRuText;
+  audioDialogStatus.textContent = "Проверяем запись…";
+  audioRecordPhrase.textContent = "● Записать";
+  audioRecordPhrase.classList.remove("audio-recording");
+  audioDialog.showModal();
+  refreshAudioDialogStatus();
+}
+
+async function saveAudioBlob(blob, source = "record") {
+  if (!audioDialogText) return;
+  if (blob.size > 8 * 1024 * 1024) {
+    showToast("Файл больше 8 МБ. Выберите запись короче.");
+    return;
+  }
+  await putRecording(audioDialogText, blob, { ru: audioDialogRuText, source });
+  if (source === "record") state.recordingsMade = (Number(state.recordingsMade) || 0) + 1;
+  saveState();
+  checkAchievements();
+  showToast(source === "record" ? "Запись сохранена" : "Аудиофайл добавлен");
+  await refreshAudioDialogStatus();
+}
+
+async function startRecording() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    showToast("Запись с микрофона не поддерживается этим браузером");
+    return;
+  }
+  try {
+    recordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"].find((type) => MediaRecorder.isTypeSupported(type));
+    mediaRecorder = new MediaRecorder(recordStream, preferred ? { mimeType: preferred } : undefined);
+    recordChunks = [];
+    mediaRecorder.addEventListener("dataavailable", (event) => {
+      if (event.data.size) recordChunks.push(event.data);
+    });
+    mediaRecorder.addEventListener("stop", async () => {
+      const blob = new Blob(recordChunks, { type: mediaRecorder?.mimeType || "audio/webm" });
+      recordChunks = [];
+      if (recordStream) recordStream.getTracks().forEach((track) => track.stop());
+      recordStream = null;
+      if (blob.size) await saveAudioBlob(blob, "record");
+    });
+    mediaRecorder.start();
+    isRecording = true;
+    audioRecordPhrase.textContent = "■ Остановить";
+    audioRecordPhrase.classList.add("audio-recording");
+    audioDialogStatus.textContent = "Идёт запись… Говорите чётко и не спеша.";
+    clearTimeout(startRecording.timer);
+    startRecording.timer = setTimeout(() => { if (isRecording) stopRecording(); }, 30000);
+  } catch {
+    showToast("Не удалось получить доступ к микрофону");
+    if (recordStream) recordStream.getTracks().forEach((track) => track.stop());
+    recordStream = null;
+  }
+}
+
+function stopRecording() {
+  clearTimeout(startRecording.timer);
+  if (mediaRecorder && isRecording) {
+    isRecording = false;
+    try { mediaRecorder.stop(); } catch { /* already stopped */ }
+  }
+  isRecording = false;
+  audioRecordPhrase.textContent = "● Записать";
+  audioRecordPhrase.classList.remove("audio-recording");
+}
+
+function openPdf(path, title) {
+  if (!path) return;
+  pdfDialogTitle.textContent = title || "Учебник PDF";
+  pdfFrame.src = path;
+  pdfOpenLink.href = path;
+  pdfDialog.showModal();
+  state.pdfOpens = (Number(state.pdfOpens) || 0) + 1;
+  saveState();
+  checkAchievements();
+}
+
+function exportBackup() {
+  const payload = {
+    app: "masri-ru",
+    version: 3,
+    exported: new Date().toISOString(),
+    state,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `masri-ru-backup-${dayKey()}.json`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast("Резервная копия скачана");
+}
+
+async function importBackup(file) {
+  try {
+    const parsed = JSON.parse(await file.text());
+    const saved = parsed?.state && typeof parsed.state === "object" ? parsed.state : parsed;
+    if (!saved || typeof saved !== "object") throw new Error("bad backup");
+    state = {
+      ...defaultState,
+      ...saved,
+      completed: Array.isArray(saved.completed) ? saved.completed : [],
+      wordStats: saved.wordStats && typeof saved.wordStats === "object" ? saved.wordStats : {},
+      verbStats: saved.verbStats && typeof saved.verbStats === "object" ? saved.verbStats : {},
+      favorites: Array.isArray(saved.favorites) ? saved.favorites : [],
+      achievements: Array.isArray(saved.achievements) ? saved.achievements : [],
+      history: saved.history && typeof saved.history === "object" ? saved.history : {},
+    };
+    saveState();
+    setTheme();
+    renderRoute();
+    showToast("Прогресс восстановлен из резервной копии");
+  } catch {
+    showToast("Не удалось прочитать файл резервной копии");
+  }
+}
+
+
 function activateNav(route) {
   let root = route;
-  if (["module", "lesson"].includes(route)) root = "course";
+  if (["module", "lesson", "library"].includes(route)) root = "course";
   else if (route === "verb") root = "verbs";
   else if (["phrases", "reference"].includes(route)) root = "practice";
+  else if (route === "recordings") root = "settings";
   nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.route === root));
 }
 
@@ -331,16 +833,20 @@ function homeView() {
   const verb = verbOfTheDay();
   const firstForm = verb.forms.present[0];
   const learnedVerbs = Object.values(state.verbStats).filter((item) => item.right >= 3).length;
+  const dayIndex = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  const dayWord = allVocab()[dayIndex % allVocab().length];
+  const lastTrack = audioById[state.lastAudio] || audioLibrary[0];
+  const recordingCount = Number(state.recordingsMade) || 0;
 
   return `
     <section class="hero">
       <p class="eyebrow">${escapeHtml(courseMeta.levels)} · ${courseMeta.lessonCount} уроков · офлайн</p>
       <h1>${escapeHtml(courseMeta.title)}</h1>
       <p class="arabic-display" lang="ar">${escapeHtml(courseMeta.arabicTitle)}</p>
-      <p class="hero-copy">Практический каирский диалект: живые диалоги, произношение, умное повторение и большая лаборатория глаголов.</p>
+      <p class="hero-copy">Практический каирский диалект: живые диалоги, аудиофайлы, запись своего голоса, умное повторение и большая лаборатория глаголов.</p>
       <div class="hero-actions">
         <button class="primary-button" type="button" data-open-lesson="${nextLesson.id}">${done ? "Продолжить" : "Начать курс"}</button>
-        <button class="soft-button" type="button" data-route="verbs">Глаголы</button>
+        <button class="soft-button" type="button" data-route="library">🎧 Аудиокурс</button>
         <button class="soft-button" type="button" data-practice-mode="smart">Умное повторение</button>
       </div>
     </section>
@@ -352,6 +858,18 @@ function homeView() {
       <article class="stat-card"><strong>${due}</strong><span>слов к повторению</span></article>
     </section>
 
+    <section class="section card home-audio-card">
+      <div class="continue-track">
+        <span class="continue-art" aria-hidden="true">🎧</span>
+        <div><strong>${state.lastAudio ? "Продолжить аудио" : "Аудиокурс и учебник"}</strong><small>${state.lastAudio ? `${escapeHtml(lastTrack.title)} · ${escapeHtml(lastTrack.subtitle)}` : `${audioLibrary.length} записанных треков, ${textbookPdfCount} PDF-глав и ваши собственные записи`}</small></div>
+      </div>
+      <div class="lesson-actions">
+        <button class="primary-button" type="button" data-play-audio="${lastTrack.id}">▶ ${state.lastAudio ? "Продолжить" : "Слушать"}</button>
+        <button class="soft-button" type="button" data-route="library">Библиотека</button>
+        <button class="soft-button" type="button" data-route="recordings">🎙 Мои записи${recordingCount ? ` (${recordingCount})` : ""}</button>
+      </div>
+    </section>
+
     <section class="section dashboard-grid">
       <article class="card daily-card">
         <div class="daily-top">
@@ -361,6 +879,14 @@ function homeView() {
         <span class="progress-track big-track" aria-label="Цель дня ${goalPercent}%"><span class="progress-fill" style="width:${goalPercent}%"></span></span>
         <p class="muted">${due ? `${due} слов уже ждут повторения. Умный режим сам подберёт слабые места.` : "Расписание свободно: можно взять новые слова или закрепить глаголы."}</p>
         <div class="lesson-actions"><button class="primary-button" type="button" data-practice-mode="smart">Повторить умно</button><button class="soft-button" type="button" data-practice-mode="drill">Тренажёр глаголов</button></div>
+      </article>
+      <article class="card word-of-day">
+        <p class="eyebrow">Слово дня</p>
+        <div class="word-of-day-ar arabic" lang="ar">${escapeHtml(dayWord.ar)}</div>
+        ${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(dayWord.tr)}</p>` : ""}
+        <p><strong>${escapeHtml(dayWord.ru)}</strong></p>
+        <p class="muted small">${escapeHtml(dayWord.lessonTitle || "Из курса")}</p>
+        <div class="audio-actions">${speakButton(dayWord.ar)}${recordButton(dayWord.ar)}</div>
       </article>
       <article class="card verb-of-day">
         <div class="verb-of-day-head">
@@ -377,9 +903,13 @@ function homeView() {
     <section class="section">
       <div class="section-head"><div><h2>Быстрый доступ</h2><p>Новые инструменты для самостоятельной практики</p></div></div>
       <div class="feature-grid">
+        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><strong>Аудиокурс</strong><small>${audioLibrary.length} файлов · уроки, алфавит и фразы выживания</small></button>
+        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">📖</span><strong>Учебник PDF</strong><small>${textbookPdfCount} глав по частям и модулям</small></button>
+        <button class="card feature-card" type="button" data-route="recordings"><span class="feature-icon">🎙</span><strong>Мои записи</strong><small>${recordingCount ? `${recordingCount} записей своего голоса` : "Записывайте фразы и сравнивайте с курсом"}</small></button>
         <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов · 5 времён · ${learnedVerbs} освоено</small></button>
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} готовых фраз по ситуациям</small></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Местоимения, предлоги, числа и формулы времён</small></button>
+        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎨</span><strong>Цвета и темы</strong><small>8 акцентов, светлый и тёмный режим</small></button>
         <button class="card feature-card" type="button" data-route="settings"><span class="feature-icon">🏅</span><strong>Достижения</strong><small>${state.achievements.length} из ${achievementDefs.length} открыто</small></button>
       </div>
     </section>
@@ -397,8 +927,8 @@ function homeView() {
 
 function courseView() {
   return `
-    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель</p></div></header>
-    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button></div>
+    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioLibrary.length} аудиофайлов</p></div><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></header>
+    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
     <div class="module-grid">${modules.map(moduleCard).join("")}</div>
     <section class="section">
       <div class="section-head"><div><h2>План на 16 недель</h2><p>Оптимальный ритм — три учебных дня и один день повторения в неделю</p></div></div>
@@ -413,6 +943,8 @@ function moduleView(moduleId) {
   if (!module) return notFoundView();
   const items = moduleLessons(module.id);
   const done = completedCount(items);
+  const pdfInfo = modulePdfMap[module.id];
+  const firstTrack = lessonAudio(items[0]?.id);
   return `
     <button class="soft-button back-button" type="button" data-route="course">← К модулям</button>
     <section class="module-banner section" style="--module-color:${module.color}">
@@ -420,16 +952,22 @@ function moduleView(moduleId) {
         <p class="eyebrow">Модуль ${module.id} · ${escapeHtml(module.level)}</p>
         <h1>${escapeHtml(module.title)}</h1>
         <p class="arabic-display" lang="ar">${escapeHtml(module.ar)}</p>
-        <p>${done} из ${items.length} уроков завершено</p>
+        <p>${done} из ${items.length} уроков завершено · ${audioLibrary.filter((track) => track.module === module.id).length} аудиофайлов</p>
+        <div class="module-actions">
+          ${firstTrack ? `<button class="primary-button" type="button" data-play-audio="${firstTrack.id}">▶ Аудио модуля</button>` : ""}
+          ${pdfInfo ? `<button class="soft-button" type="button" data-open-pdf="${pdfInfo.pdf}" data-pdf-title="Модуль ${module.id} · ${escapeHtml(pdfInfo.title)}">📖 PDF модуля</button>` : ""}
+          <button class="soft-button" type="button" data-route="library">🎧 Библиотека</button>
+        </div>
       </div>
       <img src="${module.image}" alt="">
     </section>
     <div class="lesson-list">
       ${items.map((lesson, index) => {
         const complete = state.completed.includes(lesson.id);
+        const track = lessonAudio(lesson.id);
         return `<button class="lesson-row ${complete ? "completed" : ""}" type="button" data-open-lesson="${lesson.id}">
           <span class="lesson-number">${index + 1}</span>
-          <span><h3>${escapeHtml(lesson.title)}</h3><p><span class="arabic" lang="ar">${escapeHtml(lesson.arTitle)}</span> · ${lesson.minutes} мин.</p></span>
+          <span><h3>${escapeHtml(lesson.title)}</h3><p><span class="arabic" lang="ar">${escapeHtml(lesson.arTitle)}</span> · ${lesson.minutes} мин.${track ? " · 🎧 аудио" : ""}</p></span>
           <span class="lesson-status" aria-label="${complete ? "Завершено" : "Не завершено"}">${complete ? "✓" : "›"}</span>
         </button>`;
       }).join("")}
@@ -437,7 +975,15 @@ function moduleView(moduleId) {
 }
 
 function speakButton(text, label = "Прослушать") {
-  return `<button class="speak-button" type="button" data-speak="${escapeHtml(text)}" aria-label="${label}" title="${label}">🔊</button>`;
+  return `<button class="speak-button" type="button" data-say="${escapeHtml(text)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">🔊</button>`;
+}
+
+function recordButton(text, label = "Записать свой голос") {
+  return `<button class="record-button" type="button" data-record-say="${escapeHtml(text)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">🎙</button>`;
+}
+
+function audioActions(text, label = "Прослушать") {
+  return `<span class="audio-actions">${speakButton(text, label)}${recordButton(text)}</span>`;
 }
 
 function lessonView(lessonId) {
@@ -445,6 +991,8 @@ function lessonView(lessonId) {
   if (!lesson) return notFoundView();
   const module = modules.find((item) => item.id === lesson.module);
   const complete = state.completed.includes(lesson.id);
+  const track = lessonAudio(lesson.id);
+  const chapter = lessonPdf(lesson.id);
   state.lastLesson = lesson.id;
   saveState();
 
@@ -456,7 +1004,7 @@ function lessonView(lessonId) {
         <div class="vocab-ru">${escapeHtml(item.ru)}</div>
         ${item.note ? `<div class="vocab-note">${escapeHtml(item.note)}</div>` : ""}
       </div>
-      ${speakButton(item.ar)}
+      ${audioActions(item.ar)}
     </article>`).join("");
 
   const grammarBlocks = lesson.grammar.map((item) => `
@@ -464,7 +1012,7 @@ function lessonView(lessonId) {
       <h3>${escapeHtml(item.title)}</h3>
       <p>${escapeHtml(item.explanation)}</p>
       <div class="example-list">
-        ${item.examples.map((ex) => `<div class="example-row"><span class="arabic" lang="ar">${escapeHtml(ex.ar)}</span><small>${escapeHtml(ex.tr)}</small><div>${escapeHtml(ex.ru)}</div></div>`).join("")}
+        ${item.examples.map((ex) => `<div class="example-row"><span class="arabic" lang="ar">${escapeHtml(ex.ar)}</span><small>${escapeHtml(ex.tr)}</small><div>${escapeHtml(ex.ru)}</div>${audioActions(ex.ar)}</div>`).join("")}
       </div>
     </section>`).join("");
 
@@ -472,7 +1020,7 @@ function lessonView(lessonId) {
     <div class="dialogue-line">
       <span class="avatar" aria-hidden="true">${escapeHtml(item.speaker.trim().slice(0, 1).toUpperCase())}</span>
       <div class="bubble"><strong>${escapeHtml(item.speaker)}</strong><div class="arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="transcription">${escapeHtml(item.tr)}</div>` : ""}<p>${escapeHtml(item.ru)}</p></div>
-      ${speakButton(item.ar, `Прослушать реплику ${item.speaker}`)}
+      ${audioActions(item.ar, `Прослушать реплику ${item.speaker}`)}
     </div>`).join("");
 
   return `
@@ -481,8 +1029,16 @@ function lessonView(lessonId) {
       <p class="eyebrow">Урок ${lesson.order} · ${escapeHtml(lesson.level)}</p>
       <h1>${escapeHtml(lesson.title)}</h1>
       <div class="arabic-display" lang="ar">${escapeHtml(lesson.arTitle)}</div>
-      <div class="lesson-meta"><span class="chip">${lesson.minutes} минут</span><span class="chip">${lesson.vocabulary.length} слов и фраз</span><span class="chip">Диалог</span><span class="chip">Тест</span></div>
+      <div class="lesson-meta"><span class="chip">${lesson.minutes} минут</span><span class="chip">${lesson.vocabulary.length} слов и фраз</span><span class="chip">Диалог</span><span class="chip">Тест</span>${track ? `<span class="chip">🎧 Аудиофайл урока</span>` : ""}</div>
     </section>
+
+    ${track || chapter ? `<section class="lesson-audio-card">
+      <div><strong>🎧 Аудиоматериалы урока</strong><small>${track ? "Полная запись урока в MP3" : "PDF-глава учебника"}${chapter ? " · PDF учебника" : ""}</small></div>
+      <div class="lesson-actions">
+        ${track ? `<button class="primary-button" type="button" data-play-audio="${track.id}">▶ Слушать урок</button>` : ""}
+        ${chapter ? `<button class="soft-button" type="button" data-open-pdf="${chapter}" data-pdf-title="${escapeHtml(`Урок ${lesson.order} · ${lesson.title}`)}">📖 Открыть PDF</button>` : ""}
+      </div>
+    </section>` : ""}
 
     <div class="lesson-layout">
       <div class="lesson-content">
@@ -495,8 +1051,8 @@ function lessonView(lessonId) {
       </div>
       <aside class="card">
         <h3>Как пройти урок</h3>
-        <p class="muted">1. Прослушайте каждую фразу.<br>2. Повторите её три раза.<br>3. Разыграйте обе роли диалога.<br>4. Пройдите тест без подсказки.</p>
-        <button class="soft-button" type="button" data-practice-lesson="${lesson.id}">Карточки урока</button>
+        <p class="muted">1. Прослушайте каждую фразу.<br>2. Повторите её три раза.<br>3. Запишите свой голос и сравните.<br>4. Разыграйте обе роли диалога.</p>
+        <div class="lesson-actions"><button class="soft-button" type="button" data-record-say="${escapeHtml(lesson.vocabulary[0]?.ar || lesson.arTitle)}">🎙 Записать себя</button><button class="soft-button" type="button" data-practice-lesson="${lesson.id}">Карточки урока</button></div>
       </aside>
     </div>`;
 }
@@ -530,7 +1086,7 @@ function flashcardView() {
       ${flipped ? `<div><div class="back-ru">${escapeHtml(item.ru)}</div><div class="front-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="front-tr">${escapeHtml(item.tr)}</div>` : ""}</div>` : `<div><div class="front-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="front-tr">${escapeHtml(item.tr)}</div>` : ""}</div>`}
       <span class="flashcard-hint">Нажмите, чтобы ${flipped ? "скрыть" : "показать"} ответ · ${index + 1}/${deck.length}${stat.seen ? ` · повторений: ${stat.seen}` : ""}</span>
     </div>
-    <div class="practice-controls"><button class="soft-button" type="button" data-card-step="-1">← Назад</button>${speakButton(item.ar)}<button class="soft-button" type="button" data-card-shuffle>Перемешать</button><button class="primary-button" type="button" data-card-step="1">Дальше →</button></div>
+    <div class="practice-controls"><button class="soft-button" type="button" data-card-step="-1">← Назад</button>${audioActions(item.ar)}<button class="soft-button" type="button" data-card-shuffle>Перемешать</button><button class="primary-button" type="button" data-card-step="1">Дальше →</button></div>
     ${flipped ? `<div class="rating-row"><span>Насколько уверенно?</span><div class="practice-controls"><button class="soft-button danger-soft" type="button" data-card-rate="again">Не знаю</button><button class="soft-button" type="button" data-card-rate="good">Помню</button><button class="primary-button" type="button" data-card-rate="easy">Легко</button></div></div>` : `<p class="muted" style="text-align:center">Переверните карточку и оцените себя — интервал повтора подстроится.</p>`}
   </div>`;
 }
@@ -560,7 +1116,7 @@ function smartReviewView() {
       ${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(item.tr)}</p>` : ""}
       ${reviewRevealed
         ? `<div class="smart-answer"><strong>${escapeHtml(item.ru)}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ""}</div><div class="rating-row"><span>Как запомнилось?</span><div class="practice-controls"><button class="soft-button danger-soft" type="button" data-review-rate="again">Ещё раз</button><button class="soft-button" type="button" data-review-rate="good">Помню</button><button class="primary-button" type="button" data-review-rate="easy">Легко</button></div></div>`
-        : `<div class="lesson-actions centered-actions"><button class="primary-button" type="button" data-review-reveal>Показать перевод</button>${speakButton(item.ar)}</div>`}
+        : `<div class="lesson-actions centered-actions"><button class="primary-button" type="button" data-review-reveal>Показать перевод</button>${audioActions(item.ar)}</div>`}
     </div>
   </div>`;
 }
@@ -613,7 +1169,7 @@ function quizView(lessonId = null) {
 }
 
 function survivalView() {
-  return `<div class="card"><h2>Фразы первой необходимости</h2><p class="muted">Сохраните этот раздел офлайн и потренируйте произношение заранее.</p><div class="vocab-list">${survivalPhrases.map((item) => `<article class="vocab-item"><div><div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(item.tr)}</div>` : ""}<div>${escapeHtml(item.ru)}</div></div>${speakButton(item.ar)}</article>`).join("")}</div></div>`;
+  return `<div class="card"><h2>Фразы первой необходимости</h2><p class="muted">Сохраните этот раздел офлайн и потренируйте произношение заранее.</p><div class="vocab-list">${survivalPhrases.map((item) => `<article class="vocab-item"><div><div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(item.tr)}</div>` : ""}<div>${escapeHtml(item.ru)}</div></div>${audioActions(item.ar)}</article>`).join("")}</div></div>`;
 }
 
 function verbCard(verb) {
@@ -679,7 +1235,7 @@ function phraseItem(item) {
       ${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(item.tr)}</div>` : ""}
       <div class="vocab-ru">${escapeHtml(item.ru)}</div>
     </div>
-    <div class="phrase-actions">${speakButton(item.ar)}<button class="fav-button ${favorite ? "active" : ""}" type="button" data-fav-phrase="${escapeHtml(item.ar)}" aria-label="${favorite ? "Убрать из избранного" : "В избранное"}" title="${favorite ? "Убрать из избранного" : "В избранное"}">${favorite ? "★" : "☆"}</button></div>
+    <div class="phrase-actions">${audioActions(item.ar)}<button class="fav-button ${favorite ? "active" : ""}" type="button" data-fav-phrase="${escapeHtml(item.ar)}" aria-label="${favorite ? "Убрать из избранного" : "В избранное"}" title="${favorite ? "Убрать из избранного" : "В избранное"}">${favorite ? "★" : "☆"}</button></div>
   </article>`;
 }
 
@@ -689,7 +1245,7 @@ function phrasebookView(embedded = false) {
   const items = active.id === "favorites" ? favoritePhrases() : active.phrases;
   const body = `<div class="phrasebook">
     <div class="phrase-categories">${phrasebook.map((category) => `<button class="${category.id === active.id ? "primary-button" : "soft-button"}" type="button" data-phrase-category="${category.id}"><span aria-hidden="true">${category.icon}</span> ${escapeHtml(category.title)}${category.id === "favorites" ? ` (${state.favorites.length})` : ""}</button>`).join("")}</div>
-    <div class="section-head"><div><h2>${escapeHtml(active.icon)} ${escapeHtml(active.title)}</h2><p>${items.length ? `${items.length} фраз · нажмите ★, чтобы сохранить` : "Сохраняйте нужные фразы звёздочкой"}</p></div></div>
+    <div class="section-head"><div><h2>${escapeHtml(active.icon)} ${escapeHtml(active.title)}</h2><p>${items.length ? `${items.length} фраз · нажмите ★, чтобы сохранить` : "Сохраняйте нужные фразы звёздочкой"}</p></div><button class="soft-button" type="button" data-random-phrase>🔀 Случайная фраза</button></div>
     <div class="vocab-list">${items.map(phraseItem).join("") || `<div class="empty-state">В избранном пока пусто. Откройте любую категорию и нажмите ★ у нужной фразы.</div>`}</div>
   </div>`;
   if (embedded) return body;
@@ -785,17 +1341,17 @@ function listeningView(embedded = false) {
 function renderListen(backLessonId = null, play = true) {
   const back = backLessonId ? `<button class="soft-button back-button" type="button" data-open-lesson="${backLessonId}">← Вернуться к уроку</button>` : "";
   main.innerHTML = `${back}<section class="section">${listeningView(true)}</section>`;
-  if (play) setTimeout(() => speakArabic(listenState.item.ar), 150);
+  if (play) setTimeout(() => playPhrase(listenState.item.ar, { openDialog: false }), 150);
 }
 
 function refreshListen() {
   const [route, lessonId] = getRoute();
   if (route === "practice") {
     main.innerHTML = practiceView("listen");
-    setTimeout(() => speakArabic(listenState.item.ar), 150);
+    setTimeout(() => playPhrase(listenState.item.ar, { openDialog: false }), 150);
     return;
   }
-  renderListen(lessonId || listenState.lessonId, false);
+  renderListen(lessonId || listenState.lessonId, true);
 }
 
 function mediaCard(media) {
@@ -803,19 +1359,145 @@ function mediaCard(media) {
 }
 
 function mediaView() {
-  return `<header class="page-head"><div><p class="eyebrow">Визуальное повторение</p><h1>Видео</h1><p>Короткие озвученные сцены с субтитрами. Для тренировки произношения используйте кнопку звука в уроках.</p></div></header><div class="media-grid">${mediaLessons.map(mediaCard).join("")}</div>`;
+  return `<header class="page-head"><div><p class="eyebrow">Визуальное повторение</p><h1>Видео</h1><p>Короткие озвученные сцены с субтитрами. Для тренировки произношения используйте кнопку звука в уроках.</p></div><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></header><div class="media-grid">${mediaLessons.map(mediaCard).join("")}</div>`;
+}
+
+function audioRow(track) {
+  const playing = currentAudioTrack?.id === track.id;
+  return `<button class="audio-row ${playing ? "playing" : ""}" type="button" data-play-audio="${track.id}" data-audio-id="${track.id}">
+    <span class="audio-row-play" aria-hidden="true">${playing && !audioPlayer.paused ? "⏸" : "▶"}</span>
+    <span class="audio-row-info"><strong>${escapeHtml(track.title)}</strong><small>${escapeHtml(track.subtitle)}</small></span>
+    <span class="audio-row-meta"><span class="source-badge">${track.kind === "intro" ? "Введение" : `Модуль ${track.module}`}</span><span class="track-duration">MP3</span></span>
+  </button>`;
+}
+
+function pdfCard(item) {
+  return `<article class="pdf-card">
+    <span class="pdf-cover" aria-hidden="true">📖</span>
+    <h3>${escapeHtml(item.title)}</h3>
+    <p>${escapeHtml(item.subtitle || "")}</p>
+    ${item.ar ? `<p class="arabic" lang="ar">${escapeHtml(item.ar)}</p>` : ""}
+    <div class="pdf-card-actions">
+      ${item.pdf ? `<button class="primary-button" type="button" data-open-pdf="${item.pdf}" data-pdf-title="${escapeHtml(item.title)}">Открыть PDF</button>` : ""}
+      ${item.audio ? `<button class="soft-button" type="button" data-play-audio="${item.audio}">▶ Аудио</button>` : ""}
+      ${item.lessonId ? `<button class="soft-button" type="button" data-open-lesson="${item.lessonId}">Урок</button>` : ""}
+    </div>
+  </article>`;
+}
+
+function libraryView() {
+  const tab = state.libraryTab || "audio";
+  const tabs = [["audio", "🎧 Аудиокурс"], ["text", "📖 Учебник PDF"], ["video", "🎬 Видео"]];
+  let body = "";
+  if (tab === "text") {
+    body = `
+      <div class="section-head"><div><h2>Введение и алфавит</h2><p>Бесплатные материалы для старта</p></div></div>
+      <div class="library-grid">${textbookFrontMatter.map((item) => pdfCard({ ...item, audio: item.audio ? `front-${item.id}` : "" })).join("")}</div>
+      ${textbookParts.map((part) => {
+        const units = textbookUnits.filter((unit) => part.modules.includes(unit.module));
+        return `<section class="section">
+          <div class="section-head"><div><h2>${escapeHtml(part.title)} · ${escapeHtml(part.subtitle)}</h2><p>Модули ${part.modules.join(", ")} · ${units.length} глав</p></div><span class="chip">${escapeHtml(textbookMeta.levels)}</span></div>
+          <div class="library-grid">${units.map((unit) => {
+            const first = lessonAudio(unit.lessons[0]?.id);
+            return pdfCard({ title: `Модуль ${unit.module} · ${unit.title}`, subtitle: `${unit.lessons.length} уроков · ${unit.level}`, ar: unit.ar, pdf: unit.chapter, audio: first?.id, lessonId: unit.lessons[0]?.id });
+          }).join("")}</div>
+        </section>`;
+      }).join("")}`;
+  } else if (tab === "video") {
+    body = `<div class="section-head"><div><h2>Видеоуроки</h2><p>Короткие сцены с русскими субтитрами</p></div><span class="chip">${mediaLessons.length} видео</span></div><div class="media-grid">${mediaLessons.map(mediaCard).join("")}</div>`;
+  } else {
+    const groups = new Map();
+    audioLibrary.forEach((track) => {
+      if (!groups.has(track.group)) groups.set(track.group, []);
+      groups.get(track.group).push(track);
+    });
+    body = `<div class="section-head"><div><h2>Аудиокурс</h2><p>${audioLibrary.length} записанных файлов · работают офлайн · можно слушать целиком или по урокам</p></div><button class="soft-button" type="button" data-play-audio="${audioLibrary[0]?.id || ""}">▶ Начать</button></div>
+      ${[...groups].map(([group, tracks]) => `<section class="audio-group">
+        <div class="audio-group-head"><h3>${escapeHtml(group)}</h3><span>${tracks.length} файл${tracks.length === 1 ? "" : "ов"}</span></div>
+        <div class="audio-list">${tracks.map(audioRow).join("")}</div>
+      </section>`).join("")}`;
+  }
+  return `<header class="page-head"><div><p class="eyebrow">Аудио, учебник и видео</p><h1>Библиотека</h1><p>${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF-глав · ${mediaLessons.length} видео · всё доступно офлайн после загрузки</p></div><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></header>
+    <div class="library-tabs">${tabs.map(([id, label]) => `<button class="${tab === id ? "primary-button" : "soft-button"}" type="button" data-library-tab="${id}">${label}</button>`).join("")}</div>
+    ${body}`;
+}
+
+function recordingsView() {
+  return `<header class="page-head"><div><p class="eyebrow">Ваш голос</p><h1>Мои аудиозаписи</h1><p>Записи хранятся на этом устройстве и работают без интернета</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="library">🎧 В библиотеку</button><button class="soft-button danger-soft" type="button" data-clear-recordings>Очистить все</button></div></header>
+    <section class="section lesson-section">
+      <div id="recordingsList" class="recordings-list"><div class="empty-state">Загружаем записи…</div></div>
+    </section>`;
+}
+
+async function loadRecordingsView() {
+  const container = document.querySelector("#recordingsList");
+  if (!container) return;
+  const records = await listRecordings();
+  if (!records.length) {
+    container.innerHTML = `<div class="empty-state"><h3>Записей пока нет</h3><p>Откройте урок или разговорник и нажмите 🎙 рядом с фразой. Можно записать голос с микрофона или загрузить готовый аудиофайл.</p><button class="primary-button" type="button" data-route="course">Перейти к урокам</button></div>`;
+    return;
+  }
+  container.innerHTML = records.map((record) => {
+    const date = new Date(record.updated || Date.now());
+    return `<article class="recording-row">
+      <div><strong class="arabic" lang="ar">${escapeHtml(record.key)}</strong><small>${escapeHtml(record.ru || "Своя запись")} · ${Math.max(1, Math.round((record.size || 0) / 1024))} КБ · ${date.toLocaleDateString("ru-RU")}</small></div>
+      <div class="recording-row-actions">
+        <button class="speak-button" type="button" data-say="${escapeHtml(record.key)}" aria-label="Прослушать запись" title="Прослушать запись">🔊</button>
+        <button class="record-button" type="button" data-record-say="${escapeHtml(record.key)}" aria-label="Перезаписать" title="Перезаписать">🎙</button>
+        <button class="soft-button danger-soft" type="button" data-delete-recording="${escapeHtml(record.key)}" aria-label="Удалить запись" title="Удалить">🗑</button>
+      </div>
+    </article>`;
+  }).join("");
+  refreshRecordingBadges();
+}
+
+function activityChart() {
+  const days = [];
+  for (let offset = 13; offset >= 0; offset -= 1) {
+    const date = new Date(Date.now() - offset * 86400000);
+    const key = dayKey(date);
+    days.push({ date, key, xp: Number(state.history[key]?.xp) || 0, audio: Number(state.history[key]?.audio) || 0 });
+  }
+  const max = Math.max(20, ...days.map((day) => day.xp));
+  const total = days.reduce((sum, day) => sum + day.xp, 0);
+  return `<div class="activity-chart">
+    <div class="activity-bars">${days.map((day) => `<div class="activity-bar ${day.key === dayKey() ? "today" : ""}" title="${day.date.toLocaleDateString("ru-RU")} · ${day.xp} XP · ${day.audio} аудио"><i style="height:${Math.max(4, Math.round((day.xp / max) * 100))}%"></i><b>${["вс", "пн", "вт", "ср", "чт", "пт", "сб"][day.date.getDay()]}</b></div>`).join("")}</div>
+    <div class="activity-meta"><span class="stat-pill">${total} XP за 14 дней</span><span class="stat-pill">🎧 ${state.audioPlays || 0} запусков аудио</span><span class="stat-pill">🎙 ${state.recordingsMade || 0} своих записей</span><span class="stat-pill">📖 ${state.pdfOpens || 0} PDF</span></div>
+  </div>`;
 }
 
 function settingsView() {
-  return `<header class="page-head"><div><p class="eyebrow">Приложение</p><h1>Настройки и справка</h1><p>Изменения сохраняются только на этом устройстве</p></div></header>
-    <div class="settings-list">
-      <label class="setting-row"><span><strong>Тема</strong><small>Светлая, тёмная или системная</small></span><select id="themeSelect"><option value="system" ${state.theme === "system" ? "selected" : ""}>Системная</option><option value="light" ${state.theme === "light" ? "selected" : ""}>Светлая</option><option value="dark" ${state.theme === "dark" ? "selected" : ""}>Тёмная</option></select></label>
-      <label class="setting-row"><span><strong>Показывать транскрипцию</strong><small>Латинская запись египетского произношения</small></span><span class="switch"><input id="transcriptionToggle" type="checkbox" ${state.showTranscription ? "checked" : ""}><span></span></span></label>
-      <label class="setting-row"><span><strong>Скорость произношения</strong><small>Голос зависит от установленных голосов устройства</small></span><select id="speechRateSelect"><option value="0.68" ${Number(state.speechRate) === .68 ? "selected" : ""}>Медленно</option><option value="0.82" ${Number(state.speechRate) === .82 ? "selected" : ""}>Учебная</option><option value="1" ${Number(state.speechRate) === 1 ? "selected" : ""}>Обычно</option></select></label>
-      <label class="setting-row"><span><strong>Цель дня</strong><small>Сколько повторений слов выполнять ежедневно</small></span><select id="dailyGoalSelect"><option value="10" ${Number(state.dailyGoal) === 10 ? "selected" : ""}>10</option><option value="20" ${Number(state.dailyGoal) === 20 ? "selected" : ""}>20</option><option value="30" ${Number(state.dailyGoal) === 30 ? "selected" : ""}>30</option><option value="50" ${Number(state.dailyGoal) === 50 ? "selected" : ""}>50</option></select></label>
-      <div class="setting-row"><span><strong>Сбросить статистику слов</strong><small>Интервалы повторения, XP и серия будут очищены, уроки останутся</small></span><button class="soft-button" type="button" data-reset-stats>Очистить</button></div>
-      <div class="setting-row"><span><strong>Сбросить весь прогресс</strong><small>Уроки, статистика, избранное и достижения будут удалены</small></span><button class="soft-button" type="button" data-reset-progress>Сбросить</button></div>
-    </div>
+  return `<header class="page-head"><div><p class="eyebrow">Приложение</p><h1>Настройки и справка</h1><p>Изменения сохраняются только на этом устройстве</p></div><button class="soft-button" type="button" data-open-palette>🎨 Палитра</button></header>
+
+    <section class="section lesson-section">
+      <div class="section-head"><div><h2>Цвета и оформление</h2><p>8 акцентов, светлый, тёмный и системный режим</p></div><span class="chip">${escapeHtml(accents.find((item) => item.id === state.accent)?.name || "Средиземный")}</span></div>
+      <div id="settingsPalette" class="palette-grid">${paletteMarkup()}</div>
+      <label class="setting-row"><span><strong>Режим</strong><small>Светлая, тёмная или системная тема</small></span><select id="themeSelect"><option value="system" ${state.theme === "system" ? "selected" : ""}>Системная</option><option value="light" ${state.theme === "light" ? "selected" : ""}>Светлая</option><option value="dark" ${state.theme === "dark" ? "selected" : ""}>Тёмная</option></select></label>
+    </section>
+
+    <section class="section lesson-section">
+      <div class="section-head"><div><h2>Аудио и произношение</h2><p>Файлы курса, ваши записи и системный голос</p></div><span class="chip">${audioLibrary.length} MP3</span></div>
+      <div class="settings-list">
+        <label class="setting-row"><span><strong>Источник звука</strong><small>Файлы и записи в первую очередь, системный голос как запасной вариант</small></span><select id="audioModeSelect"><option value="auto" ${state.audioMode === "auto" ? "selected" : ""}>Файлы + системный голос</option><option value="files" ${state.audioMode === "files" ? "selected" : ""}>Только файлы и записи</option><option value="tts" ${state.audioMode === "tts" ? "selected" : ""}>Только системный голос</option></select></label>
+        <label class="setting-row"><span><strong>Автовоспроизведение карточек</strong><small>Автоматически включать аудио при переходе к следующей карточке</small></span><span class="switch"><input id="autoplayCardsToggle" type="checkbox" ${state.autoplayCards ? "checked" : ""}><span></span></span></label>
+        <label class="setting-row"><span><strong>Скорость системного голоса</strong><small>Используется только когда нет аудиофайла или записи</small></span><select id="speechRateSelect"><option value="0.68" ${Number(state.speechRate) === .68 ? "selected" : ""}>Медленно</option><option value="0.82" ${Number(state.speechRate) === .82 ? "selected" : ""}>Учебная</option><option value="1" ${Number(state.speechRate) === 1 ? "selected" : ""}>Обычно</option></select></label>
+        <label class="setting-row"><span><strong>Скорость аудиофайлов</strong><small>Можно менять и кнопкой в плеере</small></span><select id="audioRateSelect"><option value="0.75" ${Number(state.audioRate) === .75 ? "selected" : ""}>0.75×</option><option value="1" ${Number(state.audioRate) === 1 ? "selected" : ""}>1×</option><option value="1.15" ${Number(state.audioRate) === 1.15 ? "selected" : ""}>1.15×</option><option value="1.3" ${Number(state.audioRate) === 1.3 ? "selected" : ""}>1.3×</option></select></label>
+        <div class="setting-row"><span><strong>Мои записи</strong><small>${state.recordingsMade || 0} записей создано · хранятся в браузере</small></span><button class="soft-button" type="button" data-route="recordings">Открыть</button></div>
+      </div>
+    </section>
+
+    <section class="section lesson-section">
+      <div class="section-head"><div><h2>Обучение</h2><p>Транскрипция и ежедневная цель</p></div></div>
+      <div class="settings-list">
+        <label class="setting-row"><span><strong>Показывать транскрипцию</strong><small>Латинская запись египетского произношения</small></span><span class="switch"><input id="transcriptionToggle" type="checkbox" ${state.showTranscription ? "checked" : ""}><span></span></span></label>
+        <label class="setting-row"><span><strong>Цель дня</strong><small>Сколько повторений слов выполнять ежедневно</small></span><select id="dailyGoalSelect"><option value="10" ${Number(state.dailyGoal) === 10 ? "selected" : ""}>10</option><option value="20" ${Number(state.dailyGoal) === 20 ? "selected" : ""}>20</option><option value="30" ${Number(state.dailyGoal) === 30 ? "selected" : ""}>30</option><option value="50" ${Number(state.dailyGoal) === 50 ? "selected" : ""}>50</option></select></label>
+      </div>
+    </section>
+
+    <section class="section lesson-section">
+      <div class="section-head"><div><h2>Активность</h2><p>Последние 14 дней · ${state.xp || 0} XP всего</p></div><span class="chip">Серия ${activeStreak()} дн.</span></div>
+      ${activityChart()}
+    </section>
 
     <section class="section lesson-section" id="achievements">
       <div class="section-head"><div><h2>Достижения</h2><p>${state.achievements.length} из ${achievementDefs.length} открыто · ${state.xp || 0} XP</p></div><span class="chip">Уровень ${levelInfo().level}</span></div>
@@ -824,17 +1506,28 @@ function settingsView() {
     </section>
 
     <section class="section lesson-section">
+      <div class="section-head"><div><h2>Резервная копия</h2><p>Сохраните прогресс в файл или перенесите на другое устройство</p></div></div>
+      <div class="lesson-actions"><button class="primary-button" type="button" data-export-backup>⬇ Скачать прогресс</button><button class="soft-button" type="button" data-import-backup>⬆ Загрузить прогресс</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
+      <div class="settings-list" style="margin-top:.8rem">
+        <div class="setting-row"><span><strong>Сбросить статистику слов</strong><small>Интервалы повторения, XP и серия будут очищены, уроки останутся</small></span><button class="soft-button" type="button" data-reset-stats>Очистить</button></div>
+        <div class="setting-row"><span><strong>Сбросить весь прогресс</strong><small>Уроки, статистика, избранное и достижения будут удалены</small></span><button class="soft-button" type="button" data-reset-progress>Сбросить</button></div>
+      </div>
+    </section>
+
+    <section class="section lesson-section">
       <div class="section-head"><div><h2>Инструменты</h2><p>Дополнительные разделы работают без интернета</p></div></div>
       <div class="feature-grid">
+        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><strong>Аудио и учебник</strong><small>${audioLibrary.length} MP3 и ${textbookPdfCount} PDF</small></button>
         <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов и 5 времён</small></button>
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} фраз и избранное</small></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Грамматика в таблицах</small></button>
+        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎨</span><strong>Цвета</strong><small>Сменить акцент и тему</small></button>
       </div>
     </section>
 
     <section class="section lesson-section"><h2>Как читать транскрипцию</h2><div class="plan-table"><table><thead><tr><th>Знак</th><th>Как произнести</th><th>Пример</th></tr></thead><tbody>${transcriptionGuide.map((row) => `<tr><td><strong>${escapeHtml(row[0])}</strong></td><td>${escapeHtml(row[1])}</td><td>${escapeHtml(row[2])}</td></tr>`).join("")}</tbody></table></div></section>
     <section class="section lesson-section"><h2>Арабский алфавит</h2><p>Буквы пишутся справа налево и меняют вид в зависимости от позиции. Буквы ا د ذ ر ز و не соединяются со следующей буквой слева. В таблице дано каирское разговорное произношение.</p><div class="plan-table"><table><thead><tr><th>Буква</th><th>Название</th><th>Звук</th><th>Пример</th><th>Значение</th></tr></thead><tbody>${alphabetGuide.map((row) => `<tr><td class="arabic" lang="ar" style="font-size:1.4rem;font-weight:800">${escapeHtml(row[0])}</td><td>${escapeHtml(row[1])}</td><td>${escapeHtml(row[2])}</td><td>${escapeHtml(row[3])}</td><td>${escapeHtml(row[4])}</td></tr>`).join("")}</tbody></table></div></section>
-    <section class="section lesson-section"><h2>Правильная тренировка</h2><ol class="goal-list"><li>Сначала слушайте целую фразу, не читая транскрипцию.</li><li>Повторяйте одновременно с голосом, затем самостоятельно.</li><li>Записывайте себя на телефон и сравнивайте ритм, а не только отдельные звуки.</li><li>Используйте новые фразы в коротких личных примерах.</li></ol><p class="muted">Системное произношение ar-EG зависит от телефона и может звучать ближе к литературному арабскому. Диалоги и транскрипция курса сохраняют египетские формы.</p></section>
+    <section class="section lesson-section"><h2>Правильная тренировка</h2><ol class="goal-list"><li>Сначала слушайте целый аудиофайл урока, не читая транскрипцию.</li><li>Повторяйте одновременно с голосом, затем самостоятельно.</li><li>Записывайте себя кнопкой 🎙 и сравнивайте с записью курса.</li><li>Используйте новые фразы в коротких личных примерах.</li></ol><p class="muted">Аудиофайлы курса — основной источник произношения. Системный голос ar-EG включается только как запасной вариант и зависит от устройства.</p></section>
     <section class="section lesson-section"><h2>О разработчике</h2><p>Нашли ошибку, хотите новую тему или свой пример в курсе — напишите, отвечу удобным способом.</p><div class="contact-links"><a class="contact-link" href="https://wa.me/971561101262" target="_blank" rel="noopener"><span>WhatsApp</span><span dir="ltr">+971 56 110 1262</span></a><a class="contact-link" href="https://t.me/mourssi2700" target="_blank" rel="noopener"><span>Telegram</span><span dir="ltr">@mourssi2700</span></a></div></section>`;
 }
 
@@ -855,10 +1548,14 @@ function renderRoute() {
   else if (route === "reference") main.innerHTML = referenceView();
   else if (route === "practice") main.innerHTML = practiceView();
   else if (route === "media") main.innerHTML = mediaView();
+  else if (route === "library") main.innerHTML = libraryView();
+  else if (route === "recordings") main.innerHTML = recordingsView();
   else if (route === "settings") main.innerHTML = settingsView();
   else main.innerHTML = notFoundView();
   main.focus({ preventScroll: true });
   window.scrollTo(0, 0);
+  if (route === "recordings") loadRecordingsView();
+  refreshRecordingBadges();
 }
 
 function refreshDrill() {
@@ -888,6 +1585,7 @@ function speakArabic(text) {
     showToast("На этом устройстве нет системного синтеза речи");
     return;
   }
+  if (!audioPlayer.paused) audioPlayer.pause();
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ar-EG";
@@ -895,6 +1593,10 @@ function speakArabic(text) {
   const voices = speechSynthesis.getVoices();
   utterance.voice = voices.find((voice) => voice.lang.toLowerCase() === "ar-eg") || voices.find((voice) => voice.lang.toLowerCase().startsWith("ar")) || null;
   speechSynthesis.speak(utterance);
+  state.audioPlays = (Number(state.audioPlays) || 0) + 1;
+  bumpHistory("audio", 1);
+  saveState();
+  checkAchievements();
 }
 
 function openMedia(mediaId) {
@@ -916,18 +1618,55 @@ function openMedia(mediaId) {
 function updateSearch(query) {
   const needle = query.trim().toLocaleLowerCase("ru");
   if (!needle) {
-    searchResults.innerHTML = `<div class="empty-state">Введите русское или арабское слово</div>`;
+    searchResults.innerHTML = `<div class="empty-state">
+      <strong>Ищите по всему курсу</strong>
+      <p>Уроки · слова · разговорник · глаголы · аудио · PDF</p>
+      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${verbLibrary.length} глаголов · ${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF</p>
+      <p class="small"><span class="keyboard-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd> или <kbd>/</kbd> — открыть поиск</span></p>
+    </div>`;
     return;
   }
   const found = [];
   lessons.forEach((lesson) => {
-    const lessonHit = `${lesson.title} ${lesson.arTitle}`.toLocaleLowerCase("ru").includes(needle);
-    if (lessonHit) found.push({ type: "lesson", lessonId: lesson.id, ar: lesson.arTitle, ru: lesson.title, tr: `Урок ${lesson.order}` });
+    const lessonHit = `${lesson.title} ${lesson.arTitle} ${lesson.level}`.toLocaleLowerCase("ru").includes(needle);
+    if (lessonHit) found.push({ group: "Уроки", type: "Урок", lessonId: lesson.id, ar: lesson.arTitle, ru: lesson.title, tr: `Урок ${lesson.order} · ${lesson.vocabulary.length} слов` });
     lesson.vocabulary.forEach((item) => {
-      if (`${item.ar} ${item.tr} ${item.ru}`.toLocaleLowerCase("ru").includes(needle)) found.push({ type: "vocab", lessonId: lesson.id, ...item });
+      if (`${item.ar} ${item.tr} ${item.ru} ${item.note || ""}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Слова урока", type: "Слово", lessonId: lesson.id, ...item });
     });
   });
-  searchResults.innerHTML = found.length ? found.slice(0, 60).map((item) => `<button class="search-result" type="button" data-search-open="${item.lessonId}"><span class="arabic" lang="ar">${escapeHtml(item.ar)}</span><strong> · ${escapeHtml(item.ru)}</strong><small>${escapeHtml(item.tr || "")}</small></button>`).join("") : `<div class="empty-state">Ничего не найдено</div>`;
+  allPhrases().forEach((item) => {
+    if (`${item.ar} ${item.tr} ${item.ru}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Разговорник", type: "Фраза", phrase: item.ar, category: item.categoryId, ar: item.ar, ru: item.ru, tr: item.tr });
+  });
+  verbLibrary.forEach((verb) => {
+    if (`${verb.ar} ${verb.tr} ${verb.ru} ${verb.root} ${verb.pattern}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Глаголы", type: "Глагол", verbId: verb.id, ar: verb.ar, ru: verb.ru, tr: verb.tr });
+  });
+  audioLibrary.forEach((track) => {
+    if (`${track.title} ${track.subtitle} ${track.ar || ""} ${track.group}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Аудио", type: "Аудио", audioId: track.id, ar: track.ar || "", ru: track.title, tr: track.subtitle });
+  });
+  textbookUnits.forEach((unit) => {
+    if (`${unit.title} ${unit.ar} ${unit.level} Модуль ${unit.module}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Учебник PDF", type: "PDF", pdf: unit.chapter, title: `Модуль ${unit.module} · ${unit.title}`, ar: unit.ar, ru: unit.title, tr: `${unit.lessons.length} уроков · ${unit.level}` });
+  });
+  textbookFrontMatter.forEach((item) => {
+    if (`${item.title} ${item.subtitle} ${item.pdf ? "pdf" : ""} ${item.audio ? "аудио" : ""}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Учебник PDF", type: item.pdf ? "PDF" : "Аудио", pdf: item.pdf || "", audioId: item.audio ? `front-${item.id}` : "", title: item.title, ar: "", ru: item.title, tr: item.subtitle });
+  });
+
+  if (!found.length) {
+    searchResults.innerHTML = `<div class="empty-state">Ничего не найдено. Попробуйте арабское слово, транскрипцию или русский перевод.</div>`;
+    return;
+  }
+  let lastGroup = "";
+  searchResults.innerHTML = found.slice(0, 90).map((item) => {
+    let attrs = `data-search-open="${item.lessonId || ""}"`;
+    if (item.phrase) attrs = `data-search-phrase="${escapeHtml(item.phrase)}" data-search-category="${escapeHtml(item.category)}"`;
+    else if (item.verbId) attrs = `data-search-verb="${item.verbId}"`;
+    else if (item.pdf) attrs = `data-search-pdf="${item.pdf}" data-pdf-title="${escapeHtml(item.title)}"`;
+    else if (item.audioId) attrs = `data-search-audio="${item.audioId}"`;
+    const groupLabel = item.group !== lastGroup ? `<div class="search-group-label">${escapeHtml(item.group)}</div>` : "";
+    lastGroup = item.group;
+    return `${groupLabel}<button class="search-result" type="button" ${attrs}>
+      <span class="search-type">${escapeHtml(item.type)}</span>${item.ar ? `<span class="arabic" lang="ar">${escapeHtml(item.ar)}</span> · ` : ""}<strong class="search-title">${escapeHtml(item.ru)}</strong><small>${escapeHtml(item.tr || "")}</small>
+    </button>`;
+  }).join("") + `<div class="search-group-label">Найдено: ${found.length}</div>`;
 }
 
 document.addEventListener("click", (event) => {
@@ -937,9 +1676,69 @@ document.addEventListener("click", (event) => {
   else if (target.dataset.openModule) routeTo(`module/${target.dataset.openModule}`);
   else if (target.dataset.openLesson) routeTo(`lesson/${target.dataset.openLesson}`);
   else if (target.dataset.openVerb) routeTo(`verb/${target.dataset.openVerb}`);
-  else if (target.dataset.speak) speakArabic(target.dataset.speak);
+  else if (target.dataset.say) playPhrase(target.dataset.say);
+  else if (target.dataset.recordSay) openAudioDialog(target.dataset.recordSay);
   else if (target.dataset.openMedia) openMedia(target.dataset.openMedia);
-  else if (target.dataset.toggleComplete) {
+  else if (target.dataset.playAudio) {
+    const id = target.dataset.playAudio;
+    if (currentAudioTrack?.id === id) {
+      if (audioPlayer.paused) audioPlayer.play().catch(() => showToast("Не удалось запустить аудиофайл"));
+      else audioPlayer.pause();
+      updateAudioDock();
+    } else {
+      playTrackById(id);
+    }
+  } else if (target.dataset.openPdf) {
+    openPdf(target.dataset.openPdf, target.dataset.pdfTitle || "");
+  } else if (target.hasAttribute("data-open-palette")) {
+    renderPaletteChoices();
+    paletteDialog.showModal();
+  } else if (target.dataset.libraryTab) {
+    state.libraryTab = target.dataset.libraryTab;
+    saveState();
+    main.innerHTML = libraryView();
+    window.scrollTo(0, 0);
+  } else if (target.dataset.accentChoice) {
+    state.accent = target.dataset.accentChoice;
+    saveState();
+    setTheme();
+    showToast(`Палитра: ${accents.find((item) => item.id === state.accent)?.name || ""}`);
+  } else if (target.dataset.themeChoice) {
+    state.theme = target.dataset.themeChoice;
+    saveState();
+    setTheme();
+  } else if (target.dataset.surfaceChoice) {
+    state.surface = target.dataset.surfaceChoice;
+    saveState();
+    setTheme();
+  } else if (target.hasAttribute("data-random-phrase")) {
+    const pool = allPhrases();
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    if (item) {
+      showToast(`${item.ar} — ${item.ru}`);
+      playPhrase(item.ar);
+    }
+  } else if (target.dataset.deleteRecording) {
+    deleteRecording(target.dataset.deleteRecording).then(() => {
+      loadRecordingsView();
+      refreshRecordingBadges();
+      showToast("Запись удалена");
+    });
+  } else if (target.hasAttribute("data-clear-recordings")) {
+    if (confirm("Удалить все ваши аудиозаписи с этого устройства?")) {
+      clearRecordings().then(() => {
+        state.recordingsMade = 0;
+        saveState();
+        loadRecordingsView();
+        refreshRecordingBadges();
+        showToast("Все записи удалены");
+      });
+    }
+  } else if (target.hasAttribute("data-export-backup")) {
+    exportBackup();
+  } else if (target.hasAttribute("data-import-backup")) {
+    backupInput.click();
+  } else if (target.dataset.toggleComplete) {
     const id = target.dataset.toggleComplete;
     const adding = !state.completed.includes(id);
     state.completed = adding ? [...state.completed, id] : state.completed.filter((item) => item !== id);
@@ -965,7 +1764,8 @@ document.addEventListener("click", (event) => {
     reviewRevealed = false;
     reviewKey = "";
     main.innerHTML = practiceView(target.dataset.practiceMode);
-    if (target.dataset.practiceMode === "listen" && listenState) setTimeout(() => speakArabic(listenState.item.ar), 150);
+    if (target.dataset.practiceMode === "listen" && listenState) setTimeout(() => playPhrase(listenState.item.ar, { openDialog: false }), 150);
+    if (target.dataset.practiceMode === "cards") maybeAutoplayCard();
     if (target.dataset.practiceMode === "smart") reviewRevealed = false;
   } else if (target.hasAttribute("data-flip-card")) {
     state.flashcardFlipped = !state.flashcardFlipped;
@@ -976,11 +1776,13 @@ document.addEventListener("click", (event) => {
     state.flashcardFlipped = false;
     saveState();
     main.innerHTML = practiceView("cards");
+    maybeAutoplayCard();
   } else if (target.hasAttribute("data-card-shuffle")) {
     state.flashcardIndex = Math.floor(Math.random() * allVocab().length);
     state.flashcardFlipped = false;
     saveState();
     main.innerHTML = practiceView("cards");
+    maybeAutoplayCard();
   } else if (target.dataset.cardRate) {
     const deck = allVocab();
     const index = ((state.flashcardIndex % deck.length) + deck.length) % deck.length;
@@ -989,6 +1791,7 @@ document.addEventListener("click", (event) => {
     state.flashcardIndex += 1;
     saveState();
     main.innerHTML = practiceView("cards");
+    maybeAutoplayCard();
     showToast(target.dataset.cardRate === "again" ? "Будет повторено через 10 минут" : "Интервал повтора увеличен");
   } else if (target.hasAttribute("data-review-reveal")) {
     reviewRevealed = true;
@@ -1015,8 +1818,7 @@ document.addEventListener("click", (event) => {
     const correct = quizState.selected === quizState.questions[quizState.index].answer;
     if (correct) quizState.score += 1;
     touchStreak();
-    state.totalReviews = (Number(state.totalReviews) || 0) + 1;
-    state.todayReviews = (Number(state.todayReviews) || 0) + 1;
+    recordReviewActivity();
     awardXp(correct ? 8 : 3);
     saveState();
     const [route] = getRoute();
@@ -1078,14 +1880,14 @@ document.addEventListener("click", (event) => {
     listenState = buildListening(target.dataset.lessonListen);
     renderListen(target.dataset.lessonListen, true);
   } else if (target.dataset.listenPlay) {
-    speakArabic(target.dataset.listenPlay);
+    playPhrase(target.dataset.listenPlay, { openDialog: false });
   } else if (target.dataset.listenChoice) {
     if (listenState?.answered) return;
     listenState.selected = target.dataset.listenChoice;
     listenState.answered = true;
     touchStreak();
-    state.totalReviews = (Number(state.totalReviews) || 0) + 1;
-    state.todayReviews = (Number(state.todayReviews) || 0) + 1;
+    recordReviewActivity();
+    state.listenPlays = (Number(state.listenPlays) || 0) + 1;
     awardXp(target.dataset.listenChoice === listenState.item.ru ? 6 : 2);
     saveState();
     refreshListen();
@@ -1116,13 +1918,29 @@ document.addEventListener("click", (event) => {
       state.totalReviews = 0;
       state.perfectQuiz = false;
       state.achievements = [];
+      state.audioPlays = 0;
+      state.listenPlays = 0;
+      state.pdfOpens = 0;
+      state.history = {};
       saveState();
       renderRoute();
       showToast("Статистика очищена");
     }
   } else if (target.hasAttribute("data-reset-progress")) {
     if (confirm("Сбросить весь учебный прогресс на этом устройстве?")) {
-      state = { ...defaultState, theme: state.theme };
+      const preferences = {
+        theme: state.theme,
+        accent: state.accent,
+        surface: state.surface,
+        audioMode: state.audioMode,
+        audioRate: state.audioRate,
+        audioLoop: state.audioLoop,
+        autoplayCards: state.autoplayCards,
+        speechRate: state.speechRate,
+        showTranscription: state.showTranscription,
+        dailyGoal: state.dailyGoal,
+      };
+      state = { ...defaultState, ...preferences };
       saveState();
       renderRoute();
       showToast("Прогресс сброшен");
@@ -1131,11 +1949,26 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if ((event.key === "Enter" || event.key === " ") && event.target.hasAttribute("data-flip-card")) {
+  const target = event.target;
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || "") || !!target?.isContentEditable;
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
     event.preventDefault();
-    event.target.click();
+    searchDialog.showModal();
+    searchInput.value = "";
+    updateSearch("");
+    setTimeout(() => searchInput.focus(), 80);
+  } else if (event.key === "/" && !typing && !searchDialog.open) {
+    event.preventDefault();
+    searchDialog.showModal();
+    searchInput.value = "";
+    updateSearch("");
+    setTimeout(() => searchInput.focus(), 80);
   }
-  if ((event.key === "Enter" || event.key === " ") && event.target.id === "verbSearch") {
+  if ((event.key === "Enter" || event.key === " ") && target?.hasAttribute?.("data-flip-card")) {
+    event.preventDefault();
+    target.click();
+  }
+  if ((event.key === "Enter" || event.key === " ") && target?.id === "verbSearch") {
     event.preventDefault();
   }
 });
@@ -1161,6 +1994,18 @@ document.addEventListener("change", (event) => {
   } else if (event.target.id === "speechRateSelect") {
     state.speechRate = Number(event.target.value);
     saveState();
+  } else if (event.target.id === "audioModeSelect") {
+    state.audioMode = event.target.value;
+    saveState();
+    showToast("Источник звука обновлён");
+  } else if (event.target.id === "audioRateSelect") {
+    state.audioRate = Number(event.target.value);
+    audioPlayer.playbackRate = Number(state.audioRate) || 1;
+    saveState();
+    updateAudioDock();
+  } else if (event.target.id === "autoplayCardsToggle") {
+    state.autoplayCards = event.target.checked;
+    saveState();
   } else if (event.target.id === "dailyGoalSelect") {
     state.dailyGoal = Number(event.target.value);
     saveState();
@@ -1169,6 +2014,11 @@ document.addEventListener("change", (event) => {
 });
 
 document.querySelector("#brandButton").addEventListener("click", () => routeTo("home"));
+libraryButton.addEventListener("click", () => routeTo("library"));
+paletteButton.addEventListener("click", () => {
+  renderPaletteChoices();
+  paletteDialog.showModal();
+});
 document.querySelector("#searchButton").addEventListener("click", () => {
   searchDialog.showModal();
   searchInput.value = "";
@@ -1177,12 +2027,107 @@ document.querySelector("#searchButton").addEventListener("click", () => {
 });
 searchInput.addEventListener("input", () => updateSearch(searchInput.value));
 searchResults.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-search-open]");
+  const button = event.target.closest("[data-search-open], [data-search-phrase], [data-search-verb], [data-search-audio], [data-search-pdf]");
   if (!button) return;
-  searchDialog.close();
-  routeTo(`lesson/${button.dataset.searchOpen}`);
+  if (button.dataset.searchPhrase) {
+    if (button.dataset.searchCategory) state.phraseCategory = button.dataset.searchCategory;
+    saveState();
+    searchDialog.close();
+    routeTo("phrases");
+  } else if (button.dataset.searchVerb) {
+    searchDialog.close();
+    routeTo(`verb/${button.dataset.searchVerb}`);
+  } else if (button.dataset.searchAudio) {
+    searchDialog.close();
+    playTrackById(button.dataset.searchAudio);
+  } else if (button.dataset.searchPdf) {
+    searchDialog.close();
+    openPdf(button.dataset.searchPdf, button.dataset.pdfTitle || "");
+  } else {
+    searchDialog.close();
+    routeTo(`lesson/${button.dataset.searchOpen}`);
+  }
 });
 mediaDialog.addEventListener("close", () => { lessonVideo.pause(); lessonVideo.removeAttribute("src"); lessonVideo.load(); });
+
+audioToggle.addEventListener("click", () => {
+  if (!currentAudioTrack) return;
+  if (audioPlayer.paused) audioPlayer.play().catch(() => showToast("Не удалось запустить аудиофайл"));
+  else audioPlayer.pause();
+  updateAudioDock();
+});
+audioPrev.addEventListener("click", () => playAdjacentTrack(-1));
+audioNext.addEventListener("click", () => playAdjacentTrack(1));
+audioClose.addEventListener("click", closeAudioPlayer);
+audioSeek.addEventListener("input", () => {
+  if (!audioPlayer.duration) return;
+  audioPlayer.currentTime = (Number(audioSeek.value) / 1000) * audioPlayer.duration;
+});
+audioRateButton.addEventListener("click", () => {
+  const rates = [0.75, 1, 1.15, 1.3];
+  const index = rates.indexOf(Number(state.audioRate));
+  state.audioRate = rates[(index + 1) % rates.length];
+  audioPlayer.playbackRate = state.audioRate;
+  saveState();
+  updateAudioDock();
+  showToast(`Скорость: ${state.audioRate}×`);
+});
+audioLoopButton.addEventListener("click", () => {
+  state.audioLoop = !state.audioLoop;
+  audioPlayer.loop = state.audioLoop;
+  saveState();
+  updateAudioDock();
+});
+audioPlayer.addEventListener("play", updateAudioDock);
+audioPlayer.addEventListener("pause", updateAudioDock);
+audioPlayer.addEventListener("timeupdate", updateAudioDock);
+audioPlayer.addEventListener("loadedmetadata", updateAudioDock);
+audioPlayer.addEventListener("ended", updateAudioDock);
+audioPlayer.addEventListener("error", () => {
+  if (currentAudioTrack) showToast("Не удалось воспроизвести аудиофайл");
+});
+
+audioPlayPhrase.addEventListener("click", () => {
+  if (audioDialogText) playPhrase(audioDialogText);
+});
+audioRecordPhrase.addEventListener("click", () => {
+  if (isRecording) stopRecording();
+  else startRecording();
+});
+audioUploadPhrase.addEventListener("click", () => audioFileInput.click());
+audioDeletePhrase.addEventListener("click", async () => {
+  if (!audioDialogText) return;
+  await deleteRecording(audioDialogText);
+  showToast("Запись удалена");
+  await refreshAudioDialogStatus();
+});
+audioTtsPhrase.addEventListener("click", () => {
+  if (audioDialogText) speakArabic(audioDialogText);
+});
+audioFileInput.addEventListener("change", async () => {
+  const file = audioFileInput.files?.[0];
+  audioFileInput.value = "";
+  if (!file) return;
+  const looksAudio = file.type.startsWith("audio/") || /\.(mp3|m4a|aac|ogg|oga|wav|webm|flac|opus)$/i.test(file.name || "");
+  if (!looksAudio) {
+    showToast("Выберите аудиофайл: mp3, m4a, ogg или wav");
+    return;
+  }
+  await saveAudioBlob(file, "upload");
+});
+audioDialog.addEventListener("close", () => {
+  if (isRecording) stopRecording();
+  audioDialogText = "";
+});
+pdfDialog.addEventListener("close", () => {
+  pdfFrame.removeAttribute("src");
+  pdfOpenLink.href = "#";
+});
+backupInput.addEventListener("change", async () => {
+  const file = backupInput.files?.[0];
+  backupInput.value = "";
+  if (file) await importBackup(file);
+});
 
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
