@@ -11,6 +11,7 @@ import {
 import { phrasebook, quickReference } from "./extra-data.js";
 import { verbLibrary, verbTenses } from "./verb-data.js";
 import { colorLesson } from "./colors-data.js";
+import { cultureGuide, examMeta, learningPrograms, writingTasks, writingTips } from "./academy-data.js";
 import {
   audioById,
   audioLibrary,
@@ -116,6 +117,10 @@ const defaultState = {
   pdfOpens: 0,
   listenPlays: 0,
   history: {},
+  examScores: {},
+  writingDone: [],
+  grammarModule: "all",
+  learnerName: "",
 };
 
 let state = loadState();
@@ -123,6 +128,7 @@ let deferredInstallPrompt = null;
 let quizState = null;
 let drillState = null;
 let listenState = null;
+let examState = null;
 let verbTense = "present";
 let drillTense = "present";
 let verbFilter = "all";
@@ -160,6 +166,11 @@ const achievementDefs = [
   { id: "voice-10", icon: "🎤", title: "Постановка голоса", desc: "Запишите 10 фраз", test: () => state.recordingsMade >= 10 },
   { id: "bookworm", icon: "📖", title: "Учебник открыт", desc: "Откройте 5 PDF-глав", test: () => state.pdfOpens >= 5 },
   { id: "listener-50", icon: "👂", title: "Тонкий слух", desc: "50 ответов в аудировании", test: () => state.listenPlays >= 50 },
+  { id: "first-exam", icon: "📝", title: "Первый экзамен", desc: "Сдайте любой модульный экзамен", test: () => passedExamCount() >= 1 },
+  { id: "all-exams", icon: "🎓", title: "Все модули сданы", desc: "Сдайте 12 модульных экзаменов", test: () => passedExamCount() >= moduleExamIds().length },
+  { id: "final-exam", icon: "🏛", title: "Итоговый экзамен", desc: "Сдайте финальный экзамен курса", test: () => examPassed("final") },
+  { id: "writer-10", icon: "✍️", title: "Пишу по-арабски", desc: "Выполните 10 заданий письма", test: () => state.writingDone.length >= 10 },
+  { id: "academy-complete", icon: "🏆", title: "Академия пройдена", desc: "Получите право на сертификат", test: () => certificateEligibility().eligible },
   { id: "reviews-400", icon: "🧠", title: "Глубокая память", desc: "400 повторений слов", test: () => state.totalReviews >= 400 },
   { id: "level-10", icon: "👑", title: "Десятый уровень", desc: "Наберите 1080 XP", test: () => state.xp >= 1080 },
 ];
@@ -177,6 +188,10 @@ function loadState() {
       favorites: Array.isArray(saved.favorites) ? saved.favorites : [],
       achievements: Array.isArray(saved.achievements) ? saved.achievements : [],
       history: saved.history && typeof saved.history === "object" ? saved.history : {},
+      examScores: saved.examScores && typeof saved.examScores === "object" ? saved.examScores : {},
+      writingDone: Array.isArray(saved.writingDone) ? saved.writingDone : [],
+      grammarModule: typeof saved.grammarModule === "string" ? saved.grammarModule : "all",
+      learnerName: typeof saved.learnerName === "string" ? saved.learnerName : "",
     };
   } catch {
     return { ...defaultState };
@@ -209,6 +224,53 @@ function getRoute() {
 
 function moduleLessons(moduleId) {
   return lessons.filter((lesson) => lesson.module === Number(moduleId));
+}
+
+function moduleExamIds() {
+  return modules.map((module) => `module-${module.id}`);
+}
+
+function examTotal(examId) {
+  return examId === "final" ? examMeta.finalQuestions : examMeta.moduleQuestions;
+}
+
+function examPassScore(examId) {
+  return Math.ceil(examTotal(examId) * (examMeta.passPercent / 100));
+}
+
+function examPassed(examId) {
+  const score = Number(state.examScores?.[examId]?.best) || 0;
+  return score >= examPassScore(examId);
+}
+
+function passedExamCount() {
+  return moduleExamIds().filter((id) => examPassed(id)).length;
+}
+
+function certificateEligibility() {
+  const lessonsDone = completedCount();
+  const examsDone = passedExamCount();
+  const writingDone = state.writingDone.filter((id) => writingTasks.some((task) => task.id === id)).length;
+  const finalDone = examPassed("final");
+  const eligible = lessonsDone >= lessons.length && examsDone >= moduleExamIds().length && finalDone && writingDone >= 10;
+  return { eligible, lessonsDone, examsDone, writingDone, finalDone };
+}
+
+function normalizeArabic(value = "") {
+  return String(value)
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[؟?،,؛;.!]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function writingDoneCount() {
+  return writingTasks.filter((task) => state.writingDone.includes(task.id)).length;
 }
 
 function completedCount(items = lessons) {
@@ -791,6 +853,10 @@ async function importBackup(file) {
       favorites: Array.isArray(saved.favorites) ? saved.favorites : [],
       achievements: Array.isArray(saved.achievements) ? saved.achievements : [],
       history: saved.history && typeof saved.history === "object" ? saved.history : {},
+      examScores: saved.examScores && typeof saved.examScores === "object" ? saved.examScores : {},
+      writingDone: Array.isArray(saved.writingDone) ? saved.writingDone : [],
+      grammarModule: typeof saved.grammarModule === "string" ? saved.grammarModule : "all",
+      learnerName: typeof saved.learnerName === "string" ? saved.learnerName : "",
     };
     saveState();
     setTheme();
@@ -804,10 +870,10 @@ async function importBackup(file) {
 
 function activateNav(route) {
   let root = route;
-  if (["module", "lesson", "library", "colors"].includes(route)) root = "course";
+  if (["module", "lesson", "library", "colors", "programs", "program", "grammar", "culture", "writing"].includes(route)) root = "course";
   else if (route === "verb") root = "verbs";
-  else if (["phrases", "reference"].includes(route)) root = "practice";
-  else if (route === "recordings") root = "settings";
+  else if (["phrases", "reference", "exams", "exam"].includes(route)) root = "practice";
+  else if (route === "recordings" || route === "certificate") root = "settings";
   nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.route === root));
 }
 
@@ -919,8 +985,17 @@ function homeView() {
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} готовых фраз по ситуациям</small></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Местоимения, предлоги, числа и формулы времён</small></button>
         <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и фразы для покупок</small></button>
+        <button class="card feature-card" type="button" data-route="programs"><span class="feature-icon">🎓</span><strong>Полные курсы</strong><small>${learningPrograms.length} программы · уроки, практика и сертификат</small></button>
+        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><strong>Экзамены</strong><small>12 модульных тестов и финальная аттестация</small></button>
+        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><strong>Грамматика</strong><small>${lessons.reduce((sum, lesson) => sum + lesson.grammar.length, 0)} тем с примерами</small></button>
+        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></button>
         <button class="card feature-card" type="button" data-route="settings"><span class="feature-icon">🏅</span><strong>Достижения</strong><small>${state.achievements.length} из ${achievementDefs.length} открыто</small></button>
       </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>Полные курсы</h2><p>Выберите программу под свою цель — от разговорника до полного A0–B1</p></div><button class="soft-button" type="button" data-route="programs">Все программы</button></div>
+      <div class="program-grid">${learningPrograms.map(programCard).join("")}</div>
     </section>
 
     <section class="section">
@@ -936,8 +1011,8 @@ function homeView() {
 
 function courseView() {
   return `
-    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioLibrary.length} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></div></header>
-    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
+    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioLibrary.length} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="programs">🎓 Программы</button><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></div></header>
+    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
     <div class="module-grid">${modules.map(moduleCard).join("")}</div>
     <section class="section">
       <div class="section-head"><div><h2>План на 16 недель</h2><p>Оптимальный ритм — три учебных дня и один день повторения в неделю</p></div></div>
@@ -966,6 +1041,7 @@ function moduleView(moduleId) {
           ${firstTrack ? `<button class="primary-button" type="button" data-play-audio="${firstTrack.id}">▶ Аудио модуля</button>` : ""}
           ${pdfInfo ? `<button class="soft-button" type="button" data-open-pdf="${pdfInfo.pdf}" data-pdf-title="Модуль ${module.id} · ${escapeHtml(pdfInfo.title)}">📖 PDF модуля</button>` : ""}
           <button class="soft-button" type="button" data-route="library">🎧 Библиотека</button>
+          <button class="soft-button" type="button" data-start-exam="${module.id}">📝 Экзамен модуля</button>
         </div>
       </div>
       <img src="${module.image}" alt="">
@@ -1061,7 +1137,7 @@ function lessonView(lessonId) {
         <section class="lesson-section"><h2>Грамматика без перегруза</h2>${grammarBlocks}</section>
         <section class="lesson-section"><h2>Живой диалог</h2><div class="dialogue">${dialogue}</div></section>
         <section class="lesson-section"><h2>Контекст и культура</h2><p class="culture-note">${escapeHtml(lesson.culture)}</p></section>
-        <section class="lesson-section"><h2>Закрепление</h2><p>Пройдите короткий тест по словам этого урока или проверьте понимание на слух. Ответ показывается сразу, а вопросы меняются при повторе.</p>${[4, 5, 6, 7].includes(lesson.module) ? `<p class="muted" style="margin-top:.5rem">Для уроков о глаголах здесь же тренируется спряжение, а в лаборатории доступны все времена.</p>` : ""}<div class="lesson-actions"><button class="primary-button" type="button" data-lesson-quiz="${lesson.id}">Начать тест</button><button class="primary-button" type="button" data-lesson-listen="${lesson.id}">Аудирование</button>${[4, 5, 6, 7].includes(lesson.module) ? `<button class="primary-button" type="button" data-lesson-drill="${lesson.id}">Спряжение</button><button class="soft-button" type="button" data-route="verbs">Все глаголы</button>` : ""}<button class="primary-button complete-button ${complete ? "completed" : ""}" type="button" data-toggle-complete="${lesson.id}">${complete ? "✓ Урок завершён" : "Отметить завершённым"}</button></div>${[4, 5, 6, 7].includes(lesson.module) ? `<div id="lessonDrill">${drillView(true)}</div>` : ""}</section>
+        <section class="lesson-section"><h2>Закрепление</h2><p>Пройдите короткий тест по словам этого урока или проверьте понимание на слух. Ответ показывается сразу, а вопросы меняются при повторе.</p>${[4, 5, 6, 7].includes(lesson.module) ? `<p class="muted" style="margin-top:.5rem">Для уроков о глаголах здесь же тренируется спряжение, а в лаборатории доступны все времена.</p>` : ""}<div class="lesson-actions"><button class="primary-button" type="button" data-lesson-quiz="${lesson.id}">Начать тест</button><button class="soft-button" type="button" data-start-exam="${lesson.module}">📝 Экзамен модуля</button><button class="primary-button" type="button" data-lesson-listen="${lesson.id}">Аудирование</button>${[4, 5, 6, 7].includes(lesson.module) ? `<button class="primary-button" type="button" data-lesson-drill="${lesson.id}">Спряжение</button><button class="soft-button" type="button" data-route="verbs">Все глаголы</button>` : ""}<button class="primary-button complete-button ${complete ? "completed" : ""}" type="button" data-toggle-complete="${lesson.id}">${complete ? "✓ Урок завершён" : "Отметить завершённым"}</button></div>${[4, 5, 6, 7].includes(lesson.module) ? `<div id="lessonDrill">${drillView(true)}</div>` : ""}</section>
       </div>
       <aside class="card">
         <h3>Как пройти урок</h3>
@@ -1271,7 +1347,7 @@ function referenceView() {
     const arabic = /[\u0600-\u06FF]/.test(value);
     return `<td${arabic ? ` class="arabic ref-arabic" lang="ar"` : ""}>${escapeHtml(value)}</td>`;
   };
-  return `<header class="page-head"><div><p class="eyebrow">Быстрый справочник</p><h1>Шпаргалка</h1><p>Местоимения, суффиксы, вопросы, предлоги и формулы времён</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="phrases">Разговорник</button></div></header>
+  return `<header class="page-head"><div><p class="eyebrow">Быстрый справочник</p><h1>Шпаргалка</h1><p>Местоимения, суффиксы, вопросы, предлоги и формулы времён</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="phrases">Разговорник</button></div></header>
     ${quickReference.map((section) => `<section class="lesson-section ref-section"><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.intro)}</p><div class="plan-table"><table><thead><tr>${section.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${section.rows.map((row) => `<tr>${row.map(cell).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("")}`;
 }
 
@@ -1536,6 +1612,332 @@ function colorsView() {
   ${colorsBody()}`;
 }
 
+function programProgress(program) {
+  if (program.kind === "modules") {
+    const done = completedCount();
+    return { done, total: lessons.length, label: `${done} из ${lessons.length} уроков`, percent: percent(done, lessons.length) };
+  }
+  if (program.kind === "writing") {
+    const done = writingDoneCount();
+    return { done, total: writingTasks.length, label: `${done} из ${writingTasks.length} заданий`, percent: percent(done, writingTasks.length) };
+  }
+  if (program.kind === "grammar") {
+    const mastered = Object.values(state.verbStats).filter((item) => item.right >= 3).length;
+    return { done: mastered, total: verbLibrary.length, label: `${mastered} из ${verbLibrary.length} глаголов освоено`, percent: percent(mastered, verbLibrary.length) };
+  }
+  if (program.kind === "speaking") {
+    return { done: null, total: null, label: `${program.phraseGroups.length} тем · ${allPhrases().length} фраз` };
+  }
+  if (program.kind === "audio") {
+    const plays = Number(state.audioPlays) || 0;
+    return { done: Math.min(plays, audioLibrary.length), total: audioLibrary.length, label: `${plays} запусков · ${audioLibrary.length} аудиофайлов`, percent: percent(Math.min(plays, audioLibrary.length), audioLibrary.length) };
+  }
+  return { done: 0, total: 1, label: "", percent: 0 };
+}
+
+function programCard(program) {
+  const progress = programProgress(program);
+  return `<button class="card program-card" type="button" data-open-program="${program.id}" style="--program-color:${program.color}">
+    <span class="program-card-top"><span class="program-icon">${program.icon}</span><span class="chip">${escapeHtml(program.level)}</span></span>
+    <strong class="program-title">${escapeHtml(program.title)}</strong>
+    <span class="program-ar arabic" lang="ar">${escapeHtml(program.ar)}</span>
+    <small class="program-desc">${escapeHtml(program.description)}</small>
+    <span class="program-facts"><span>${program.weeks} недель</span><span>${program.hours} ч</span><span>${program.lessons} ${program.kind === "speaking" ? "тем" : "ед."}</span></span>
+    ${progress.percent !== undefined ? `<span class="progress-track"><span class="progress-fill" style="width:${progress.percent}%"></span></span>` : ""}
+    <span class="program-progress-label">${escapeHtml(progress.label)}</span>
+    <span class="program-open">Открыть программу →</span>
+  </button>`;
+}
+
+function programsView() {
+  const status = certificateEligibility();
+  return `<header class="page-head">
+    <div><p class="eyebrow">Академия Masri RU</p><h1>Полные курсы</h1><p>${learningPrograms.length} программы · ${lessons.length} уроков · ${verbLibrary.length} глаголов · ${audioLibrary.length} аудио · ${textbookPdfCount} PDF</p></div>
+    <div class="lesson-actions"><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button></div>
+  </header>
+  <section class="section">
+    <div class="program-grid">${learningPrograms.map(programCard).join("")}</div>
+  </section>
+  <section class="section lesson-section">
+    <h2>Как устроена академия</h2>
+    <div class="academy-steps">
+      <article><strong>1</strong><div><h3>Выберите программу</h3><p>Основной курс, разговорная практика, грамматика, письмо или аудиокурс.</p></div></article>
+      <article><strong>2</strong><div><h3>Проходите уроки</h3><p>Слушайте файлы, повторяйте фразы, записывайте голос и открывайте PDF.</p></div></article>
+      <article><strong>3</strong><div><h3>Сдавайте экзамены</h3><p>После каждого модуля — тест из ${examMeta.moduleQuestions} вопросов, в конце — итоговый экзамен.</p></div></article>
+      <article><strong>4</strong><div><h3>Получите сертификат</h3><p>${status.eligible ? "Все условия выполнены — сертификат готов к печати." : "Сертификат открывается после уроков, 12 экзаменов и практики письма."}</p></div></article>
+    </div>
+  </section>`;
+}
+
+function programView(programId) {
+  const program = learningPrograms.find((item) => item.id === programId);
+  if (!program) return notFoundView();
+  const progress = programProgress(program);
+  let curriculum = "";
+  if (program.kind === "modules") {
+    curriculum = `<div class="module-grid">${program.modules.map((id) => modules.find((module) => module.id === id)).filter(Boolean).map(moduleCard).join("")}</div>`;
+  } else if (program.kind === "speaking") {
+    curriculum = `<div class="program-topic-grid">${program.phraseGroups.map((id) => {
+      const group = phrasebook.find((item) => item.id === id);
+      if (!group) return "";
+      return `<article class="card program-topic-card"><span class="program-topic-icon">${group.icon}</span><h3>${escapeHtml(group.title)}</h3><p>${group.phrases.length} готовых фраз · ${escapeHtml(group.id)}</p><button class="soft-button" type="button" data-program-phrase="${group.id}">Открыть тему →</button></article>`;
+    }).join("")}</div>`;
+  } else if (program.kind === "grammar") {
+    curriculum = `<div class="program-topic-list">${program.modules.map((id) => {
+      const module = modules.find((item) => item.id === id);
+      const grammarCount = moduleLessons(id).reduce((sum, lesson) => sum + lesson.grammar.length, 0);
+      return `<button class="program-topic-row" type="button" data-open-grammar="${id}"><span class="program-topic-num">${id}</span><span><strong>${escapeHtml(module?.title || `Модуль ${id}`)}</strong><small>${grammarCount} грамматических тем · ${moduleLessons(id).length} урока</small></span><span>→</span></button>`;
+    }).join("")}</div>`;
+  } else if (program.kind === "writing") {
+    curriculum = `<div class="section lesson-section"><h2>Правила письма</h2><div class="writing-tips">${writingTips.map((tip) => `<article class="writing-tip"><strong>${escapeHtml(tip.title)}</strong><p>${escapeHtml(tip.text)}</p></article>`).join("")}</div><div class="lesson-actions"><button class="primary-button" type="button" data-route="writing">Открыть лабораторию письма</button></div></div>
+      <div class="section lesson-section"><h2>Слова для практики</h2><div class="writing-word-cloud">${writingTasks.slice(0, 12).map((task) => `<span class="writing-word arabic" lang="ar">${escapeHtml(task.ar)}</span>`).join("")}</div></div>`;
+  } else if (program.kind === "audio") {
+    const groups = new Map();
+    audioLibrary.forEach((track) => {
+      if (!groups.has(track.group)) groups.set(track.group, []);
+      groups.get(track.group).push(track);
+    });
+    curriculum = `<div class="program-topic-list">${[...groups].map(([group, tracks]) => `<article class="program-audio-row"><div><strong>${escapeHtml(group)}</strong><small>${tracks.length} аудио · PDF и уроки внутри</small></div><div class="lesson-actions"><button class="soft-button" type="button" data-play-audio="${tracks[0].id}">▶ Слушать</button></div></article>`).join("")}</div>`;
+  }
+  return `<button class="soft-button back-button" type="button" data-route="programs">← Все программы</button>
+    <section class="lesson-hero program-hero" style="--module-color:${program.color}">
+      <p class="eyebrow">Программа · ${escapeHtml(program.level)}</p>
+      <h1>${program.icon} ${escapeHtml(program.title)}</h1>
+      <div class="arabic-display" lang="ar">${escapeHtml(program.ar)}</div>
+      <p>${escapeHtml(program.description)}</p>
+      <div class="lesson-meta"><span class="chip">${program.weeks} недель</span><span class="chip">${program.hours} часов</span><span class="chip">${program.lessons} ${program.kind === "speaking" ? "тем" : "единиц"}</span><span class="chip">${escapeHtml(progress.label)}</span></div>
+    </section>
+    <div class="lesson-actions program-actions">
+      ${program.kind === "modules" ? `<button class="primary-button" type="button" data-route="course">▶ Продолжить курс</button>` : ""}
+      <button class="soft-button" type="button" data-route="exams">📝 Экзамены программы</button>
+      <button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button>
+    </div>
+    <section class="section lesson-section">
+      <h2>Что вы освоите</h2>
+      <ul class="goal-list">${program.outcomes.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+      <span class="progress-track big-track"><span class="progress-fill" style="width:${progress.percent || 0}%"></span></span>
+      <p class="muted">${escapeHtml(progress.label)}</p>
+    </section>
+    ${curriculum}`;
+}
+
+function examsView() {
+  const passed = passedExamCount();
+  const totalModules = moduleExamIds().length;
+  return `<header class="page-head">
+    <div><p class="eyebrow">Академия · Проверка знаний</p><h1>Экзамены</h1><p>${totalModules} модульных экзаменов по ${examMeta.moduleQuestions} вопросов и финальный экзамен на ${examMeta.finalQuestions} вопросов</p></div>
+    <button class="soft-button" type="button" data-route="programs">🎓 Программы</button>
+  </header>
+  <section class="section lesson-section">
+    <div class="section-head"><div><h2>Прогресс аттестации</h2><p>Минимальный порог — ${examMeta.passPercent}% правильных ответов</p></div><span class="chip">${passed} из ${totalModules} сдано</span></div>
+    <span class="progress-track big-track"><span class="progress-fill" style="width:${percent(passed, totalModules)}%"></span></span>
+    <div class="lesson-actions" style="margin-top:.8rem"><button class="soft-button" type="button" data-route="certificate">Проверить сертификат</button><button class="soft-button" type="button" data-route="course">Повторить уроки</button></div>
+  </section>
+  <div class="exam-grid">${modules.map((module) => {
+    const examId = `module-${module.id}`;
+    const record = state.examScores?.[examId];
+    const isPassed = examPassed(examId);
+    const best = Number(record?.best) || 0;
+    return `<article class="card exam-card ${isPassed ? "passed" : ""}">
+      <div class="exam-card-top"><span class="exam-icon">${isPassed ? "✓" : "📝"}</span><span class="chip">Модуль ${module.id}</span></div>
+      <h3>${escapeHtml(module.title)}</h3>
+      <span class="arabic" lang="ar">${escapeHtml(module.ar)}</span>
+      <p>${moduleLessons(module.id).length} урока · ${examTotal(examId)} вопросов</p>
+      <div class="exam-score">${record ? `Лучший результат: ${best}/${examTotal(examId)}` : "Ещё не сдан"}</div>
+      <button class="${isPassed ? "soft-button" : "primary-button"}" type="button" data-start-exam="${module.id}">${isPassed ? "Пройти снова" : "Начать экзамен"}</button>
+    </article>`;
+  }).join("")}</div>
+  <section class="section lesson-section final-exam-card">
+    <div><p class="eyebrow">Финальная аттестация</p><h2>${examPassed("final") ? "✓ Итоговый экзамен сдан" : "Итоговый экзамен курса"}</h2><p>${examMeta.finalQuestions} вопросов по всем 12 модулям · ${examPassed("final") ? `Лучший результат: ${state.examScores.final.best}/${examTotal("final")}` : "Рекомендуется после модульных экзаменов"}</p></div>
+    <button class="${examPassed("final") ? "soft-button" : "primary-button"}" type="button" data-start-exam="final">${examPassed("final") ? "Пройти снова" : "Начать финальный экзамен"}</button>
+  </section>`;
+}
+
+function buildExam(moduleId = null) {
+  const examId = moduleId ? `module-${moduleId}` : "final";
+  const sourceLessons = moduleId ? lessons.filter((lesson) => lesson.module === Number(moduleId)) : lessons;
+  const pool = sourceLessons.flatMap((lesson) => lesson.vocabulary.map((item) => ({ ...item, lessonId: lesson.id, lessonTitle: lesson.title })));
+  const count = Math.min(moduleId ? examMeta.moduleQuestions : examMeta.finalQuestions, pool.length);
+  const selected = shuffle([...pool]).slice(0, count);
+  const globalMeanings = [...new Set(allVocab().map((item) => item.ru))];
+  const globalArabic = [...new Set(allVocab().map((item) => item.ar))];
+  const questions = selected.map((item) => {
+    const direction = Math.random() < .5 ? "ar" : "ru";
+    const answerPool = direction === "ru" ? globalArabic : globalMeanings;
+    const answer = direction === "ru" ? item.ar : item.ru;
+    const distractors = shuffle(answerPool.filter((value) => value !== answer)).slice(0, 3);
+    return { item, direction, answer, options: shuffle([...new Set([answer, ...distractors])]) };
+  });
+  return { examId, moduleId: moduleId ? Number(moduleId) : null, questions, index: 0, score: 0, answered: false, selected: null, finished: false, saved: false };
+}
+
+function examView() {
+  if (!examState) return examsView();
+  const examTitle = examState.examId === "final" ? "Итоговый экзамен" : `Экзамен · Модуль ${examState.moduleId}`;
+  const total = examState.questions.length;
+  if (examState.finished) {
+    const passed = examState.score >= examPassScore(examState.examId);
+    return `<button class="soft-button back-button" type="button" data-exam-exit>← Все экзамены</button>
+      <section class="section"><div class="card quiz-card exam-result">
+        <p class="eyebrow">${escapeHtml(examTitle)} · результат</p>
+        <h2>${examState.score} из ${total}</h2>
+        <p>${passed ? "✓ Экзамен сдан. Результат сохранён в прогрессе." : `Пока недостаточно: нужно ${examPassScore(examState.examId)} правильных ответов. Повторите уроки модуля и попробуйте снова.`}</p>
+        <div class="lesson-actions">
+          <button class="primary-button" type="button" data-exam-restart="${examState.moduleId ?? "final"}">Пройти снова</button>
+          <button class="soft-button" type="button" data-exam-exit>Все экзамены</button>
+          ${passed ? `<button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button>` : ""}
+        </div>
+      </div></section>`;
+  }
+  const question = examState.questions[examState.index];
+  const { item, answer, direction, options } = question;
+  const readingArabic = direction === "ru";
+  const optionButtons = options.map((option) => {
+    let className = "choice-button";
+    if (examState.answered && option === answer) className += " correct";
+    else if (examState.answered && option === examState.selected) className += " wrong";
+    const label = readingArabic ? `<span class="arabic" lang="ar">${escapeHtml(option)}</span>` : escapeHtml(option);
+    return `<button class="${className}" type="button" data-exam-choice="${escapeHtml(option)}" ${examState.answered ? "disabled" : ""}>${label}</button>`;
+  }).join("");
+  return `<button class="soft-button back-button" type="button" data-exam-exit>← Все экзамены</button>
+    <section class="section"><div class="card quiz-card">
+      <div class="section-head"><div><p class="eyebrow">${escapeHtml(examTitle)} · вопрос ${examState.index + 1} из ${total}</p><h2>${Math.round((examState.score / total) * 100)}% верных</h2></div><span class="chip">${examMeta.passPercent}% для сдачи</span></div>
+      <span class="progress-track big-track"><span class="progress-fill" style="width:${percent(examState.index, total)}%"></span></span>
+      <div class="quiz-prompt">${readingArabic ? "Выберите арабскую запись" : "Выберите правильный перевод"}</div>
+      ${readingArabic ? `<div class="quiz-ru">${escapeHtml(item.ru)}</div>` : `<div class="quiz-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(item.tr)}</p>` : ""}`}
+      <div class="choice-grid">${optionButtons}</div>
+      <div class="quiz-feedback">${examState.answered ? (examState.selected === answer ? "✓ Верно" : `Правильный ответ: ${readingArabic ? `<span class="arabic" lang="ar">${escapeHtml(answer)}</span>` : escapeHtml(answer)}`) : ""}</div>
+      ${examState.answered ? `<button class="primary-button" type="button" data-exam-next>${examState.index + 1 === total ? "Показать результат" : "Следующий вопрос"}</button>` : ""}
+      <p class="muted small">Вопрос по материалу: ${escapeHtml(item.lessonTitle || "курс")}. Экзамен можно проходить повторно.</p>
+    </div></section>`;
+}
+
+function saveExamResult() {
+  if (!examState || examState.saved) return;
+  examState.saved = true;
+  const id = examState.examId;
+  const total = examState.questions.length;
+  const score = examState.score;
+  const previous = state.examScores[id] || {};
+  state.examScores[id] = {
+    best: Math.max(Number(previous.best) || 0, score),
+    total,
+    attempts: (Number(previous.attempts) || 0) + 1,
+    date: dayKey(),
+  };
+  if (score >= examPassScore(id)) {
+    touchStreak();
+    awardXp(score * 4 + (id === "final" ? 100 : 20));
+    state.perfectQuiz = state.perfectQuiz || score === total;
+    showToast(id === "final" ? "Итоговый экзамен сдан!" : "Модульный экзамен сдан!");
+  } else {
+    showToast(`Нужно ${examPassScore(id)} из ${total}. Повторите материал и попробуйте снова.`);
+  }
+  saveState();
+  checkAchievements();
+}
+
+function grammarView() {
+  const selected = state.grammarModule || "all";
+  const visibleModules = selected === "all" ? modules : modules.filter((module) => String(module.id) === String(selected));
+  const topicCount = modules.reduce((sum, module) => sum + moduleLessons(module.id).reduce((inner, lesson) => inner + lesson.grammar.length, 0), 0);
+  const exampleCount = modules.reduce((sum, module) => sum + moduleLessons(module.id).reduce((inner, lesson) => inner + lesson.grammar.reduce((x, block) => x + block.examples.length, 0), 0), 0);
+  return `<header class="page-head">
+    <div><p class="eyebrow">Полный грамматический справочник</p><h1>Грамматика</h1><p>${topicCount} тем · ${exampleCount} примеров · 12 модулей · связь с уроками и глаголами</p></div>
+    <div class="lesson-actions"><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button></div>
+  </header>
+  <div class="card grammar-toolbar">
+    <input id="grammarSearch" type="search" autocomplete="off" placeholder="Найти тему: время, вопрос, отрицание…">
+    <div class="filter-row"><button class="${selected === "all" ? "primary-button" : "soft-button"}" type="button" data-grammar-filter="all">Все модули</button>${modules.map((module) => `<button class="${String(selected) === String(module.id) ? "primary-button" : "soft-button"}" type="button" data-grammar-filter="${module.id}">${module.id}</button>`).join("")}</div>
+  </div>
+  ${visibleModules.map((module) => {
+    const items = moduleLessons(module.id);
+    return `<section class="section lesson-section grammar-topic">
+      <div class="section-head"><div><h2>Модуль ${module.id} · ${escapeHtml(module.title)}</h2><p>${items.reduce((sum, lesson) => sum + lesson.grammar.length, 0)} тем · ${escapeHtml(module.level)}</p></div><button class="soft-button" type="button" data-open-module="${module.id}">Уроки →</button></div>
+      ${items.map((lesson) => lesson.grammar.map((block) => `<section class="grammar-block" data-grammar-text="${escapeHtml(`${block.title} ${block.explanation} ${block.examples.map((ex) => `${ex.ar} ${ex.tr} ${ex.ru}`).join(" ")}`.toLocaleLowerCase("ru"))}">
+        <h3>${escapeHtml(block.title)}</h3>
+        <p>${escapeHtml(block.explanation)}</p>
+        <div class="example-list">${block.examples.map((ex) => `<div class="example-row"><span class="arabic" lang="ar">${escapeHtml(ex.ar)}</span>${state.showTranscription ? `<small>${escapeHtml(ex.tr)}</small>` : ""}<div>${escapeHtml(ex.ru)}</div>${audioActions(ex.ar)}</div>`).join("")}</div>
+      </section>`).join("")).join("")}
+    </section>`;
+  }).join("")}`;
+}
+
+function writingView() {
+  const done = writingDoneCount();
+  return `<header class="page-head">
+    <div><p class="eyebrow">Чтение и письмо · практика</p><h1>Лаборатория письма</h1><p>${done} из ${writingTasks.length} заданий выполнено · алфавит, набор и проверка</p></div>
+    <div class="lesson-actions"><button class="soft-button" type="button" data-route="reference">Алфавит</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button></div>
+  </header>
+  <section class="section lesson-section">
+    <h2>Как писать по-арабски</h2>
+    <div class="writing-tips">${writingTips.map((tip) => `<article class="writing-tip"><strong>${escapeHtml(tip.title)}</strong><p>${escapeHtml(tip.text)}</p></article>`).join("")}</div>
+    <span class="progress-track big-track"><span class="progress-fill" style="width:${percent(done, writingTasks.length)}%"></span></span>
+  </section>
+  <section class="section lesson-section">
+    <h2>Алфавит и чтение</h2>
+    <div class="plan-table"><table><thead><tr><th>Буква</th><th>Название</th><th>Звук</th><th>Пример</th><th>Значение</th></tr></thead><tbody>${alphabetGuide.map((row) => `<tr><td class="arabic" lang="ar" style="font-size:1.4rem;font-weight:800">${escapeHtml(row[0])}</td><td>${escapeHtml(row[1])}</td><td>${escapeHtml(row[2])}</td><td>${escapeHtml(row[3])}</td><td>${escapeHtml(row[4])}</td></tr>`).join("")}</tbody></table></div>
+  </section>
+  <section class="section lesson-section">
+    <h2>Практика набора</h2>
+    <p class="muted">Посмотрите на слово, закройте глаза, наберите его в поле и проверьте. Регистр и огласовки не важны.</p>
+    <div class="writing-grid">${writingTasks.map((task) => {
+      const isDone = state.writingDone.includes(task.id);
+      return `<article class="writing-task ${isDone ? "done" : ""}">
+        <div class="writing-prompt"><span class="arabic" lang="ar">${escapeHtml(task.ar)}</span><small>${escapeHtml(task.tr)} · ${escapeHtml(task.ru)} · ${escapeHtml(task.level)}</small></div>
+        ${isDone ? `<div class="writing-done">✓ Задание выполнено</div>` : `<div class="writing-input-row"><input class="writing-input" dir="rtl" lang="ar" data-writing-input="${task.id}" autocomplete="off" placeholder="اكتب هنا…"><button class="primary-button" type="button" data-writing-check="${task.id}">Проверить</button></div><div class="writing-feedback" data-writing-feedback="${task.id}"></div>`}
+      </article>`;
+    }).join("")}</div>
+  </section>`;
+}
+
+function cultureView() {
+  return `<header class="page-head">
+    <div><p class="eyebrow">Египет в деталях</p><h1>Культурный гид</h1><p>${cultureGuide.length} тем о общении, еде, времени, деньгах, здоровье и безопасности</p></div>
+    <div class="lesson-actions"><button class="soft-button" type="button" data-route="phrases">💬 Фразы</button><button class="soft-button" type="button" data-route="course">📚 Курс</button></div>
+  </header>
+  <div class="culture-grid">${cultureGuide.map((item) => `<article class="card culture-card">
+    <div class="culture-card-top"><span class="chip">Модуль ${item.module}</span><span class="arabic" lang="ar">${escapeHtml(item.ar)}</span></div>
+    <h2>${escapeHtml(item.title)}</h2>
+    <p class="muted">${escapeHtml(item.summary)}</p>
+    <p>${escapeHtml(item.body)}</p>
+    <h3>Что важно знать</h3>
+    <ul class="culture-tips">${item.tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join("")}</ul>
+    <h3>Полезные фразы</h3>
+    <div class="vocab-list">${item.phrases.map((phrase) => `<article class="vocab-item"><div><div class="vocab-ar arabic" lang="ar">${escapeHtml(phrase.ar)}</div>${state.showTranscription ? `<div class="vocab-tr">${escapeHtml(phrase.tr)}</div>` : ""}<div class="vocab-ru">${escapeHtml(phrase.ru)}</div></div>${audioActions(phrase.ar)}</article>`).join("")}</div>
+    <button class="soft-button" type="button" data-open-module="${item.module}">Открыть модуль ${item.module} →</button>
+  </article>`).join("")}</div>`;
+}
+
+function certificateView() {
+  const status = certificateEligibility();
+  const name = state.learnerName || "Имя ученика";
+  const date = new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+  if (!status.eligible) {
+    return `<header class="page-head"><div><p class="eyebrow">Итог обучения</p><h1>Сертификат</h1><p>Выполните все условия — и сертификат откроется автоматически</p></div><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button></header>
+      <section class="section lesson-section"><h2>Условия получения</h2><div class="certificate-checklist">
+        <div class="${status.lessonsDone >= lessons.length ? "done" : ""}"><span>${status.lessonsDone >= lessons.length ? "✓" : "○"}</span><div><strong>Завершить все уроки</strong><small>${status.lessonsDone} из ${lessons.length}</small></div><button class="soft-button" type="button" data-route="course">К урокам</button></div>
+        <div class="${status.examsDone >= moduleExamIds().length ? "done" : ""}"><span>${status.examsDone >= moduleExamIds().length ? "✓" : "○"}</span><div><strong>Сдать 12 модульных экзаменов</strong><small>${status.examsDone} из ${moduleExamIds().length} · порог ${examMeta.passPercent}%</small></div><button class="soft-button" type="button" data-route="exams">К экзаменам</button></div>
+        <div class="${status.finalDone ? "done" : ""}"><span>${status.finalDone ? "✓" : "○"}</span><div><strong>Сдать итоговый экзамен</strong><small>${examMeta.finalQuestions} вопросов по всему курсу</small></div><button class="soft-button" type="button" data-route="exams">Финальный тест</button></div>
+        <div class="${status.writingDone >= 10 ? "done" : ""}"><span>${status.writingDone >= 10 ? "✓" : "○"}</span><div><strong>Выполнить 10 заданий письма</strong><small>${status.writingDone} из ${writingTasks.length} заданий</small></div><button class="soft-button" type="button" data-route="writing">К письму</button></div>
+      </div></section>`;
+  }
+  return `<header class="page-head"><div><p class="eyebrow">Итог обучения</p><h1>Ваш сертификат</h1><p>Можно распечатать или сохранить в PDF через печать браузера</p></div></header>
+    <article class="certificate" id="certificate">
+      <div class="certificate-frame">
+        <p class="eyebrow">Masri RU · Египетский арабский</p>
+        <h1>СЕРТИФИКАТ</h1>
+        <p class="certificate-lead">подтверждает, что</p>
+        <input id="certificateName" class="certificate-name-input" value="${escapeHtml(state.learnerName)}" placeholder="Введите имя" aria-label="Имя для сертификата">
+        <p class="certificate-lead">успешно завершил(а) полный курс египетского арабского<br><strong>${escapeHtml(courseMeta.subtitle)}</strong></p>
+        <div class="certificate-stats"><span>${lessons.length} уроков</span><span>${moduleExamIds().length} экзаменов</span><span>${writingDoneCount()} заданий письма</span><span>${verbLibrary.length} глаголов</span></div>
+        <div class="certificate-footer"><span>${escapeHtml(courseMeta.levels)} · ${escapeHtml(courseMeta.dialect)}</span><span>${date}</span></div>
+        <p class="certificate-name-preview">${escapeHtml(name)}</p>
+      </div>
+    </article>
+    <div class="lesson-actions certificate-actions"><button class="primary-button" type="button" data-print-certificate>🖨 Распечатать сертификат</button><button class="soft-button" type="button" data-route="exams">📝 Мои экзамены</button><button class="soft-button" type="button" data-route="programs">🎓 Программы</button></div>`;
+}
+
 function activityChart() {
   const days = [];
   for (let offset = 13; offset >= 0; offset -= 1) {
@@ -1607,6 +2009,12 @@ function settingsView() {
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} фраз и избранное</small></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Грамматика в таблицах</small></button>
         <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и грамматика</small></button>
+        <button class="card feature-card" type="button" data-route="programs"><span class="feature-icon">🎓</span><strong>Полные курсы</strong><small>${learningPrograms.length} программы обучения</small></button>
+        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><strong>Экзамены</strong><small>${passedExamCount()} из ${moduleExamIds().length} модулей сдано</small></button>
+        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><strong>Грамматика</strong><small>Полный справочник по модулям</small></button>
+        <button class="card feature-card" type="button" data-route="writing"><span class="feature-icon">✍️</span><strong>Письмо</strong><small>${writingDoneCount()} из ${writingTasks.length} заданий</small></button>
+        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></button>
+        <button class="card feature-card" type="button" data-route="certificate"><span class="feature-icon">🏆</span><strong>Сертификат</strong><small>${certificateEligibility().eligible ? "Готов к печати" : "Условия и прогресс"}</small></button>
         <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎛</span><strong>Оформление</strong><small>8 акцентов, светлый и тёмный режим</small></button>
       </div>
     </section>
@@ -1636,6 +2044,14 @@ function renderRoute() {
   else if (route === "media") main.innerHTML = mediaView();
   else if (route === "library") main.innerHTML = libraryView();
   else if (route === "colors") main.innerHTML = colorsView();
+  else if (route === "programs") main.innerHTML = programsView();
+  else if (route === "program") main.innerHTML = programView(value);
+  else if (route === "exams") main.innerHTML = examsView();
+  else if (route === "exam") main.innerHTML = examView();
+  else if (route === "grammar") main.innerHTML = grammarView();
+  else if (route === "writing") main.innerHTML = writingView();
+  else if (route === "culture") main.innerHTML = cultureView();
+  else if (route === "certificate") main.innerHTML = certificateView();
   else if (route === "recordings") main.innerHTML = recordingsView();
   else if (route === "settings") main.innerHTML = settingsView();
   else main.innerHTML = notFoundView();
@@ -1707,8 +2123,8 @@ function updateSearch(query) {
   if (!needle) {
     searchResults.innerHTML = `<div class="empty-state">
       <strong>Ищите по всему курсу</strong>
-      <p>Уроки · слова · разговорник · глаголы · цвета · аудио · PDF</p>
-      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${verbLibrary.length} глаголов · ${colorLesson.colors.length} цветов · ${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF</p>
+      <p>Уроки · слова · курсы · грамматика · экзамены · культура · цвета · аудио · PDF</p>
+      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${learningPrograms.length} программ · ${verbLibrary.length} глаголов · ${colorLesson.colors.length} цветов · ${audioLibrary.length} аудиофайлов</p>
       <p class="small"><span class="keyboard-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd> или <kbd>/</kbd> — открыть поиск</span></p>
     </div>`;
     return;
@@ -1738,6 +2154,31 @@ function updateSearch(query) {
   colorLesson.phrases.forEach((item) => {
     if (`${item.ar} ${item.tr} ${item.ru}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Цвета", type: "Фраза о цвете", searchRoute: "colors", ar: item.ar, ru: item.ru, tr: item.tr });
   });
+  learningPrograms.forEach((program) => {
+    if (`${program.title} ${program.ar} ${program.description} ${program.level} программа курс`.toLocaleLowerCase("ru").includes(needle)) {
+      found.push({ group: "Курсы", type: "Программа", searchRoute: `program/${program.id}`, ar: program.ar, ru: program.title, tr: `${program.level} · ${program.weeks} недель · ${program.hours} ч` });
+    }
+  });
+  cultureGuide.forEach((item) => {
+    if (`${item.title} ${item.ar} ${item.summary} ${item.body} ${item.tips.join(" ")} культура этикет`.toLocaleLowerCase("ru").includes(needle)) {
+      found.push({ group: "Культурный гид", type: "Культура", searchRoute: "culture", ar: item.ar, ru: item.title, tr: item.summary });
+    }
+  });
+  writingTasks.forEach((task) => {
+    if (`${task.ar} ${task.tr} ${task.ru} письмо набор`.toLocaleLowerCase("ru").includes(needle)) {
+      found.push({ group: "Практика письма", type: "Письмо", searchRoute: "writing", ar: task.ar, ru: task.ru, tr: `${task.tr} · ${task.level}` });
+    }
+  });
+  if (`грамматика правила справочник таблицы`.toLocaleLowerCase("ru").includes(needle)) {
+    const grammarCount = lessons.reduce((sum, lesson) => sum + lesson.grammar.length, 0);
+    found.push({ group: "Грамматика", type: "Справочник", searchRoute: "grammar", ar: "القواعد", ru: `Грамматика · ${grammarCount} тем`, tr: "Все модули, примеры и таблицы" });
+  }
+  if (`экзамен тест аттестация проверка`.toLocaleLowerCase("ru").includes(needle)) {
+    found.push({ group: "Экзамены", type: "Аттестация", searchRoute: "exams", ar: "الامتحانات", ru: "Экзамены курса", tr: "12 модульных и финальный экзамен" });
+  }
+  if (`сертификат диплом`.toLocaleLowerCase("ru").includes(needle)) {
+    found.push({ group: "Сертификат", type: "Итог", searchRoute: "certificate", ar: "الشهادة", ru: "Сертификат курса", tr: certificateEligibility().eligible ? "Готов к печати" : "Проверьте условия" });
+  }
   audioLibrary.forEach((track) => {
     if (`${track.title} ${track.subtitle} ${track.ar || ""} ${track.group}`.toLocaleLowerCase("ru").includes(needle)) found.push({ group: "Аудио", type: "Аудио", audioId: track.id, ar: track.ar || "", ru: track.title, tr: track.subtitle });
   });
@@ -1775,6 +2216,78 @@ document.addEventListener("click", (event) => {
   else if (target.dataset.openModule) routeTo(`module/${target.dataset.openModule}`);
   else if (target.dataset.openLesson) routeTo(`lesson/${target.dataset.openLesson}`);
   else if (target.dataset.openVerb) routeTo(`verb/${target.dataset.openVerb}`);
+  else if (target.dataset.openProgram) routeTo(`program/${target.dataset.openProgram}`);
+  else if (target.dataset.openGrammar) {
+    state.grammarModule = target.dataset.openGrammar;
+    saveState();
+    routeTo("grammar");
+  }
+  else if (target.dataset.programPhrase) {
+    state.phraseCategory = target.dataset.programPhrase;
+    saveState();
+    routeTo("phrases");
+  }
+  else if (target.dataset.startExam) {
+    examState = buildExam(target.dataset.startExam === "final" ? null : target.dataset.startExam);
+    routeTo("exam");
+    if (getRoute()[0] === "exam") main.innerHTML = examView();
+  }
+  else if (target.dataset.examChoice) {
+    if (examState?.answered) return;
+    examState.selected = target.dataset.examChoice;
+    examState.answered = true;
+    const correct = examState.selected === examState.questions[examState.index].answer;
+    if (correct) examState.score += 1;
+    touchStreak();
+    recordReviewActivity();
+    awardXp(correct ? 10 : 3);
+    saveState();
+    main.innerHTML = examView();
+  }
+  else if (target.hasAttribute("data-exam-next")) {
+    if (!examState) return;
+    if (examState.index + 1 >= examState.questions.length) {
+      examState.finished = true;
+      saveExamResult();
+    } else {
+      examState.index += 1;
+      examState.answered = false;
+      examState.selected = null;
+    }
+    main.innerHTML = examView();
+  }
+  else if (target.dataset.examRestart) {
+    examState = buildExam(target.dataset.examRestart === "final" ? null : target.dataset.examRestart);
+    main.innerHTML = examView();
+  }
+  else if (target.hasAttribute("data-exam-exit")) {
+    examState = null;
+    routeTo("exams");
+    if (getRoute()[0] === "exams") main.innerHTML = examsView();
+  }
+  else if (target.dataset.grammarFilter) {
+    state.grammarModule = target.dataset.grammarFilter;
+    saveState();
+    main.innerHTML = grammarView();
+  }
+  else if (target.dataset.writingCheck) {
+    const id = target.dataset.writingCheck;
+    const task = writingTasks.find((item) => item.id === id);
+    const input = document.querySelector(`[data-writing-input="${id}"]`);
+    const feedback = document.querySelector(`[data-writing-feedback="${id}"]`);
+    const correct = !!task && normalizeArabic(input?.value || "") === normalizeArabic(task.ar);
+    if (feedback) feedback.textContent = correct ? "✓ Верно! Задание засчитано." : `Пока не совпало. Проверьте слово: ${task?.ar || ""}`;
+    if (correct && !state.writingDone.includes(id)) {
+      state.writingDone.push(id);
+      awardXp(10);
+      saveState();
+      checkAchievements();
+      setTimeout(() => { if (getRoute()[0] === "writing") main.innerHTML = writingView(); }, 400);
+    }
+  }
+  else if (target.hasAttribute("data-print-certificate")) {
+    window.print?.();
+  }
   else if (target.dataset.say) playPhrase(target.dataset.say);
   else if (target.dataset.recordSay) openAudioDialog(target.dataset.recordSay);
   else if (target.dataset.openMedia) openMedia(target.dataset.openMedia);
@@ -2067,6 +2580,10 @@ document.addEventListener("keydown", (event) => {
     event.preventDefault();
     target.click();
   }
+  if (event.key === "Enter" && target?.dataset?.writingInput) {
+    event.preventDefault();
+    document.querySelector(`[data-writing-check="${target.dataset.writingInput}"]`)?.click();
+  }
   if ((event.key === "Enter" || event.key === " ") && target?.id === "verbSearch") {
     event.preventDefault();
   }
@@ -2079,6 +2596,17 @@ document.addEventListener("input", (event) => {
       const hay = card.dataset.verbSearch || "";
       card.classList.toggle("hidden", query.length > 0 && !hay.includes(query));
     });
+  } else if (event.target.id === "grammarSearch") {
+    const query = event.target.value.trim().toLocaleLowerCase("ru");
+    document.querySelectorAll(".grammar-block").forEach((block) => {
+      const hay = block.dataset.grammarText || "";
+      block.classList.toggle("hidden", query.length > 0 && !hay.includes(query));
+    });
+  } else if (event.target.id === "certificateName") {
+    state.learnerName = event.target.value;
+    saveState();
+    const preview = document.querySelector(".certificate-name-preview");
+    if (preview) preview.textContent = event.target.value.trim() || "Имя ученика";
   }
 });
 
