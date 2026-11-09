@@ -1,0 +1,1523 @@
+MASRI RU — سكريبت تسجيل الكلمات
+نَصّ كل الكلمات والعبارات — 664 ملفًا صوتيًا
+
+النسخة: 2026-11-09
+عدد الملفات: 664 · عدد الدروس: 36 · عدد الوحدات: 12
+
+تعليمات التسجيل:
+• اقرأ النص العربي فقط. لا تقرأ الترجمة ولا الترجمة الصوتية ولا اسم الملف.
+• اقرأ بسرعة طبيعية، مع وقفة قصيرة قبل الكلمة وبعدها.
+• إذا كان في السطر شرطة مائلة «/» فاقرأ الصيغتين معًا، مثال: «روسي / روسية».
+• احفظ كل ملف باسمه ومساره كما هو مكتوب، بصيغة MP3، ليحلّ محل الصوت الحالي.
+• الملفات مرتبة حسب الدرس، ثم حسب ترتيب الكلمات في صفحة الدرس.
+• يمكنك نسخ الملف نفسه للكلمات المكررة بدل إعادة تسجيلها.
+
+======================================================================
+[01] m1l1 · الوحدة 1 · 19 كلمة
+Главные звуки египетского арабского
+======================================================================
+01. أهلاً
+    assets/audio/words/m01/m1l1-01-ahlan.mp3
+02. أنا
+    assets/audio/words/m01/m1l1-02-ana.mp3
+03. إنت
+    assets/audio/words/m01/m1l1-03-enta-enti.mp3
+04. اسم
+    assets/audio/words/m01/m1l1-04-esm.mp3
+05. عربي
+    assets/audio/words/m01/m1l1-05-arabi.mp3
+06. جميل
+    assets/audio/words/m01/m1l1-06-gamiil.mp3
+07. حلو
+    assets/audio/words/m01/m1l1-07-helw.mp3
+08. خلاص
+    assets/audio/words/m01/m1l1-08-khalaas.mp3
+09. غالي
+    assets/audio/words/m01/m1l1-09-ghaali.mp3
+10. قهوة
+    assets/audio/words/m01/m1l1-10-ahwa.mp3
+11. صح
+    assets/audio/words/m01/m1l1-11-sahh.mp3
+12. شكراً
+    assets/audio/words/m01/m1l1-12-shokran.mp3
+13. مرحبا
+    assets/audio/words/m01/m1l1-13-marhaba.mp3
+14. أهلاً وسهلاً
+    assets/audio/words/m01/m1l1-14-ahlan-wa-sahlan.mp3
+15. أيوه
+    assets/audio/words/m01/m1l1-15-aywa.mp3
+16. لأ
+    assets/audio/words/m01/m1l1-16-la.mp3
+17. شوية
+    assets/audio/words/m01/m1l1-17-shwayya.mp3
+18. عادي
+    assets/audio/words/m01/m1l1-18-aadi.mp3
+19. طيب
+    assets/audio/words/m01/m1l1-19-tayyib.mp3
+
+======================================================================
+[02] m1l2 · الوحدة 1 · 18 كلمة
+Приветствия и вежливость
+======================================================================
+01. صباح الخير
+    assets/audio/words/m01/m1l2-01-sabaah-el-kheer.mp3
+02. صباح النور
+    assets/audio/words/m01/m1l2-02-sabaah-en-nuur.mp3
+03. مساء الخير
+    assets/audio/words/m01/m1l2-03-masaa-el-kheer.mp3
+04. إزيّك؟
+    assets/audio/words/m01/m1l2-04-izzayyak-izzayyik.mp3
+05. عامل إيه؟
+    assets/audio/words/m01/m1l2-05-aamel-eeh.mp3
+06. عاملة إيه؟
+    assets/audio/words/m01/m1l2-06-aamla-eeh.mp3
+07. كويس
+    assets/audio/words/m01/m1l2-07-kwayyis.mp3
+08. تمام
+    assets/audio/words/m01/m1l2-08-tamaam.mp3
+09. من فضلك
+    assets/audio/words/m01/m1l2-09-min-fadlak-fadlik.mp3
+10. لو سمحت
+    assets/audio/words/m01/m1l2-10-law-samaht.mp3
+11. معلش
+    assets/audio/words/m01/m1l2-11-malesh.mp3
+12. مع السلامة
+    assets/audio/words/m01/m1l2-12-ma-es-salaama.mp3
+13. عفواً
+    assets/audio/words/m01/m1l2-13-afwan.mp3
+14. الحمد لله
+    assets/audio/words/m01/m1l2-14-el-hamdu-lillah.mp3
+15. تسلم
+    assets/audio/words/m01/m1l2-15-tislam.mp3
+16. تصبح على خير
+    assets/audio/words/m01/m1l2-16-tsabbah-ala-khayr.mp3
+17. كله تمام
+    assets/audio/words/m01/m1l2-17-kullu-tamaam.mp3
+18. عاملين إيه؟
+    assets/audio/words/m01/m1l2-18-aamliin-eeh.mp3
+
+======================================================================
+[03] m1l3 · الوحدة 1 · 19 كلمة
+Знакомство и страны
+======================================================================
+01. اسمك إيه؟
+    assets/audio/words/m01/m1l3-01-esmak-eeh-esmik-eeh.mp3
+02. أنا اسمي…
+    assets/audio/words/m01/m1l3-02-ana-esmi.mp3
+03. إنت منين؟
+    assets/audio/words/m01/m1l3-03-enta-enti-minen.mp3
+04. أنا من روسيا
+    assets/audio/words/m01/m1l3-04-ana-min-ruusya.mp3
+05. مصر
+    assets/audio/words/m01/m1l3-05-masr.mp3
+06. روسي / روسية
+    assets/audio/words/m01/m1l3-06-ruusi-ruusiyya.mp3
+07. مصري / مصرية
+    assets/audio/words/m01/m1l3-07-masri-masriyya.mp3
+08. لغة
+    assets/audio/words/m01/m1l3-08-lugha.mp3
+09. بتتكلم…؟
+    assets/audio/words/m01/m1l3-09-bititkallim.mp3
+10. بتتكلمي…؟
+    assets/audio/words/m01/m1l3-10-bititkallimi.mp3
+11. إنجليزي
+    assets/audio/words/m01/m1l3-11-engliizi.mp3
+12. تشرفنا
+    assets/audio/words/m01/m1l3-12-tsharrafna.mp3
+13. بلد
+    assets/audio/words/m01/m1l3-13-balad.mp3
+14. جنسية
+    assets/audio/words/m01/m1l3-14-jinsiyya.mp3
+15. ساكن / ساكنة
+    assets/audio/words/m01/m1l3-15-saakin-saakna.mp3
+16. كمان
+    assets/audio/words/m01/m1l3-16-kamaan.mp3
+17. سهل
+    assets/audio/words/m01/m1l3-17-sahl.mp3
+18. صعب
+    assets/audio/words/m01/m1l3-18-saab.mp3
+19. لسه
+    assets/audio/words/m01/m1l3-19-lissa.mp3
+
+======================================================================
+[04] m2l1 · الوحدة 2 · 18 كلمة
+Местоимения и предложения без есть
+======================================================================
+01. أنا
+    assets/audio/words/m02/m2l1-01-ana.mp3
+02. إنتَ
+    assets/audio/words/m02/m2l1-02-enta.mp3
+03. إنتِ
+    assets/audio/words/m02/m2l1-03-enti.mp3
+04. هو
+    assets/audio/words/m02/m2l1-04-howwa.mp3
+05. هي
+    assets/audio/words/m02/m2l1-05-heyya.mp3
+06. إحنا
+    assets/audio/words/m02/m2l1-06-ehna.mp3
+07. إنتو
+    assets/audio/words/m02/m2l1-07-entu.mp3
+08. هم
+    assets/audio/words/m02/m2l1-08-homma.mp3
+09. طالب
+    assets/audio/words/m02/m2l1-09-taalib.mp3
+10. مهندس
+    assets/audio/words/m02/m2l1-10-mohandis.mp3
+11. دكتور
+    assets/audio/words/m02/m2l1-11-doktoor.mp3
+12. مش
+    assets/audio/words/m02/m2l1-12-mish.mp3
+13. طالبة
+    assets/audio/words/m02/m2l1-13-taaliba.mp3
+14. مهندسة
+    assets/audio/words/m02/m2l1-14-mohandisa.mp3
+15. دكتورة
+    assets/audio/words/m02/m2l1-15-doktoora.mp3
+16. عمّال
+    assets/audio/words/m02/m2l1-16-ummaal.mp3
+17. مدرّس
+    assets/audio/words/m02/m2l1-17-modarris.mp3
+18. مدرسِّة
+    assets/audio/words/m02/m2l1-18-modarrsa.mp3
+
+======================================================================
+[05] m2l2 · الوحدة 2 · 16 كلمة
+Род прилагательные и определённость
+======================================================================
+01. كبير / كبيرة
+    assets/audio/words/m02/m2l2-01-kibiir-kabiira.mp3
+02. صغير / صغيرة
+    assets/audio/words/m02/m2l2-02-sughayyar-sughayyara.mp3
+03. جديد / جديدة
+    assets/audio/words/m02/m2l2-03-gidiid-gidiida.mp3
+04. قديم / قديمة
+    assets/audio/words/m02/m2l2-04-adiim-adiima.mp3
+05. حلو / حلوة
+    assets/audio/words/m02/m2l2-05-helw-helwa.mp3
+06. غالي / غالية
+    assets/audio/words/m02/m2l2-06-ghaali-ghalya.mp3
+07. رخيص / رخيصة
+    assets/audio/words/m02/m2l2-07-rakhiis-rakhiisa.mp3
+08. سريع / سريعة
+    assets/audio/words/m02/m2l2-08-sarii-sariia.mp3
+09. العربية
+    assets/audio/words/m02/m2l2-09-el-arabiyya.mp3
+10. البيت
+    assets/audio/words/m02/m2l2-10-el-bet.mp3
+11. ده
+    assets/audio/words/m02/m2l2-11-da.mp3
+12. دي
+    assets/audio/words/m02/m2l2-12-di.mp3
+13. دول
+    assets/audio/words/m02/m2l2-13-dool.mp3
+14. نضيف / نضيفة
+    assets/audio/words/m02/m2l2-14-nadiif-nadiifa.mp3
+15. مستريح
+    assets/audio/words/m02/m2l2-15-mistariyh.mp3
+16. بعيد / بعيدة
+    assets/audio/words/m02/m2l2-16-baiid-baiida.mp3
+
+======================================================================
+[06] m2l3 · الوحدة 2 · 21 كلمة
+Семья и принадлежность
+======================================================================
+01. عيلة
+    assets/audio/words/m02/m2l3-01-eela.mp3
+02. أب / بابا
+    assets/audio/words/m02/m2l3-02-ab-baaba.mp3
+03. أم / ماما
+    assets/audio/words/m02/m2l3-03-omm-maama.mp3
+04. أخ
+    assets/audio/words/m02/m2l3-04-akh.mp3
+05. أخت
+    assets/audio/words/m02/m2l3-05-okht.mp3
+06. ابن
+    assets/audio/words/m02/m2l3-06-ebn.mp3
+07. بنت
+    assets/audio/words/m02/m2l3-07-bent.mp3
+08. جوز
+    assets/audio/words/m02/m2l3-08-gooz.mp3
+09. مرات
+    assets/audio/words/m02/m2l3-09-maraat.mp3
+10. صاحبي / صاحبتي
+    assets/audio/words/m02/m2l3-10-saahbi-saahbti.mp3
+11. بتاع
+    assets/audio/words/m02/m2l3-11-bita.mp3
+12. مين؟
+    assets/audio/words/m02/m2l3-12-miin.mp3
+13. خال / خالة
+    assets/audio/words/m02/m2l3-13-khaal-khaala.mp3
+14. عم / عمّة
+    assets/audio/words/m02/m2l3-14-amm-amma.mp3
+15. ابن عم
+    assets/audio/words/m02/m2l3-15-ebn-amm.mp3
+16. جد / جدّة
+    assets/audio/words/m02/m2l3-16-gidd-gidda.mp3
+17. عريس / عروسة
+    assets/audio/words/m02/m2l3-17-ariis-aruusa.mp3
+18. ولاد
+    assets/audio/words/m02/m2l3-18-wilaad.mp3
+19. زوجة
+    assets/audio/words/m02/m2l3-19-zawga.mp3
+20. قريب / قريبة
+    assets/audio/words/m02/m2l3-20-ariib-ariiba.mp3
+21. خطيب / خطيبة
+    assets/audio/words/m02/m2l3-21-khatiib-khatiiba.mp3
+
+======================================================================
+[07] m3l1 · الوحدة 3 · 15 كلمة
+Вопросительные слова
+======================================================================
+01. إيه؟
+    assets/audio/words/m03/m3l1-01-eeh.mp3
+02. مين؟
+    assets/audio/words/m03/m3l1-02-miin.mp3
+03. فين؟
+    assets/audio/words/m03/m3l1-03-fen.mp3
+04. منين؟
+    assets/audio/words/m03/m3l1-04-minen.mp3
+05. إمتى؟
+    assets/audio/words/m03/m3l1-05-emta.mp3
+06. ليه؟
+    assets/audio/words/m03/m3l1-06-leh.mp3
+07. إزاي؟
+    assets/audio/words/m03/m3l1-07-izzaay.mp3
+08. كام؟
+    assets/audio/words/m03/m3l1-08-kaam.mp3
+09. أنهي؟
+    assets/audio/words/m03/m3l1-09-anhi.mp3
+10. مع مين؟
+    assets/audio/words/m03/m3l1-10-ma-miin.mp3
+11. عشان
+    assets/audio/words/m03/m3l1-11-ashaan.mp3
+12. يعني إيه؟
+    assets/audio/words/m03/m3l1-12-yani-eeh.mp3
+13. حتى؟
+    assets/audio/words/m03/m3l1-13-hatta.mp3
+14. ولا
+    assets/audio/words/m03/m3l1-14-wala.mp3
+15. ولا إيه؟
+    assets/audio/words/m03/m3l1-15-wala-eeh.mp3
+
+======================================================================
+[08] m3l2 · الوحدة 3 · 18 كلمة
+Числа возраст и телефон
+======================================================================
+01. صفر
+    assets/audio/words/m03/m3l2-01-sefr.mp3
+02. واحد
+    assets/audio/words/m03/m3l2-02-waahid.mp3
+03. اتنين
+    assets/audio/words/m03/m3l2-03-etnen.mp3
+04. تلاتة
+    assets/audio/words/m03/m3l2-04-talaata.mp3
+05. أربعة
+    assets/audio/words/m03/m3l2-05-arbaa.mp3
+06. خمسة
+    assets/audio/words/m03/m3l2-06-khamsa.mp3
+07. ستة
+    assets/audio/words/m03/m3l2-07-setta.mp3
+08. سبعة
+    assets/audio/words/m03/m3l2-08-saba.mp3
+09. تمانية
+    assets/audio/words/m03/m3l2-09-tamaanya.mp3
+10. تسعة
+    assets/audio/words/m03/m3l2-10-tesa.mp3
+11. عشرة
+    assets/audio/words/m03/m3l2-11-ashara.mp3
+12. عشرين
+    assets/audio/words/m03/m3l2-12-ishriin.mp3
+13. مية
+    assets/audio/words/m03/m3l2-13-meyya.mp3
+14. ألف
+    assets/audio/words/m03/m3l2-14-alf.mp3
+15. جنية
+    assets/audio/words/m03/m3l2-15-gineeh.mp3
+16. سنة
+    assets/audio/words/m03/m3l2-16-sana.mp3
+17. رقم
+    assets/audio/words/m03/m3l2-17-ram.mp3
+18. تلاتين
+    assets/audio/words/m03/m3l2-18-talatiin.mp3
+
+======================================================================
+[09] m3l3 · الوحدة 3 · 20 كلمة
+Время дни и даты
+======================================================================
+01. الساعة كام؟
+    assets/audio/words/m03/m3l3-01-es-saaa-kaam.mp3
+02. الساعة واحدة
+    assets/audio/words/m03/m3l3-02-es-saaa-waahda.mp3
+03. ونص
+    assets/audio/words/m03/m3l3-03-w-noss.mp3
+04. وربع
+    assets/audio/words/m03/m3l3-04-w-rob.mp3
+05. إلا ربع
+    assets/audio/words/m03/m3l3-05-illa-rob.mp3
+06. النهارده
+    assets/audio/words/m03/m3l3-06-en-nahaarda.mp3
+07. بكرة
+    assets/audio/words/m03/m3l3-07-bokra.mp3
+08. امبارح
+    assets/audio/words/m03/m3l3-08-embaareh.mp3
+09. الأحد
+    assets/audio/words/m03/m3l3-09-el-hadd.mp3
+10. الاتنين
+    assets/audio/words/m03/m3l3-10-el-etnen.mp3
+11. الجمعة
+    assets/audio/words/m03/m3l3-11-el-goma.mp3
+12. الصبح
+    assets/audio/words/m03/m3l3-12-es-sobh.mp3
+13. بالليل
+    assets/audio/words/m03/m3l3-13-bil-lel.mp3
+14. ميعاد
+    assets/audio/words/m03/m3l3-14-miiaad.mp3
+15. السبت
+    assets/audio/words/m03/m3l3-15-es-sabt.mp3
+16. الثلاث
+    assets/audio/words/m03/m3l3-16-et-talaat.mp3
+17. الأربع
+    assets/audio/words/m03/m3l3-17-el-arba.mp3
+18. الخميس
+    assets/audio/words/m03/m3l3-18-el-khamiis.mp3
+19. الظهر
+    assets/audio/words/m03/m3l3-19-ed-dohr.mp3
+20. فترة بعد الظهر
+    assets/audio/words/m03/m3l3-20-fatrat-bad-ed-dohr.mp3
+
+======================================================================
+[10] m4l1 · الوحدة 4 · 16 كلمة
+Настоящее время и приставка b
+======================================================================
+01. بيشتغل
+    assets/audio/words/m04/m4l1-01-biyishtighal.mp3
+02. بيدرس
+    assets/audio/words/m04/m4l1-02-biyidris.mp3
+03. بيسكن
+    assets/audio/words/m04/m4l1-03-biyiskon.mp3
+04. بيروح
+    assets/audio/words/m04/m4l1-04-biyiruuh.mp3
+05. بييجي
+    assets/audio/words/m04/m4l1-05-biyigi.mp3
+06. بياكل
+    assets/audio/words/m04/m4l1-06-biyaakul.mp3
+07. بيشرب
+    assets/audio/words/m04/m4l1-07-biyishrab.mp3
+08. بيفهم
+    assets/audio/words/m04/m4l1-08-biyifham.mp3
+09. بيعرف
+    assets/audio/words/m04/m4l1-09-biyeraf.mp3
+10. بيتكلّم
+    assets/audio/words/m04/m4l1-10-biyitkallim.mp3
+11. كل يوم
+    assets/audio/words/m04/m4l1-11-koll-yoom.mp3
+12. عادةً
+    assets/audio/words/m04/m4l1-12-aadatan.mp3
+13. بسكن بجوار
+    assets/audio/words/m04/m4l1-13-baskin-buguwaar.mp3
+14. بكتشف
+    assets/audio/words/m04/m4l1-14-biktishif.mp3
+15. بيحب
+    assets/audio/words/m04/m4l1-15-biyihibb.mp3
+16. بيحاول
+    assets/audio/words/m04/m4l1-16-biyihaawil.mp3
+
+======================================================================
+[11] m4l2 · الوحدة 4 · 22 كلمة
+Распорядок дня и частотность
+======================================================================
+01. بصحى
+    assets/audio/words/m04/m4l2-01-basha.mp3
+02. بقوم
+    assets/audio/words/m04/m4l2-02-bauum.mp3
+03. بفطر
+    assets/audio/words/m04/m4l2-03-baftar.mp3
+04. بنزل
+    assets/audio/words/m04/m4l2-04-banzil.mp3
+05. ببدأ
+    assets/audio/words/m04/m4l2-05-babda.mp3
+06. بخلص
+    assets/audio/words/m04/m4l2-06-bakhlas.mp3
+07. برجع
+    assets/audio/words/m04/m4l2-07-barga.mp3
+08. بنام
+    assets/audio/words/m04/m4l2-08-banaam.mp3
+09. دايماً
+    assets/audio/words/m04/m4l2-09-daayman.mp3
+10. غالباً
+    assets/audio/words/m04/m4l2-10-ghaaliban.mp3
+11. ساعات
+    assets/audio/words/m04/m4l2-11-saaaat.mp3
+12. نادراً
+    assets/audio/words/m04/m4l2-12-naadiran.mp3
+13. الأول
+    assets/audio/words/m04/m4l2-13-el-awwil.mp3
+14. بعدين
+    assets/audio/words/m04/m4l2-14-baden.mp3
+15. بتمرن
+    assets/audio/words/m04/m4l2-15-batmarran.mp3
+16. بذاكر
+    assets/audio/words/m04/m4l2-16-bazakir.mp3
+17. بشوف
+    assets/audio/words/m04/m4l2-17-bashuuf.mp3
+18. بيجري
+    assets/audio/words/m04/m4l2-18-biyigri.mp3
+19. مرة وحدة
+    assets/audio/words/m04/m4l2-19-marra-wahda.mp3
+20. باخد دوش
+    assets/audio/words/m04/m4l2-20-baakhod-dush.mp3
+21. بتعشّى
+    assets/audio/words/m04/m4l2-21-batasha.mp3
+22. بسمع
+    assets/audio/words/m04/m4l2-22-basma.mp3
+
+======================================================================
+[12] m4l3 · الوحدة 4 · 16 كلمة
+Отрицание желания и возможность
+======================================================================
+01. ما بفهمش
+    assets/audio/words/m04/m4l3-01-ma-bafham-sh.mp3
+02. ما بعرفش
+    assets/audio/words/m04/m4l3-02-ma-baraf-sh.mp3
+03. مش
+    assets/audio/words/m04/m4l3-03-mish.mp3
+04. عايز
+    assets/audio/words/m04/m4l3-04-aayiz.mp3
+05. عايزة
+    assets/audio/words/m04/m4l3-05-aayza.mp3
+06. محتاج
+    assets/audio/words/m04/m4l3-06-mihtaag.mp3
+07. محتاجة
+    assets/audio/words/m04/m4l3-07-mihtaaga.mp3
+08. ممكن
+    assets/audio/words/m04/m4l3-08-momkin.mp3
+09. لازم
+    assets/audio/words/m04/m4l3-09-laazim.mp3
+10. أقدر
+    assets/audio/words/m04/m4l3-10-adar.mp3
+11. مش قادر
+    assets/audio/words/m04/m4l3-11-mish-aadir.mp3
+12. لسه
+    assets/audio/words/m04/m4l3-12-lissa.mp3
+13. مش عايز
+    assets/audio/words/m04/m4l3-13-mish-aayiz.mp3
+14. مش عايزة
+    assets/audio/words/m04/m4l3-14-mish-aayza.mp3
+15. ما أقدرش
+    assets/audio/words/m04/m4l3-15-ma-adar-sh.mp3
+16. لو سمحت
+    assets/audio/words/m04/m4l3-16-law-samaht.mp3
+
+======================================================================
+[13] m5l1 · الوحدة 5 · 18 كلمة
+Прошедшее время
+======================================================================
+01. رُحت
+    assets/audio/words/m05/m5l1-01-roht.mp3
+02. رُحتي
+    assets/audio/words/m05/m5l1-02-rohti.mp3
+03. راح
+    assets/audio/words/m05/m5l1-03-raah.mp3
+04. راحت
+    assets/audio/words/m05/m5l1-04-raahit.mp3
+05. عملت
+    assets/audio/words/m05/m5l1-05-amalt.mp3
+06. شُفت
+    assets/audio/words/m05/m5l1-06-shoft.mp3
+07. قلت
+    assets/audio/words/m05/m5l1-07-olt.mp3
+08. جيت
+    assets/audio/words/m05/m5l1-08-giit.mp3
+09. أكلت
+    assets/audio/words/m05/m5l1-09-akalt.mp3
+10. شربت
+    assets/audio/words/m05/m5l1-10-shiribt.mp3
+11. حصل
+    assets/audio/words/m05/m5l1-11-hasal.mp3
+12. قبل كده
+    assets/audio/words/m05/m5l1-12-abl-kida.mp3
+13. كتبت
+    assets/audio/words/m05/m5l1-13-katabt.mp3
+14. قرأت
+    assets/audio/words/m05/m5l1-14-aret.mp3
+15. سمعت
+    assets/audio/words/m05/m5l1-15-simat.mp3
+16. اتكلمت
+    assets/audio/words/m05/m5l1-16-itkallimt.mp3
+17. رجعت
+    assets/audio/words/m05/m5l1-17-ragat.mp3
+18. قعدت
+    assets/audio/words/m05/m5l1-18-aadt.mp3
+
+======================================================================
+[14] m5l2 · الوحدة 5 · 17 كلمة
+Будущее и планы
+======================================================================
+01. هاروح
+    assets/audio/words/m05/m5l2-01-haruuh.mp3
+02. هتيجي
+    assets/audio/words/m05/m5l2-02-hatigi.mp3
+03. هنشوف
+    assets/audio/words/m05/m5l2-03-hanshuuf.mp3
+04. هنتقابل
+    assets/audio/words/m05/m5l2-04-hantaabil.mp3
+05. هسافر
+    assets/audio/words/m05/m5l2-05-hasaafir.mp3
+06. هبدأ
+    assets/audio/words/m05/m5l2-06-habda.mp3
+07. ناوي
+    assets/audio/words/m05/m5l2-07-naawi.mp3
+08. ناوية
+    assets/audio/words/m05/m5l2-08-naawya.mp3
+09. خطة
+    assets/audio/words/m05/m5l2-09-khotta.mp3
+10. الأسبوع الجاي
+    assets/audio/words/m05/m5l2-10-el-osbuu-el-gaay.mp3
+11. الشهر الجاي
+    assets/audio/words/m05/m5l2-11-esh-shahr-el-gaay.mp3
+12. إن شاء الله
+    assets/audio/words/m05/m5l2-12-in-shaa-allah.mp3
+13. هخلص
+    assets/audio/words/m05/m5l2-13-hakhallas.mp3
+14. هستنى
+    assets/audio/words/m05/m5l2-14-hastanna.mp3
+15. هكلمك
+    assets/audio/words/m05/m5l2-15-hakallimak.mp3
+16. هنتكلم
+    assets/audio/words/m05/m5l2-16-hanitkallim.mp3
+17. مش هروح
+    assets/audio/words/m05/m5l2-17-mish-haruuh.mp3
+
+======================================================================
+[15] m5l3 · الوحدة 5 · 17 كلمة
+Повелительное наклонение и вежливые просьбы
+======================================================================
+01. استنى
+    assets/audio/words/m05/m5l3-01-istanna.mp3
+02. استني
+    assets/audio/words/m05/m5l3-02-istanni.mp3
+03. تعالى
+    assets/audio/words/m05/m5l3-03-taaala.mp3
+04. تعالي
+    assets/audio/words/m05/m5l3-04-taaali.mp3
+05. خُد
+    assets/audio/words/m05/m5l3-05-khod.mp3
+06. خُدي
+    assets/audio/words/m05/m5l3-06-khodi.mp3
+07. افتح
+    assets/audio/words/m05/m5l3-07-iftah.mp3
+08. اقفل
+    assets/audio/words/m05/m5l3-08-ifil.mp3
+09. قول
+    assets/audio/words/m05/m5l3-09-uul.mp3
+10. بص
+    assets/audio/words/m05/m5l3-10-boss.mp3
+11. اكتب
+    assets/audio/words/m05/m5l3-11-iktib.mp3
+12. اتكلم بالراحة
+    assets/audio/words/m05/m5l3-12-itkallim-bir-raaha.mp3
+13. ما تقلقش
+    assets/audio/words/m05/m5l3-13-ma-tila-sh.mp3
+14. ممكن تساعدني؟
+    assets/audio/words/m05/m5l3-14-momkin-tsaidni.mp3
+15. روح
+    assets/audio/words/m05/m5l3-15-ruuh.mp3
+16. ارجع
+    assets/audio/words/m05/m5l3-16-irga.mp3
+17. اقعد
+    assets/audio/words/m05/m5l3-17-ood.mp3
+
+======================================================================
+[16] m6l1 · الوحدة 6 · 15 كلمة
+Система спряжения: основы глагола
+======================================================================
+01. فعل
+    assets/audio/words/m06/m6l1-01-fil.mp3
+02. جذر
+    assets/audio/words/m06/m6l1-02-gidr.mp3
+03. أوزان
+    assets/audio/words/m06/m6l1-03-awzaan.mp3
+04. صيغة
+    assets/audio/words/m06/m6l1-04-sigha.mp3
+05. مضارع
+    assets/audio/words/m06/m6l1-05-mudaari.mp3
+06. ماضي
+    assets/audio/words/m06/m6l1-06-maadi.mp3
+07. بيكتب
+    assets/audio/words/m06/m6l1-07-biyiktib.mp3
+08. بيكتبوا
+    assets/audio/words/m06/m6l1-08-biyiktibu.mp3
+09. بتكتبي
+    assets/audio/words/m06/m6l1-09-bitiktibi.mp3
+10. مثّل
+    assets/audio/words/m06/m6l1-10-maththal.mp3
+11. شَغّل
+    assets/audio/words/m06/m6l1-11-shaghghal.mp3
+12. ذاكر
+    assets/audio/words/m06/m6l1-12-zaakar.mp3
+13. حاول
+    assets/audio/words/m06/m6l1-13-haawal.mp3
+14. سافر
+    assets/audio/words/m06/m6l1-14-saafar.mp3
+15. دوّر
+    assets/audio/words/m06/m6l1-15-dawwar.mp3
+
+======================================================================
+[17] m6l2 · الوحدة 6 · 15 كلمة
+Настоящее время: приставки и чередование гласных
+======================================================================
+01. بشتغل
+    assets/audio/words/m06/m6l2-01-bishtaghal.mp3
+02. بدرس
+    assets/audio/words/m06/m6l2-02-badris.mp3
+03. بتاكل
+    assets/audio/words/m06/m6l2-03-bitaakol.mp3
+04. بنشرب
+    assets/audio/words/m06/m6l2-04-binshrab.mp3
+05. بشوف
+    assets/audio/words/m06/m6l2-05-bashuuf.mp3
+06. بيسمع
+    assets/audio/words/m06/m6l2-06-biyisma.mp3
+07. بتحكي
+    assets/audio/words/m06/m6l2-07-bitihki.mp3
+08. بنلعب
+    assets/audio/words/m06/m6l2-08-binilab.mp3
+09. بتقف
+    assets/audio/words/m06/m6l2-09-bitiaf.mp3
+10. بيروح
+    assets/audio/words/m06/m6l2-10-biyiruh.mp3
+11. بيرجّع
+    assets/audio/words/m06/m6l2-11-biyirggi.mp3
+12. بيحكّي
+    assets/audio/words/m06/m6l2-12-biyihikki.mp3
+13. بيحط
+    assets/audio/words/m06/m6l2-13-biyihutt.mp3
+14. بيمسك
+    assets/audio/words/m06/m6l2-14-biyimsik.mp3
+15. بيفتح
+    assets/audio/words/m06/m6l2-15-biyiftah.mp3
+
+======================================================================
+[18] m6l3 · الوحدة 6 · 15 كلمة
+Разные породы: faʿʿala и faaʿala
+======================================================================
+01. علّم
+    assets/audio/words/m06/m6l3-01-allam.mp3
+02. تعلّم
+    assets/audio/words/m06/m6l3-02-itallam.mp3
+03. فكّر
+    assets/audio/words/m06/m6l3-03-fakkar.mp3
+04. افتكر
+    assets/audio/words/m06/m6l3-04-iftakar.mp3
+05. جهّز
+    assets/audio/words/m06/m6l3-05-gahhiz.mp3
+06. اتجهّز
+    assets/audio/words/m06/m6l3-06-itgahhiz.mp3
+07. جرّب
+    assets/audio/words/m06/m6l3-07-garrab.mp3
+08. اتجرّب
+    assets/audio/words/m06/m6l3-08-itgarrab.mp3
+09. طبّخ
+    assets/audio/words/m06/m6l3-09-tabbakh.mp3
+10. كَبّر
+    assets/audio/words/m06/m6l3-10-kabbir.mp3
+11. بَيّن
+    assets/audio/words/m06/m6l3-11-bayyin.mp3
+12. رَتَّب
+    assets/audio/words/m06/m6l3-12-rattib.mp3
+13. حاول
+    assets/audio/words/m06/m6l3-13-haawal.mp3
+14. خبّي
+    assets/audio/words/m06/m6l3-14-khabba.mp3
+15. أكّل
+    assets/audio/words/m06/m6l3-15-akkal.mp3
+
+======================================================================
+[19] m7l1 · الوحدة 7 · 15 كلمة
+Приставка it-: возвратные и страдательные глаголы
+======================================================================
+01. اتعمل
+    assets/audio/words/m07/m7l1-01-itamil.mp3
+02. اتكتب
+    assets/audio/words/m07/m7l1-02-itkatab.mp3
+03. انفتح
+    assets/audio/words/m07/m7l1-03-infatah.mp3
+04. اكسر
+    assets/audio/words/m07/m7l1-04-inkasar.mp3
+05. تكلّم
+    assets/audio/words/m07/m7l1-05-itkallim.mp3
+06. المتكلّم
+    assets/audio/words/m07/m7l1-06-el-mutkallim.mp3
+07. اتجمع
+    assets/audio/words/m07/m7l1-07-itgama.mp3
+08. توافق
+    assets/audio/words/m07/m7l1-08-itwaafi.mp3
+09. اتلقى
+    assets/audio/words/m07/m7l1-09-itlaqqa.mp3
+10. اتمّ
+    assets/audio/words/m07/m7l1-10-itamma.mp3
+11. اتفهم
+    assets/audio/words/m07/m7l1-11-itfahhim.mp3
+12. إقلب
+    assets/audio/words/m07/m7l1-12-ilib.mp3
+13. اتصور
+    assets/audio/words/m07/m7l1-13-itsawwar.mp3
+14. اتسجل
+    assets/audio/words/m07/m7l1-14-itsaggal.mp3
+15. اتعملت
+    assets/audio/words/m07/m7l1-15-itamilt.mp3
+
+======================================================================
+[20] m7l2 · الوحدة 7 · 15 كلمة
+Команды, просьбы и формы для всех
+======================================================================
+01. اقعد
+    assets/audio/words/m07/m7l2-01-ood.mp3
+02. اقعدي
+    assets/audio/words/m07/m7l2-02-oodi.mp3
+03. استنى
+    assets/audio/words/m07/m7l2-03-istanna.mp3
+04. روح
+    assets/audio/words/m07/m7l2-04-ruuh.mp3
+05. روحي
+    assets/audio/words/m07/m7l2-05-ruuhi.mp3
+06. ارجع
+    assets/audio/words/m07/m7l2-06-irga.mp3
+07. افتح
+    assets/audio/words/m07/m7l2-07-iftah.mp3
+08. اقفل
+    assets/audio/words/m07/m7l2-08-ifil.mp3
+09. كلمني
+    assets/audio/words/m07/m7l2-09-kallimni.mp3
+10. اقبل
+    assets/audio/words/m07/m7l2-10-ibal.mp3
+11. هات
+    assets/audio/words/m07/m7l2-11-haat.mp3
+12. قول
+    assets/audio/words/m07/m7l2-12-uul.mp3
+13. سبّني
+    assets/audio/words/m07/m7l2-13-sibbni.mp3
+14. اسكت
+    assets/audio/words/m07/m7l2-14-askut.mp3
+15. وَفَّر
+    assets/audio/words/m07/m7l2-15-waffar.mp3
+
+======================================================================
+[21] m7l3 · الوحدة 7 · 15 كلمة
+Глаголы движения и предлоги
+======================================================================
+01. يمشي
+    assets/audio/words/m07/m7l3-01-yimshi.mp3
+02. يروح
+    assets/audio/words/m07/m7l3-02-yiruh.mp3
+03. يرجع
+    assets/audio/words/m07/m7l3-03-yirga.mp3
+04. يدخل
+    assets/audio/words/m07/m7l3-04-yudkhul.mp3
+05. يخرج
+    assets/audio/words/m07/m7l3-05-yukhrug.mp3
+06. ينزل
+    assets/audio/words/m07/m7l3-06-yin-zil.mp3
+07. يطلع
+    assets/audio/words/m07/m7l3-07-yitla.mp3
+08. يعدّي
+    assets/audio/words/m07/m7l3-08-yiaddi.mp3
+09. يوصّل
+    assets/audio/words/m07/m7l3-09-yowassil.mp3
+10. يلحق
+    assets/audio/words/m07/m7l3-10-yilha.mp3
+11. يشمّر
+    assets/audio/words/m07/m7l3-11-yishammir.mp3
+12. يحاول
+    assets/audio/words/m07/m7l3-12-yihawil.mp3
+13. يلف
+    assets/audio/words/m07/m7l3-13-yiliff.mp3
+14. يدور
+    assets/audio/words/m07/m7l3-14-yiddor.mp3
+15. يوصل لـ
+    assets/audio/words/m07/m7l3-15-ywisil-li.mp3
+
+======================================================================
+[22] m8l1 · الوحدة 8 · 22 كلمة
+Дом комнаты и местоположение
+======================================================================
+01. بيت
+    assets/audio/words/m08/m8l1-01-bet.mp3
+02. أوضة
+    assets/audio/words/m08/m8l1-02-ooda.mp3
+03. مطبخ
+    assets/audio/words/m08/m8l1-03-matbakh.mp3
+04. حمّام
+    assets/audio/words/m08/m8l1-04-hammaam.mp3
+05. بلكونة
+    assets/audio/words/m08/m8l1-05-balakoona.mp3
+06. باب
+    assets/audio/words/m08/m8l1-06-baab.mp3
+07. شباك
+    assets/audio/words/m08/m8l1-07-shobbaak.mp3
+08. فوق
+    assets/audio/words/m08/m8l1-08-foo.mp3
+09. تحت
+    assets/audio/words/m08/m8l1-09-taht.mp3
+10. جنب
+    assets/audio/words/m08/m8l1-10-gamb.mp3
+11. قدّام
+    assets/audio/words/m08/m8l1-11-oddaam.mp3
+12. ورا
+    assets/audio/words/m08/m8l1-12-wara.mp3
+13. فيه
+    assets/audio/words/m08/m8l1-13-fiih.mp3
+14. مافيش
+    assets/audio/words/m08/m8l1-14-mafiish.mp3
+15. شقة
+    assets/audio/words/m08/m8l1-15-shaa.mp3
+16. أسانسير
+    assets/audio/words/m08/m8l1-16-asanseer.mp3
+17. درج
+    assets/audio/words/m08/m8l1-17-dorag.mp3
+18. صالة
+    assets/audio/words/m08/m8l1-18-saala.mp3
+19. مساحة
+    assets/audio/words/m08/m8l1-19-masaaha.mp3
+20. أثاث
+    assets/audio/words/m08/m8l1-20-athiith.mp3
+21. داخل
+    assets/audio/words/m08/m8l1-21-daakhil.mp3
+22. برة
+    assets/audio/words/m08/m8l1-22-barra.mp3
+
+======================================================================
+[23] m8l2 · الوحدة 8 · 18 كلمة
+Дорога и ориентиры
+======================================================================
+01. الطريق
+    assets/audio/words/m08/m8l2-01-et-tarii.mp3
+02. شارع
+    assets/audio/words/m08/m8l2-02-shaari.mp3
+03. ميدان
+    assets/audio/words/m08/m8l2-03-medaan.mp3
+04. إشارة
+    assets/audio/words/m08/m8l2-04-ishaara.mp3
+05. ناصية
+    assets/audio/words/m08/m8l2-05-naasya.mp3
+06. على طول
+    assets/audio/words/m08/m8l2-06-ala-tuul.mp3
+07. يمين
+    assets/audio/words/m08/m8l2-07-yimiin.mp3
+08. شمال
+    assets/audio/words/m08/m8l2-08-shimaal.mp3
+09. لف
+    assets/audio/words/m08/m8l2-09-leff.mp3
+10. عدّي
+    assets/audio/words/m08/m8l2-10-addi.mp3
+11. قريب
+    assets/audio/words/m08/m8l2-11-orayyib.mp3
+12. بعيد
+    assets/audio/words/m08/m8l2-12-baiid.mp3
+13. أنا تايه
+    assets/audio/words/m08/m8l2-13-ana-taayih.mp3
+14. أوصل إزاي؟
+    assets/audio/words/m08/m8l2-14-awsal-izzaay.mp3
+15. مسافة
+    assets/audio/words/m08/m8l2-15-masaafa.mp3
+16. دقايق
+    assets/audio/words/m08/m8l2-16-daaaye.mp3
+17. حوالي
+    assets/audio/words/m08/m8l2-17-hawaalee.mp3
+18. كوبري
+    assets/audio/words/m08/m8l2-18-kobri.mp3
+
+======================================================================
+[24] m8l3 · الوحدة 8 · 21 كلمة
+Транспорт и такси
+======================================================================
+01. مواصلات
+    assets/audio/words/m08/m8l3-01-mowaasalaat.mp3
+02. مترو
+    assets/audio/words/m08/m8l3-02-metro.mp3
+03. أتوبيس
+    assets/audio/words/m08/m8l3-03-otobiis.mp3
+04. ميكروباص
+    assets/audio/words/m08/m8l3-04-mikrobaas.mp3
+05. تاكسي
+    assets/audio/words/m08/m8l3-05-taaksi.mp3
+06. محطة
+    assets/audio/words/m08/m8l3-06-mahatta.mp3
+07. زحمة
+    assets/audio/words/m08/m8l3-07-zahma.mp3
+08. فاضي
+    assets/audio/words/m08/m8l3-08-faadi.mp3
+09. نزّلني هنا
+    assets/audio/words/m08/m8l3-09-nazzilni-hina.mp3
+10. خدني لـ…
+    assets/audio/words/m08/m8l3-10-khodni-li.mp3
+11. شغّل العداد
+    assets/audio/words/m08/m8l3-11-shaghghal-el-addaad.mp3
+12. الأجرة
+    assets/audio/words/m08/m8l3-12-el-ogra.mp3
+13. هنا كويس
+    assets/audio/words/m08/m8l3-13-hina-kwayyis.mp3
+14. مستعجل
+    assets/audio/words/m08/m8l3-14-mistagil.mp3
+15. أول محطة
+    assets/audio/words/m08/m8l3-15-awwil-mahatta.mp3
+16. آخر محطة
+    assets/audio/words/m08/m8l3-16-aakhir-mahatta.mp3
+17. تذكرة
+    assets/audio/words/m08/m8l3-17-tazkara.mp3
+18. مطار
+    assets/audio/words/m08/m8l3-18-mataar.mp3
+19. ترام
+    assets/audio/words/m08/m8l3-19-tram.mp3
+20. سوّاق
+    assets/audio/words/m08/m8l3-20-sawwaa.mp3
+21. مركب
+    assets/audio/words/m08/m8l3-21-markab.mp3
+
+======================================================================
+[25] m9l1 · الوحدة 9 · 20 كلمة
+Еда и заказ в кафе
+======================================================================
+01. منيو
+    assets/audio/words/m09/m9l1-01-menu.mp3
+02. أكل
+    assets/audio/words/m09/m9l1-02-akl.mp3
+03. فراخ
+    assets/audio/words/m09/m9l1-03-firaakh.mp3
+04. لحمة
+    assets/audio/words/m09/m9l1-04-lahma.mp3
+05. سمك
+    assets/audio/words/m09/m9l1-05-samak.mp3
+06. رز
+    assets/audio/words/m09/m9l1-06-rozz.mp3
+07. عيش
+    assets/audio/words/m09/m9l1-07-eesh.mp3
+08. سلطة
+    assets/audio/words/m09/m9l1-08-salata.mp3
+09. مَيّة
+    assets/audio/words/m09/m9l1-09-mayya.mp3
+10. شاي
+    assets/audio/words/m09/m9l1-10-shaay.mp3
+11. قهوة
+    assets/audio/words/m09/m9l1-11-ahwa.mp3
+12. من غير سكر
+    assets/audio/words/m09/m9l1-12-min-gheir-sokkar.mp3
+13. واحد كمان
+    assets/audio/words/m09/m9l1-13-waahid-kamaan.mp3
+14. الحساب
+    assets/audio/words/m09/m9l1-14-el-hisaab.mp3
+15. طبق
+    assets/audio/words/m09/m9l1-15-taba.mp3
+16. شوربة
+    assets/audio/words/m09/m9l1-16-shorba.mp3
+17. بفتيك
+    assets/audio/words/m09/m9l1-17-bofteek.mp3
+18. فتوش
+    assets/audio/words/m09/m9l1-18-fattush.mp3
+19. شطة
+    assets/audio/words/m09/m9l1-19-shatta.mp3
+20. كولون
+    assets/audio/words/m09/m9l1-20-kolaaw.mp3
+
+======================================================================
+[26] m9l2 · الوحدة 9 · 22 كلمة
+Рынок цены и количества
+======================================================================
+01. بكام؟
+    assets/audio/words/m09/m9l2-01-bikaam.mp3
+02. سعر
+    assets/audio/words/m09/m9l2-02-ser.mp3
+03. كيلو
+    assets/audio/words/m09/m9l2-03-kiilo.mp3
+04. نص كيلو
+    assets/audio/words/m09/m9l2-04-noss-kiilo.mp3
+05. حتة
+    assets/audio/words/m09/m9l2-05-hetta.mp3
+06. شوية
+    assets/audio/words/m09/m9l2-06-shwayya.mp3
+07. كتير
+    assets/audio/words/m09/m9l2-07-kitiir.mp3
+08. كفاية
+    assets/audio/words/m09/m9l2-08-kifaaya.mp3
+09. طازة
+    assets/audio/words/m09/m9l2-09-taaza.mp3
+10. غالي
+    assets/audio/words/m09/m9l2-10-ghaali.mp3
+11. رخيص
+    assets/audio/words/m09/m9l2-11-rakhiis.mp3
+12. خصم
+    assets/audio/words/m09/m9l2-12-khasm.mp3
+13. فكة
+    assets/audio/words/m09/m9l2-13-fakka.mp3
+14. ميزان
+    assets/audio/words/m09/m9l2-14-miizaan.mp3
+15. خضار
+    assets/audio/words/m09/m9l2-15-khodaar.mp3
+16. فاكهة
+    assets/audio/words/m09/m9l2-16-faakha.mp3
+17. طماطم
+    assets/audio/words/m09/m9l2-17-tamaatim.mp3
+18. تفاح
+    assets/audio/words/m09/m9l2-18-tuffah.mp3
+19. جنيه
+    assets/audio/words/m09/m9l2-19-gineeh.mp3
+20. موز
+    assets/audio/words/m09/m9l2-20-moz.mp3
+21. عنب
+    assets/audio/words/m09/m9l2-21-enab.mp3
+22. فراولة
+    assets/audio/words/m09/m9l2-22-faraawla.mp3
+
+======================================================================
+[27] m9l3 · الوحدة 9 · 20 كلمة
+Одежда размер и цвет
+======================================================================
+01. هدوم
+    assets/audio/words/m09/m9l3-01-huduum.mp3
+02. قميص
+    assets/audio/words/m09/m9l3-02-amiis.mp3
+03. بنطلون
+    assets/audio/words/m09/m9l3-03-bantaloon.mp3
+04. فستان
+    assets/audio/words/m09/m9l3-04-fostaan.mp3
+05. جزمة
+    assets/audio/words/m09/m9l3-05-gazma.mp3
+06. مقاس
+    assets/audio/words/m09/m9l3-06-maaas.mp3
+07. لون
+    assets/audio/words/m09/m9l3-07-loon.mp3
+08. أسود
+    assets/audio/words/m09/m9l3-08-iswid.mp3
+09. أبيض
+    assets/audio/words/m09/m9l3-09-abyad.mp3
+10. أحمر
+    assets/audio/words/m09/m9l3-10-ahmar.mp3
+11. أزرق
+    assets/audio/words/m09/m9l3-11-azra.mp3
+12. مظبوط
+    assets/audio/words/m09/m9l3-12-mazbuut.mp3
+13. واسع
+    assets/audio/words/m09/m9l3-13-waasi.mp3
+14. ضيق
+    assets/audio/words/m09/m9l3-14-dayya.mp3
+15. جاكيت
+    assets/audio/words/m09/m9l3-15-gaakit.mp3
+16. بدلة
+    assets/audio/words/m09/m9l3-16-badla.mp3
+17. شراب
+    assets/audio/words/m09/m9l3-17-shoraab.mp3
+18. فورمة
+    assets/audio/words/m09/m9l3-18-foorama.mp3
+19. أخضر
+    assets/audio/words/m09/m9l3-19-akhdar.mp3
+20. اصفر
+    assets/audio/words/m09/m9l3-20-asfar.mp3
+
+======================================================================
+[28] m10l1 · الوحدة 10 · 23 كلمة
+Работа профессии и обязанности
+======================================================================
+01. شغل
+    assets/audio/words/m10/m10l1-01-shoghl.mp3
+02. شركة
+    assets/audio/words/m10/m10l1-02-sharika.mp3
+03. موظف
+    assets/audio/words/m10/m10l1-03-muwazzaf.mp3
+04. مدير
+    assets/audio/words/m10/m10l1-04-mudiir.mp3
+05. فني
+    assets/audio/words/m10/m10l1-05-fanni.mp3
+06. عميل
+    assets/audio/words/m10/m10l1-06-amiil.mp3
+07. مشروع
+    assets/audio/words/m10/m10l1-07-mashruu.mp3
+08. خبرة
+    assets/audio/words/m10/m10l1-08-khibra.mp3
+09. مسؤول عن
+    assets/audio/words/m10/m10l1-09-masuul-an.mp3
+10. بصلّح
+    assets/audio/words/m10/m10l1-10-basallah.mp3
+11. بصمّم
+    assets/audio/words/m10/m10l1-11-basammim.mp3
+12. بركّب
+    assets/audio/words/m10/m10l1-12-barakkib.mp3
+13. اجتماع
+    assets/audio/words/m10/m10l1-13-igtimaa.mp3
+14. مرتب
+    assets/audio/words/m10/m10l1-14-morattab.mp3
+15. دور
+    assets/audio/words/m10/m10l1-15-dor.mp3
+16. فريق
+    assets/audio/words/m10/m10l1-16-fariir.mp3
+17. دوام
+    assets/audio/words/m10/m10l1-17-dawaam.mp3
+18. يدّي
+    assets/audio/words/m10/m10l1-18-yiddi.mp3
+19. بياخد
+    assets/audio/words/m10/m10l1-19-biyaakhod.mp3
+20. أرجّع
+    assets/audio/words/m10/m10l1-20-argi.mp3
+21. وظيفة
+    assets/audio/words/m10/m10l1-21-waziifa.mp3
+22. مكتب
+    assets/audio/words/m10/m10l1-22-maktab.mp3
+23. مقابلة
+    assets/audio/words/m10/m10l1-23-moqaabala.mp3
+
+======================================================================
+[29] m10l2 · الوحدة 10 · 20 كلمة
+Офис звонки и договорённости
+======================================================================
+01. ألو
+    assets/audio/words/m10/m10l2-01-aloo.mp3
+02. معايا مين؟
+    assets/audio/words/m10/m10l2-02-maaaya-miin.mp3
+03. مكالمة
+    assets/audio/words/m10/m10l2-03-mukaalma.mp3
+04. رسالة
+    assets/audio/words/m10/m10l2-04-risaala.mp3
+05. مشغول
+    assets/audio/words/m10/m10l2-05-mashghuul.mp3
+06. متاح
+    assets/audio/words/m10/m10l2-06-mitaah.mp3
+07. هرجع أكلمك
+    assets/audio/words/m10/m10l2-07-harga-akallimak.mp3
+08. الخط قطع
+    assets/audio/words/m10/m10l2-08-el-khatt-ata.mp3
+09. الصوت مش واضح
+    assets/audio/words/m10/m10l2-09-es-soot-mish-waadih.mp3
+10. نأجل
+    assets/audio/words/m10/m10l2-10-niaggil.mp3
+11. نقدّم
+    assets/audio/words/m10/m10l2-11-niaddim.mp3
+12. أكد
+    assets/audio/words/m10/m10l2-12-akkid.mp3
+13. بعت
+    assets/audio/words/m10/m10l2-13-baat.mp3
+14. استلم
+    assets/audio/words/m10/m10l2-14-istalam.mp3
+15. دلوقتي
+    assets/audio/words/m10/m10l2-15-dilwati.mp3
+16. بعدين
+    assets/audio/words/m10/m10l2-16-badeen.mp3
+17. كمان شوية
+    assets/audio/words/m10/m10l2-17-kamaan-shwayya.mp3
+18. متصل
+    assets/audio/words/m10/m10l2-18-muttasil.mp3
+19. رد عليا
+    assets/audio/words/m10/m10l2-19-rudd-alayya.mp3
+20. جرس
+    assets/audio/words/m10/m10l2-20-garas.mp3
+
+======================================================================
+[30] m10l3 · الوحدة 10 · 20 كلمة
+Телефон интернет и техника
+======================================================================
+01. موبايل
+    assets/audio/words/m10/m10l3-01-mobaayl.mp3
+02. شاحن
+    assets/audio/words/m10/m10l3-02-shaahin.mp3
+03. بطارية
+    assets/audio/words/m10/m10l3-03-battaariyya.mp3
+04. شبكة
+    assets/audio/words/m10/m10l3-04-shabaka.mp3
+05. إنترنت
+    assets/audio/words/m10/m10l3-05-internet.mp3
+06. واي فاي
+    assets/audio/words/m10/m10l3-06-wifi.mp3
+07. باسورد
+    assets/audio/words/m10/m10l3-07-password.mp3
+08. لينك
+    assets/audio/words/m10/m10l3-08-link.mp3
+09. ملف
+    assets/audio/words/m10/m10l3-09-malaf.mp3
+10. تحميل
+    assets/audio/words/m10/m10l3-10-tahmiil.mp3
+11. الشاشة
+    assets/audio/words/m10/m10l3-11-esh-shaasha.mp3
+12. مش شغال
+    assets/audio/words/m10/m10l3-12-mish-shaghghaal.mp3
+13. بيفصل
+    assets/audio/words/m10/m10l3-13-biyifsal.mp3
+14. البطارية خلصت
+    assets/audio/words/m10/m10l3-14-el-battaariyya-khilisit.mp3
+15. بيسخن
+    assets/audio/words/m10/m10l3-15-biyiskhan.mp3
+16. بيهنج
+    assets/audio/words/m10/m10l3-16-biyihang.mp3
+17. اقفل وافتح
+    assets/audio/words/m10/m10l3-17-ifil-w-iftah.mp3
+18. إعدادات
+    assets/audio/words/m10/m10l3-18-idaadaat.mp3
+19. كاميرا
+    assets/audio/words/m10/m10l3-19-kameera.mp3
+20. جرس الموبايل
+    assets/audio/words/m10/m10l3-20-garas-el-mobaayl.mp3
+
+======================================================================
+[31] m11l1 · الوحدة 11 · 19 كلمة
+Тело и симптомы
+======================================================================
+01. راس
+    assets/audio/words/m11/m11l1-01-raas.mp3
+02. عين
+    assets/audio/words/m11/m11l1-02-en.mp3
+03. ودن
+    assets/audio/words/m11/m11l1-03-widn.mp3
+04. زور
+    assets/audio/words/m11/m11l1-04-zoor.mp3
+05. صدر
+    assets/audio/words/m11/m11l1-05-sadr.mp3
+06. بطن
+    assets/audio/words/m11/m11l1-06-batn.mp3
+07. ضهر
+    assets/audio/words/m11/m11l1-07-dahr.mp3
+08. إيد
+    assets/audio/words/m11/m11l1-08-iid.mp3
+09. رجل
+    assets/audio/words/m11/m11l1-09-rigl.mp3
+10. واجعني
+    assets/audio/words/m11/m11l1-10-waagani.mp3
+11. واجعاني
+    assets/audio/words/m11/m11l1-11-wagaaani.mp3
+12. سخونية
+    assets/audio/words/m11/m11l1-12-sokhuuniyya.mp3
+13. كحة
+    assets/audio/words/m11/m11l1-13-kahha.mp3
+14. دوخة
+    assets/audio/words/m11/m11l1-14-dookha.mp3
+15. تعبان
+    assets/audio/words/m11/m11l1-15-tabaan.mp3
+16. تعبانة
+    assets/audio/words/m11/m11l1-16-tabaana.mp3
+17. نزلة برد
+    assets/audio/words/m11/m11l1-17-nazlit-bard.mp3
+18. صداع
+    assets/audio/words/m11/m11l1-18-sudaa.mp3
+19. إعياء
+    assets/audio/words/m11/m11l1-19-iyaa.mp3
+
+======================================================================
+[32] m11l2 · الوحدة 11 · 18 كلمة
+Аптека врач и экстренная помощь
+======================================================================
+01. صيدلية
+    assets/audio/words/m11/m11l2-01-saydaliyya.mp3
+02. دوا
+    assets/audio/words/m11/m11l2-02-dawa.mp3
+03. روشتة
+    assets/audio/words/m11/m11l2-03-roshitta.mp3
+04. قرص
+    assets/audio/words/m11/m11l2-04-ors.mp3
+05. مرتين في اليوم
+    assets/audio/words/m11/m11l2-05-marraten-fil-yoom.mp3
+06. قبل الأكل
+    assets/audio/words/m11/m11l2-06-abl-el-akl.mp3
+07. بعد الأكل
+    assets/audio/words/m11/m11l2-07-bad-el-akl.mp3
+08. حساسية
+    assets/audio/words/m11/m11l2-08-hasaasiyya.mp3
+09. إسعاف
+    assets/audio/words/m11/m11l2-09-isaaf.mp3
+10. طوارئ
+    assets/audio/words/m11/m11l2-10-tawaari.mp3
+11. حادثة
+    assets/audio/words/m11/m11l2-11-haadesa.mp3
+12. اتصل بـ
+    assets/audio/words/m11/m11l2-12-ittisil-bi.mp3
+13. ساعدني
+    assets/audio/words/m11/m11l2-13-saaidni.mp3
+14. خطر
+    assets/audio/words/m11/m11l2-14-khatar.mp3
+15. جرعة
+    assets/audio/words/m11/m11l2-15-gara.mp3
+16. كوباية
+    assets/audio/words/m11/m11l2-16-kubbaaya.mp3
+17. معلقة
+    assets/audio/words/m11/m11l2-17-malaa.mp3
+18. ماء دافي
+    assets/audio/words/m11/m11l2-18-mayyaa-daafiyya.mp3
+
+======================================================================
+[33] m11l3 · الوحدة 11 · 20 كلمة
+Ремонт и бытовые услуги
+======================================================================
+01. صيانة
+    assets/audio/words/m11/m11l3-01-siyaana.mp3
+02. عطل
+    assets/audio/words/m11/m11l3-02-otl.mp3
+03. فني
+    assets/audio/words/m11/m11l3-03-fanni.mp3
+04. تصليح
+    assets/audio/words/m11/m11l3-04-tasliih.mp3
+05. قطع غيار
+    assets/audio/words/m11/m11l3-05-ita-ghiyaar.mp3
+06. ضمان
+    assets/audio/words/m11/m11l3-06-damaan.mp3
+07. كشف
+    assets/audio/words/m11/m11l3-07-kashf.mp3
+08. تسريب
+    assets/audio/words/m11/m11l3-08-tasriib.mp3
+09. قاطع
+    assets/audio/words/m11/m11l3-09-aati.mp3
+10. محروق
+    assets/audio/words/m11/m11l3-10-mahruu.mp3
+11. يتصلّح
+    assets/audio/words/m11/m11l3-11-yitsallah.mp3
+12. يتغيّر
+    assets/audio/words/m11/m11l3-12-yitghayyar.mp3
+13. التكلفة
+    assets/audio/words/m11/m11l3-13-et-taklifa.mp3
+14. زيارة
+    assets/audio/words/m11/m11l3-14-ziyaara.mp3
+15. التكييف
+    assets/audio/words/m11/m11l3-15-et-takyiif.mp3
+16. الثلاجة
+    assets/audio/words/m11/m11l3-16-et-tallaaga.mp3
+17. الغسالة
+    assets/audio/words/m11/m11l3-17-el-ghassaala.mp3
+18. المواسير
+    assets/audio/words/m11/m11l3-18-el-mawaasiir.mp3
+19. الأسلاك
+    assets/audio/words/m11/m11l3-19-el-aslaak.mp3
+20. يقطّع
+    assets/audio/words/m11/m11l3-20-yiatti.mp3
+
+======================================================================
+[34] m12l1 · الوحدة 12 · 19 كلمة
+Приглашения чувства и общение
+======================================================================
+01. عزومة
+    assets/audio/words/m12/m12l1-01-azuuma.mp3
+02. اتفضل
+    assets/audio/words/m12/m12l1-02-itfaddal.mp3
+03. نورت
+    assets/audio/words/m12/m12l1-03-nawwart.mp3
+04. مبسوط
+    assets/audio/words/m12/m12l1-04-mabsuut.mp3
+05. زعلان
+    assets/audio/words/m12/m12l1-05-zalaan.mp3
+06. قلقان
+    assets/audio/words/m12/m12l1-06-alaan.mp3
+07. مكسوف
+    assets/audio/words/m12/m12l1-07-maksuuf.mp3
+08. وحشتني
+    assets/audio/words/m12/m12l1-08-wahashtini.mp3
+09. موافق
+    assets/audio/words/m12/m12l1-09-muwaafi.mp3
+10. للأسف
+    assets/audio/words/m12/m12l1-10-lil-asaf.mp3
+11. مرة تانية
+    assets/audio/words/m12/m12l1-11-marra-tanya.mp3
+12. أكيد
+    assets/audio/words/m12/m12l1-12-akiid.mp3
+13. فرصة سعيدة
+    assets/audio/words/m12/m12l1-13-forsa-saiida.mp3
+14. خليك على راحتك
+    assets/audio/words/m12/m12l1-14-khalliik-ala-raahtak.mp3
+15. عاجبني
+    assets/audio/words/m12/m12l1-15-aagibni.mp3
+16. وحشني
+    assets/audio/words/m12/m12l1-16-wahishni.mp3
+17. مش مرتاح
+    assets/audio/words/m12/m12l1-17-mish-mirtaah.mp3
+18. تسلم
+    assets/audio/words/m12/m12l1-18-tislam.mp3
+19. ديل
+    assets/audio/words/m12/m12l1-19-deel.mp3
+
+======================================================================
+[35] m12l2 · الوحدة 12 · 19 كلمة
+Мнение сравнение и связная речь
+======================================================================
+01. في رأيي
+    assets/audio/words/m12/m12l2-01-fi-rayi.mp3
+02. أنا شايف
+    assets/audio/words/m12/m12l2-02-ana-shaayif.mp3
+03. بالنسبة لي
+    assets/audio/words/m12/m12l2-03-bin-nisba-li.mp3
+04. أحسن
+    assets/audio/words/m12/m12l2-04-ahsan.mp3
+05. أسهل
+    assets/audio/words/m12/m12l2-05-ashal.mp3
+06. أسرع
+    assets/audio/words/m12/m12l2-06-asra.mp3
+07. أغلى
+    assets/audio/words/m12/m12l2-07-aghla.mp3
+08. أرخص
+    assets/audio/words/m12/m12l2-08-arkhas.mp3
+09. عشان
+    assets/audio/words/m12/m12l2-09-ashaan.mp3
+10. لكن
+    assets/audio/words/m12/m12l2-10-laakin.mp3
+11. مع إن
+    assets/audio/words/m12/m12l2-11-ma-inn.mp3
+12. لو
+    assets/audio/words/m12/m12l2-12-law.mp3
+13. اللي
+    assets/audio/words/m12/m12l2-13-illi.mp3
+14. عشان كده
+    assets/audio/words/m12/m12l2-14-ashaan-kida.mp3
+15. أقرب
+    assets/audio/words/m12/m12l2-15-arab.mp3
+16. أكتر
+    assets/audio/words/m12/m12l2-16-akthar.mp3
+17. أقل
+    assets/audio/words/m12/m12l2-17-aall.mp3
+18. أحسن من
+    assets/audio/words/m12/m12l2-18-ahsan-min.mp3
+19. بصراحة
+    assets/audio/words/m12/m12l2-19-bisaraaha.mp3
+
+======================================================================
+[36] m12l3 · الوحدة 12 · 23 كلمة
+Путешествие гостиница и итоговая практика
+======================================================================
+01. سفر
+    assets/audio/words/m12/m12l3-01-safar.mp3
+02. مطار
+    assets/audio/words/m12/m12l3-02-mataar.mp3
+03. طيارة
+    assets/audio/words/m12/m12l3-03-tayyaara.mp3
+04. شنطة
+    assets/audio/words/m12/m12l3-04-shanta.mp3
+05. باسبور
+    assets/audio/words/m12/m12l3-05-passport.mp3
+06. حجز
+    assets/audio/words/m12/m12l3-06-hagz.mp3
+07. فندق
+    assets/audio/words/m12/m12l3-07-fondu.mp3
+08. استقبال
+    assets/audio/words/m12/m12l3-08-istibaal.mp3
+09. أوضة مفردة
+    assets/audio/words/m12/m12l3-09-ooda-mofrada.mp3
+10. مفتاح
+    assets/audio/words/m12/m12l3-10-miftaah.mp3
+11. الفطار شامل
+    assets/audio/words/m12/m12l3-11-el-fitaar-shaamil.mp3
+12. تسجيل دخول
+    assets/audio/words/m12/m12l3-12-tasgiil-dokhuul.mp3
+13. ميعاد المغادرة
+    assets/audio/words/m12/m12l3-13-miiaad-el-mughaadara.mp3
+14. الحجز باسم…
+    assets/audio/words/m12/m12l3-14-el-hagz-bi-ism.mp3
+15. أوضة دبل
+    assets/audio/words/m12/m12l3-15-ooda-doble.mp3
+16. الخروج
+    assets/audio/words/m12/m12l3-16-el-khoruug.mp3
+17. حقيبة
+    assets/audio/words/m12/m12l3-17-hagiiba.mp3
+18. الرحلة
+    assets/audio/words/m12/m12l3-18-er-rihla.mp3
+19. الميدان
+    assets/audio/words/m12/m12l3-19-el-medaan.mp3
+20. جولة
+    assets/audio/words/m12/m12l3-20-gawla.mp3
+21. فيزا
+    assets/audio/words/m12/m12l3-21-viiza.mp3
+22. شرفة
+    assets/audio/words/m12/m12l3-22-sharfa.mp3
+23. حمّام
+    assets/audio/words/m12/m12l3-23-hammaam.mp3
+
+— نهاية سكريبت الكلمات —

@@ -1,0 +1,4971 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>سكريبت التسجيل الصوتي — MASRI RU</title>
+<meta name="description" content="النص الكامل لملفات MP3 في دورة MASRI RU، جاهز لإعادة التسجيل بصوتك.">
+<style>
+:root {
+  --paper: #fffdf8;
+  --sand: #f6f1e8;
+  --sand-deep: #efe7da;
+  --ink: #17212b;
+  --muted: #51697f;
+  --line: #e3dbcd;
+  --navy: #102a43;
+  --blue: #1565c0;
+  --teal: #167d87;
+  --gold: #ffe0a5;
+  --success: #16794d;
+  --success-soft: #e7f6ee;
+  --danger: #b42318;
+  --shadow: 0 14px 40px rgba(16, 42, 67, .10);
+  --shadow-soft: 0 5px 18px rgba(16, 42, 67, .06);
+  --radius: 22px;
+  --font-sans: Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-arabic: "Noto Naskh Arabic", "Amiri", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-family: var(--font-sans);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--sand); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(900px 380px at 100% -10%, rgba(255, 224, 165, .28), transparent 70%),
+    var(--sand);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--blue); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid rgba(21, 101, 192, .45); outline-offset: 3px; }
+.skip {
+  position: absolute; inset-inline-start: 1rem; top: -4rem; z-index: 100;
+  background: var(--paper); color: var(--ink); padding: .6rem 1rem; border-radius: 10px;
+  box-shadow: var(--shadow); text-decoration: none;
+}
+.skip:focus { top: 1rem; }
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(620px 320px at 88% 12%, rgba(255, 224, 165, .22), transparent 62%),
+    radial-gradient(520px 300px at 12% 100%, rgba(22, 125, 135, .55), transparent 65%),
+    linear-gradient(135deg, #102a43 0%, #155799 58%, #167d87 100%);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -80px;
+  bottom: -140px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 224, 165, .28);
+  box-shadow: 0 0 0 46px rgba(255, 224, 165, .06), 0 0 0 92px rgba(255, 224, 165, .04);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(2.6rem, 6vw, 4.6rem) clamp(1.1rem, 4vw, 2.4rem) clamp(2.2rem, 5vw, 3.4rem);
+  position: relative;
+  z-index: 1;
+}
+.eyebrow {
+  margin: 0 0 .9rem;
+  color: var(--gold);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  margin: 0;
+  font-family: var(--font-arabic);
+  font-size: clamp(2rem, 5.2vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.35;
+  max-width: 20ch;
+}
+.hero h1 span { color: var(--gold); }
+.lede {
+  margin: 1rem 0 0;
+  max-width: 62ch;
+  color: rgba(255, 255, 255, .82);
+  font-size: clamp(.98rem, 1.6vw, 1.08rem);
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  margin-top: 1.7rem;
+}
+.stat {
+  min-width: 120px;
+  padding: .72rem 1rem;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .08);
+  backdrop-filter: blur(4px);
+}
+.stat strong {
+  display: block;
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.stat span { font-size: .78rem; color: rgba(255, 255, 255, .72); }
+.hint {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  margin-top: 1.6rem;
+  max-width: 70ch;
+  padding: .85rem 1rem;
+  border-inline-start: 3px solid var(--gold);
+  border-radius: 8px;
+  background: rgba(16, 42, 67, .32);
+  color: rgba(255, 255, 255, .84);
+  font-size: .88rem;
+}
+.hint b { color: var(--gold); font-weight: 700; }
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem 1rem;
+  padding: .7rem clamp(1rem, 4vw, 2.4rem);
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 253, 248, .92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px rgba(16, 42, 67, .05);
+}
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--sand);
+}
+.seg-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: .42rem .9rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.seg-btn.is-active {
+  background: var(--paper);
+  color: var(--navy);
+  box-shadow: 0 2px 8px rgba(16, 42, 67, .12);
+}
+.toolbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .55rem;
+}
+.progress {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .35rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: .78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.progress-bar {
+  width: 64px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--sand-deep);
+}
+#doneBar {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--success));
+  transition: width .25s ease;
+}
+.progress strong { color: var(--success); font-variant-numeric: tabular-nums; }
+.tb-btn {
+  padding: .45rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--navy);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease;
+}
+.tb-btn:hover { border-color: var(--blue); background: #f4f8fd; }
+
+/* ---------- TOC ---------- */
+.toc {
+  max-width: 1120px;
+  margin: clamp(1.4rem, 3vw, 2.2rem) auto 0;
+  padding: 0 clamp(1rem, 4vw, 2.4rem);
+}
+.toc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .3rem 1rem;
+  margin-bottom: .8rem;
+}
+.toc-head h2 { margin: 0; font-size: 1.05rem; color: var(--navy); }
+.toc-head p { margin: 0; color: var(--muted); font-size: .82rem; }
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: .45rem;
+}
+.toc-item {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: var(--shadow-soft);
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.toc-item:hover {
+  border-color: rgba(21, 101, 192, .45);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(16, 42, 67, .09);
+}
+.toc-no {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 8px;
+  background: var(--sand);
+  color: var(--navy);
+  font-size: .76rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.toc-name {
+  overflow: hidden;
+  font-size: .82rem;
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.toc-file, .toc-dur {
+  display: none;
+  color: var(--muted);
+  font-size: .7rem;
+}
+.toc-dur { font-variant-numeric: tabular-nums; }
+@media (min-width: 900px) {
+  .toc-item { grid-template-columns: 2.1rem minmax(0, 1fr) auto auto; }
+  .toc-file, .toc-dur { display: block; }
+}
+
+/* ---------- Tracks ---------- */
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(1.2rem, 3vw, 2rem) clamp(1rem, 4vw, 2.4rem) clamp(3rem, 7vw, 5rem);
+}
+.track {
+  margin-top: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  scroll-margin-top: 84px;
+  overflow: hidden;
+}
+.track-head {
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(246, 241, 232, .72), rgba(255, 253, 248, 0));
+}
+.track-no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-top: .1rem;
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--navy), #155799);
+  color: var(--gold);
+  font-size: .84rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 4px 12px rgba(16, 42, 67, .22);
+}
+.track-title { flex: 1; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .3rem; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: .14rem .55rem;
+  border-radius: 999px;
+  background: var(--sand);
+  color: var(--navy);
+  font-family: var(--font-arabic);
+  font-size: .72rem;
+  font-weight: 600;
+}
+.chip.ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: .66rem;
+  letter-spacing: .04em;
+}
+.track-title h2 {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.45;
+  color: var(--navy);
+  font-weight: 700;
+}
+.ar-title {
+  font-family: var(--font-arabic);
+  color: var(--teal);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.track-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem .5rem;
+  margin: .35rem 0 0;
+  color: var(--muted);
+  font-size: .76rem;
+}
+.track-sub code {
+  padding: .08rem .4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--sand);
+  color: var(--navy);
+  font-size: .72rem;
+}
+.track-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  flex: none;
+  align-items: center;
+}
+.done-btn, .copy-btn {
+  padding: .42rem .8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+.done-btn:hover, .copy-btn:hover { border-color: var(--blue); color: var(--blue); }
+.done-btn[aria-pressed="true"] {
+  border-color: rgba(22, 121, 77, .35);
+  background: var(--success-soft);
+  color: var(--success);
+}
+.done-btn[aria-pressed="true"]::before { content: "✓ "; font-weight: 700; }
+.copy-btn { color: var(--blue); }
+
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.line {
+  display: flex;
+  align-items: flex-start;
+  gap: .8rem;
+  padding: .7rem 1.15rem;
+  border-bottom: 1px solid rgba(227, 219, 205, .6);
+}
+.line:last-child { border-bottom: 0; }
+.line:nth-child(even) { background: rgba(246, 241, 232, .4); }
+.line:hover { background: rgba(232, 241, 251, .55); }
+.line-no {
+  flex: none;
+  width: 1.9rem;
+  padding-top: .4rem;
+  color: #96a7b6;
+  font-size: .7rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.glyph {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sand);
+  color: var(--navy);
+  font-family: var(--font-arabic);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.line-body { flex: 1; min-width: 0; }
+.speaker {
+  display: inline-block;
+  margin-bottom: .1rem;
+  color: var(--teal);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.ar {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-arabic);
+  font-size: clamp(1.24rem, 2.5vw, 1.44rem);
+  font-weight: 500;
+  line-height: 1.95;
+  word-break: break-word;
+}
+.tr {
+  margin: .05rem 0 0;
+  color: var(--teal);
+  font-size: .78rem;
+  font-style: italic;
+  letter-spacing: .01em;
+}
+.ru {
+  margin: .02rem 0 0;
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+/* Recording mode */
+body.recording .tr,
+body.recording .ru { display: none; }
+body.recording .line { padding-block: .55rem; }
+body.recording .ar { font-size: clamp(1.42rem, 3vw, 1.7rem); line-height: 2.05; }
+body.recording .track { box-shadow: var(--shadow-soft); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 1.4rem;
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.is-visible { opacity: 1; transform: none; }
+.toast span {
+  padding: .6rem 1.1rem;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-size: .82rem;
+  box-shadow: 0 12px 30px rgba(16, 42, 67, .3);
+}
+.toast span.is-error { background: var(--danger); }
+
+footer {
+  padding: 1.4rem clamp(1rem, 4vw, 2.4rem) 2.6rem;
+  color: var(--muted);
+  font-size: .78rem;
+  text-align: center;
+}
+
+/* ---------- Print ---------- */
+@media print {
+  @page { margin: 14mm 12mm; }
+  body {
+    background: #fff !important;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .hero { color: #000; background: none; border-bottom: 2px solid #000; }
+  .hero::after, .toolbar, .toc, .track-actions, .toast, .skip, footer { display: none !important; }
+  .hero-inner { padding: 0 0 10mm; }
+  .hero h1 { font-size: 24pt; }
+  .hero h1 span { color: #000; }
+  .eyebrow, .lede, .stat span { color: #333; }
+  .stats { display: none; }
+  .hint { color: #000; background: none; border-color: #000; }
+  main { max-width: none; padding: 0; }
+  .track {
+    margin-top: 8mm;
+    border: 1px solid #bbb;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  .track-head { background: none; }
+  .line { break-inside: avoid; }
+  .line:hover { background: none; }
+  .line:nth-child(even) { background: #f6f6f6; }
+  .ar { font-size: 16pt; line-height: 1.8; }
+  .tr, .ru { font-size: 9pt; color: #444; }
+}
+
+@media (max-width: 720px) {
+  .hero::after { display: none; }
+  .toolbar { gap: .5rem; }
+  .seg-btn { padding: .4rem .7rem; font-size: .76rem; }
+  .progress { display: none; }
+  .track-head { flex-wrap: wrap; gap: .7rem; }
+  .track-actions { width: 100%; padding-inline-start: 3.4rem; }
+  .done-btn, .copy-btn { flex: 1; }
+  .line { padding-inline: .8rem; gap: .55rem; }
+  .line-no { width: 1.3rem; }
+  .glyph { width: 2.4rem; height: 2.4rem; font-size: 1.25rem; }
+  .toc { margin-top: 1rem; }
+  .toc-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) {
+  .toolbar-right { gap: .35rem; }
+  .tb-btn { padding: .4rem .65rem; font-size: .76rem; }
+  .track-actions { padding-inline-start: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#tracks">تجاوز إلى السكريبت</a>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">MASRI RU · سكريبت التسجيل الصوتي</p>
+    <h1>نصّ كل ملفات <span>MP3</span> بصوتك أنت</h1>
+    <p class="lede">النص الكامل المنطوق في ملفات الدورة، مرتّبًا حسب الملف. اقرأ العربي فقط، وسجّل بصوتك، ثم استبدل الملفات القديمة بنفس الأسماء.</p>
+    <div class="stats">
+      <div class="stat"><strong>38</strong><span>ملفًا صوتيًا</span></div>
+      <div class="stat"><strong>338</strong><span>سطرًا منطوقًا</span></div>
+      <div class="stat"><strong>13:41</strong><span>المدة الإجمالية</span></div>
+    </div>
+    <p class="hint"><span aria-hidden="true">🎙</span><span><b>قاعدة واحدة:</b> لا تقرأ أسماء المتحدثين ولا الترجمة ولا الترجمة الصوتية. في ملف الأبجدية اقرأ اسم الحرف ثم مثاله، ولا تقرأ الشرطة «—».</span></p>
+  </div>
+</header>
+
+<div class="toolbar" role="toolbar" aria-label="أدوات السكريبت">
+  <div class="seg" role="group" aria-label="طريقة العرض">
+    <button class="seg-btn is-active" type="button" data-view="full" aria-pressed="true">إظهار الكل</button>
+    <button class="seg-btn" type="button" data-view="record" aria-pressed="false">وضع التسجيل</button>
+  </div>
+  <div class="toolbar-right">
+    <div class="progress" title="تقدّم التسجيل">
+      <span class="progress-bar" aria-hidden="true"><span id="doneBar"></span></span>
+      <span>تم <strong id="doneCount">0</strong> / 38</span>
+    </div>
+    <button class="tb-btn" id="printBtn" type="button">طباعة</button>
+  </div>
+</div>
+
+<nav class="toc" aria-label="فهرس الملفات">
+  <div class="toc-head">
+    <h2>فهرس الملفات</h2>
+    <p>38 ملفًا · 338 سطرًا · 13:41</p>
+  </div>
+  <div class="toc-grid">
+<a class="toc-item" href="#track-01">
+  <span class="toc-no">01</span>
+  <span class="toc-name" dir="auto">Арабский алфавит</span>
+  <span class="toc-file" dir="ltr">alphabet.mp3</span>
+  <span class="toc-dur">0:31</span>
+</a>
+<a class="toc-item" href="#track-02">
+  <span class="toc-no">02</span>
+  <span class="toc-name" dir="auto">Фразы первой необходимости</span>
+  <span class="toc-file" dir="ltr">survival.mp3</span>
+  <span class="toc-dur">1:05</span>
+</a>
+<a class="toc-item" href="#track-03">
+  <span class="toc-no">03</span>
+  <span class="toc-name" dir="auto">01. Главные звуки египетского арабского</span>
+  <span class="toc-file" dir="ltr">lesson-m1l1.mp3</span>
+  <span class="toc-dur">0:16</span>
+</a>
+<a class="toc-item" href="#track-04">
+  <span class="toc-no">04</span>
+  <span class="toc-name" dir="auto">02. Приветствия и вежливость</span>
+  <span class="toc-file" dir="ltr">lesson-m1l2.mp3</span>
+  <span class="toc-dur">0:17</span>
+</a>
+<a class="toc-item" href="#track-05">
+  <span class="toc-no">05</span>
+  <span class="toc-name" dir="auto">03. Знакомство и страны</span>
+  <span class="toc-file" dir="ltr">lesson-m1l3.mp3</span>
+  <span class="toc-dur">0:24</span>
+</a>
+<a class="toc-item" href="#track-06">
+  <span class="toc-no">06</span>
+  <span class="toc-name" dir="auto">04. Местоимения и предложения без есть</span>
+  <span class="toc-file" dir="ltr">lesson-m2l1.mp3</span>
+  <span class="toc-dur">0:21</span>
+</a>
+<a class="toc-item" href="#track-07">
+  <span class="toc-no">07</span>
+  <span class="toc-name" dir="auto">05. Род прилагательные и определённость</span>
+  <span class="toc-file" dir="ltr">lesson-m2l2.mp3</span>
+  <span class="toc-dur">0:18</span>
+</a>
+<a class="toc-item" href="#track-08">
+  <span class="toc-no">08</span>
+  <span class="toc-name" dir="auto">06. Семья и принадлежность</span>
+  <span class="toc-file" dir="ltr">lesson-m2l3.mp3</span>
+  <span class="toc-dur">0:17</span>
+</a>
+<a class="toc-item" href="#track-09">
+  <span class="toc-no">09</span>
+  <span class="toc-name" dir="auto">07. Вопросительные слова</span>
+  <span class="toc-file" dir="ltr">lesson-m3l1.mp3</span>
+  <span class="toc-dur">0:18</span>
+</a>
+<a class="toc-item" href="#track-10">
+  <span class="toc-no">10</span>
+  <span class="toc-name" dir="auto">08. Числа возраст и телефон</span>
+  <span class="toc-file" dir="ltr">lesson-m3l2.mp3</span>
+  <span class="toc-dur">0:18</span>
+</a>
+<a class="toc-item" href="#track-11">
+  <span class="toc-no">11</span>
+  <span class="toc-name" dir="auto">09. Время дни и даты</span>
+  <span class="toc-file" dir="ltr">lesson-m3l3.mp3</span>
+  <span class="toc-dur">0:20</span>
+</a>
+<a class="toc-item" href="#track-12">
+  <span class="toc-no">12</span>
+  <span class="toc-name" dir="auto">10. Настоящее время и приставка b</span>
+  <span class="toc-file" dir="ltr">lesson-m4l1.mp3</span>
+  <span class="toc-dur">0:17</span>
+</a>
+<a class="toc-item" href="#track-13">
+  <span class="toc-no">13</span>
+  <span class="toc-name" dir="auto">11. Распорядок дня и частотность</span>
+  <span class="toc-file" dir="ltr">lesson-m4l2.mp3</span>
+  <span class="toc-dur">0:21</span>
+</a>
+<a class="toc-item" href="#track-14">
+  <span class="toc-no">14</span>
+  <span class="toc-name" dir="auto">12. Отрицание желания и возможность</span>
+  <span class="toc-file" dir="ltr">lesson-m4l3.mp3</span>
+  <span class="toc-dur">0:20</span>
+</a>
+<a class="toc-item" href="#track-15">
+  <span class="toc-no">15</span>
+  <span class="toc-name" dir="auto">13. Прошедшее время</span>
+  <span class="toc-file" dir="ltr">lesson-m5l1.mp3</span>
+  <span class="toc-dur">0:18</span>
+</a>
+<a class="toc-item" href="#track-16">
+  <span class="toc-no">16</span>
+  <span class="toc-name" dir="auto">14. Будущее и планы</span>
+  <span class="toc-file" dir="ltr">lesson-m5l2.mp3</span>
+  <span class="toc-dur">0:20</span>
+</a>
+<a class="toc-item" href="#track-17">
+  <span class="toc-no">17</span>
+  <span class="toc-name" dir="auto">15. Повелительное наклонение и вежливые просьбы</span>
+  <span class="toc-file" dir="ltr">lesson-m5l3.mp3</span>
+  <span class="toc-dur">0:23</span>
+</a>
+<a class="toc-item" href="#track-18">
+  <span class="toc-no">18</span>
+  <span class="toc-name" dir="auto">16. Система спряжения: основы глагола</span>
+  <span class="toc-file" dir="ltr">lesson-m6l1.mp3</span>
+  <span class="toc-dur">0:18</span>
+</a>
+<a class="toc-item" href="#track-19">
+  <span class="toc-no">19</span>
+  <span class="toc-name" dir="auto">17. Настоящее время: приставки и чередование гласных</span>
+  <span class="toc-file" dir="ltr">lesson-m6l2.mp3</span>
+  <span class="toc-dur">0:14</span>
+</a>
+<a class="toc-item" href="#track-20">
+  <span class="toc-no">20</span>
+  <span class="toc-name" dir="auto">18. Разные породы: faʿʿala и faaʿala</span>
+  <span class="toc-file" dir="ltr">lesson-m6l3.mp3</span>
+  <span class="toc-dur">0:16</span>
+</a>
+<a class="toc-item" href="#track-21">
+  <span class="toc-no">21</span>
+  <span class="toc-name" dir="auto">19. Приставка it-: возвратные и страдательные глаголы</span>
+  <span class="toc-file" dir="ltr">lesson-m7l1.mp3</span>
+  <span class="toc-dur">0:15</span>
+</a>
+<a class="toc-item" href="#track-22">
+  <span class="toc-no">22</span>
+  <span class="toc-name" dir="auto">20. Команды, просьбы и формы для всех</span>
+  <span class="toc-file" dir="ltr">lesson-m7l2.mp3</span>
+  <span class="toc-dur">0:17</span>
+</a>
+<a class="toc-item" href="#track-23">
+  <span class="toc-no">23</span>
+  <span class="toc-name" dir="auto">21. Глаголы движения и предлоги</span>
+  <span class="toc-file" dir="ltr">lesson-m7l3.mp3</span>
+  <span class="toc-dur">0:17</span>
+</a>
+<a class="toc-item" href="#track-24">
+  <span class="toc-no">24</span>
+  <span class="toc-name" dir="auto">22. Дом комнаты и местоположение</span>
+  <span class="toc-file" dir="ltr">lesson-m8l1.mp3</span>
+  <span class="toc-dur">0:23</span>
+</a>
+<a class="toc-item" href="#track-25">
+  <span class="toc-no">25</span>
+  <span class="toc-name" dir="auto">23. Дорога и ориентиры</span>
+  <span class="toc-file" dir="ltr">lesson-m8l2.mp3</span>
+  <span class="toc-dur">0:22</span>
+</a>
+<a class="toc-item" href="#track-26">
+  <span class="toc-no">26</span>
+  <span class="toc-name" dir="auto">24. Транспорт и такси</span>
+  <span class="toc-file" dir="ltr">lesson-m8l3.mp3</span>
+  <span class="toc-dur">0:21</span>
+</a>
+<a class="toc-item" href="#track-27">
+  <span class="toc-no">27</span>
+  <span class="toc-name" dir="auto">25. Еда и заказ в кафе</span>
+  <span class="toc-file" dir="ltr">lesson-m9l1.mp3</span>
+  <span class="toc-dur">0:21</span>
+</a>
+<a class="toc-item" href="#track-28">
+  <span class="toc-no">28</span>
+  <span class="toc-name" dir="auto">26. Рынок цены и количества</span>
+  <span class="toc-file" dir="ltr">lesson-m9l2.mp3</span>
+  <span class="toc-dur">0:20</span>
+</a>
+<a class="toc-item" href="#track-29">
+  <span class="toc-no">29</span>
+  <span class="toc-name" dir="auto">27. Одежда размер и цвет</span>
+  <span class="toc-file" dir="ltr">lesson-m9l3.mp3</span>
+  <span class="toc-dur">0:20</span>
+</a>
+<a class="toc-item" href="#track-30">
+  <span class="toc-no">30</span>
+  <span class="toc-name" dir="auto">28. Работа профессии и обязанности</span>
+  <span class="toc-file" dir="ltr">lesson-m10l1.mp3</span>
+  <span class="toc-dur">0:24</span>
+</a>
+<a class="toc-item" href="#track-31">
+  <span class="toc-no">31</span>
+  <span class="toc-name" dir="auto">29. Офис звонки и договорённости</span>
+  <span class="toc-file" dir="ltr">lesson-m10l2.mp3</span>
+  <span class="toc-dur">0:26</span>
+</a>
+<a class="toc-item" href="#track-32">
+  <span class="toc-no">32</span>
+  <span class="toc-name" dir="auto">30. Телефон интернет и техника</span>
+  <span class="toc-file" dir="ltr">lesson-m10l3.mp3</span>
+  <span class="toc-dur">0:21</span>
+</a>
+<a class="toc-item" href="#track-33">
+  <span class="toc-no">33</span>
+  <span class="toc-name" dir="auto">31. Тело и симптомы</span>
+  <span class="toc-file" dir="ltr">lesson-m11l1.mp3</span>
+  <span class="toc-dur">0:18</span>
+</a>
+<a class="toc-item" href="#track-34">
+  <span class="toc-no">34</span>
+  <span class="toc-name" dir="auto">32. Аптека врач и экстренная помощь</span>
+  <span class="toc-file" dir="ltr">lesson-m11l2.mp3</span>
+  <span class="toc-dur">0:19</span>
+</a>
+<a class="toc-item" href="#track-35">
+  <span class="toc-no">35</span>
+  <span class="toc-name" dir="auto">33. Ремонт и бытовые услуги</span>
+  <span class="toc-file" dir="ltr">lesson-m11l3.mp3</span>
+  <span class="toc-dur">0:24</span>
+</a>
+<a class="toc-item" href="#track-36">
+  <span class="toc-no">36</span>
+  <span class="toc-name" dir="auto">34. Приглашения чувства и общение</span>
+  <span class="toc-file" dir="ltr">lesson-m12l1.mp3</span>
+  <span class="toc-dur">0:25</span>
+</a>
+<a class="toc-item" href="#track-37">
+  <span class="toc-no">37</span>
+  <span class="toc-name" dir="auto">35. Мнение сравнение и связная речь</span>
+  <span class="toc-file" dir="ltr">lesson-m12l2.mp3</span>
+  <span class="toc-dur">0:27</span>
+</a>
+<a class="toc-item" href="#track-38">
+  <span class="toc-no">38</span>
+  <span class="toc-name" dir="auto">36. Путешествие гостиница и итоговая практика</span>
+  <span class="toc-file" dir="ltr">lesson-m12l3.mp3</span>
+  <span class="toc-dur">0:29</span>
+</a>
+  </div>
+</nav>
+
+<main id="tracks">
+<article class="track" id="track-01" data-kind="alphabet" data-file="alphabet.mp3">
+  <header class="track-head">
+    <span class="track-no">01</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">الأبجدية</span>
+        
+      </div>
+      <h2 dir="auto">Арабский алфавит <span class="ar-title" dir="rtl" lang="ar">— الأبجدية العربية</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">alphabet.mp3</code>
+        <span aria-hidden="true">·</span><span>0:31</span>
+        <span aria-hidden="true">·</span><span>28 سطرًا</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Алфавит</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-01" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-01">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <span class="glyph" aria-hidden="true">ا</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ألف — باب</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">alif — baab</p>
+    <p class="ru" dir="ltr" lang="ru">дверь</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <span class="glyph" aria-hidden="true">ب</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">باء — بيت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bāʾ — bēt</p>
+    <p class="ru" dir="ltr" lang="ru">дом</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <span class="glyph" aria-hidden="true">ت</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">تاء — تمام</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tāʾ — tamaam</p>
+    <p class="ru" dir="ltr" lang="ru">хорошо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <span class="glyph" aria-hidden="true">ث</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ثاء — تلاتة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">thāʾ — talaata</p>
+    <p class="ru" dir="ltr" lang="ru">три</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <span class="glyph" aria-hidden="true">ج</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">جيم — جميل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">jīm — gamiil</p>
+    <p class="ru" dir="ltr" lang="ru">красивый</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <span class="glyph" aria-hidden="true">ح</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">حاء — حلو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥāʾ — ḥelw</p>
+    <p class="ru" dir="ltr" lang="ru">хороший</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <span class="glyph" aria-hidden="true">خ</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">خاء — خبز</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">khāʾ — khobz</p>
+    <p class="ru" dir="ltr" lang="ru">хлеб</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <span class="glyph" aria-hidden="true">د</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">دال — دوا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">dāl — dawa</p>
+    <p class="ru" dir="ltr" lang="ru">лекарство</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">09</span>
+  <span class="glyph" aria-hidden="true">ذ</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ذال — ده</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">dhāl — da</p>
+    <p class="ru" dir="ltr" lang="ru">это м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">10</span>
+  <span class="glyph" aria-hidden="true">ر</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">راء — رز</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">rāʾ — rozz</p>
+    <p class="ru" dir="ltr" lang="ru">рис</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">11</span>
+  <span class="glyph" aria-hidden="true">ز</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">زاي — زحمة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">zāy — zaḥma</p>
+    <p class="ru" dir="ltr" lang="ru">пробка</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">12</span>
+  <span class="glyph" aria-hidden="true">س</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">سين — سوق</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">sīn — suuʔ</p>
+    <p class="ru" dir="ltr" lang="ru">рынок</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">13</span>
+  <span class="glyph" aria-hidden="true">ش</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">شين — شاي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">shīn — shaay</p>
+    <p class="ru" dir="ltr" lang="ru">чай</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">14</span>
+  <span class="glyph" aria-hidden="true">ص</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">صاد — صح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṣād — ṣaḥḥ</p>
+    <p class="ru" dir="ltr" lang="ru">правильно</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">15</span>
+  <span class="glyph" aria-hidden="true">ض</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ضاد — ضهر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḍād — ḍahr</p>
+    <p class="ru" dir="ltr" lang="ru">спина</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">16</span>
+  <span class="glyph" aria-hidden="true">ط</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">طاء — طريق</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭāʾ — ṭariiʔ</p>
+    <p class="ru" dir="ltr" lang="ru">дорога</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">17</span>
+  <span class="glyph" aria-hidden="true">ظ</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ظاء — مظبوط</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ẓāʾ — maẓbuuṭ</p>
+    <p class="ru" dir="ltr" lang="ru">правильно; впору</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">18</span>
+  <span class="glyph" aria-hidden="true">ع</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">عين — عربي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿayn — ʿarabi</p>
+    <p class="ru" dir="ltr" lang="ru">арабский</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">19</span>
+  <span class="glyph" aria-hidden="true">غ</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">غين — غالي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ghayn — ghaali</p>
+    <p class="ru" dir="ltr" lang="ru">дорогой</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">20</span>
+  <span class="glyph" aria-hidden="true">ف</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">فاء — فين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fāʾ — fēn</p>
+    <p class="ru" dir="ltr" lang="ru">где</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">21</span>
+  <span class="glyph" aria-hidden="true">ق</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">قاف — قهوة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">qāf — ʔahwa</p>
+    <p class="ru" dir="ltr" lang="ru">кофе</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">22</span>
+  <span class="glyph" aria-hidden="true">ك</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">كاف — كويس</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">kāf — kwayyis</p>
+    <p class="ru" dir="ltr" lang="ru">хорошо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">23</span>
+  <span class="glyph" aria-hidden="true">ل</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">لام — لأ</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">lām — laʔ</p>
+    <p class="ru" dir="ltr" lang="ru">нет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">24</span>
+  <span class="glyph" aria-hidden="true">م</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ميم — مَيّة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mīm — mayya</p>
+    <p class="ru" dir="ltr" lang="ru">вода</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">25</span>
+  <span class="glyph" aria-hidden="true">ن</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">نون — ناس</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">nūn — naas</p>
+    <p class="ru" dir="ltr" lang="ru">люди</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">26</span>
+  <span class="glyph" aria-hidden="true">ه</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">هاء — هنا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">hāʾ — hina</p>
+    <p class="ru" dir="ltr" lang="ru">здесь</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">27</span>
+  <span class="glyph" aria-hidden="true">و</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">واو — وقت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">wāw — waʔt</p>
+    <p class="ru" dir="ltr" lang="ru">время</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">28</span>
+  <span class="glyph" aria-hidden="true">ي</span>
+  <div class="line-body">
+    <p class="ar" dir="rtl" lang="ar">ياء — يمين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">yāʾ — yimiin</p>
+    <p class="ru" dir="ltr" lang="ru">направо</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-02" data-kind="phrases" data-file="survival.mp3">
+  <header class="track-head">
+    <span class="track-no">02</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">عبارات النجاة</span>
+        
+      </div>
+      <h2 dir="auto">Фразы первой необходимости <span class="ar-title" dir="rtl" lang="ar">— عبارات النجاة</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">survival.mp3</code>
+        <span aria-hidden="true">·</span><span>1:05</span>
+        <span aria-hidden="true">·</span><span>34 سطرًا</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Фразы выживания</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-02" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-02">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">مش فاهم</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mish faahim</p>
+    <p class="ru" dir="ltr" lang="ru">Я не понимаю м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">مش فاهمة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mish faahma</p>
+    <p class="ru" dir="ltr" lang="ru">Я не понимаю ж.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">قول تاني لو سمحت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʔuul taani law samaḥt</p>
+    <p class="ru" dir="ltr" lang="ru">Повторите, пожалуйста</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">اتكلم بالراحة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">itkallim bir-raaḥa</p>
+    <p class="ru" dir="ltr" lang="ru">Говорите медленнее</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">يعني إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">yaʿni eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Что это значит?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">ممكن تكتبها؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin tiktibha?</p>
+    <p class="ru" dir="ltr" lang="ru">Можете это написать?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">فين الحمّام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fēn el-ḥammaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Где туалет?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">بكام ده؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bikaam da?</p>
+    <p class="ru" dir="ltr" lang="ru">Сколько это стоит?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">09</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">أنا تايه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana taayih</p>
+    <p class="ru" dir="ltr" lang="ru">Я заблудился м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">10</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">أنا تايهة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana tayha</p>
+    <p class="ru" dir="ltr" lang="ru">Я заблудилась ж.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">11</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">محتاج مساعدة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">miḥtaag mosaaʿada</p>
+    <p class="ru" dir="ltr" lang="ru">Мне нужна помощь м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">12</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">كلّم الإسعاف</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">kallim el-isʿaaf</p>
+    <p class="ru" dir="ltr" lang="ru">Позвоните в скорую</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">13</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">الحساب لو سمحت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-ḥisaab law samaḥt</p>
+    <p class="ru" dir="ltr" lang="ru">Счёт, пожалуйста</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">14</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">ممكن أدفع كارت؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin adfaʿ kaart?</p>
+    <p class="ru" dir="ltr" lang="ru">Можно оплатить картой?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">15</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">مافيش مشكلة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mafiish moshkila</p>
+    <p class="ru" dir="ltr" lang="ru">Нет проблем</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">16</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">خلاص تمام</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">khalaas tamaam</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, договорились</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">17</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">محتاج أوضة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">miḥtaag ooḍa</p>
+    <p class="ru" dir="ltr" lang="ru">Мне нужен номер м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">18</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">هات الحساب</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">haat el-ḥisaab</p>
+    <p class="ru" dir="ltr" lang="ru">Принесите счёт</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">19</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">دي غالية</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">di ghalya</p>
+    <p class="ru" dir="ltr" lang="ru">Это дорого ж.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">20</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">إزاي أبدّل تذاكر؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">izzaay abaddil tazaakir?</p>
+    <p class="ru" dir="ltr" lang="ru">Как поменять билеты?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">21</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">في خدمة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fi khedma</p>
+    <p class="ru" dir="ltr" lang="ru">готов помочь; к вашим услугам</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">22</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">معنديش فكة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ma-ʿandīsh fakka</p>
+    <p class="ru" dir="ltr" lang="ru">У меня нет мелочи</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">23</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">فين صيدلية؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fēn ṣaydaliyya?</p>
+    <p class="ru" dir="ltr" lang="ru">Где аптека?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">24</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">أنا تعبان</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana taʿbaan</p>
+    <p class="ru" dir="ltr" lang="ru">Я плохо себя чувствую м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">25</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">أنا تعبانة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana taʿbaana</p>
+    <p class="ru" dir="ltr" lang="ru">Я плохо себя чувствую ж.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">26</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">محتاج دكتور</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">miḥtaag doktor</p>
+    <p class="ru" dir="ltr" lang="ru">Мне нужен врач м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">27</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">عندي ألم هنا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿandi alam hina</p>
+    <p class="ru" dir="ltr" lang="ru">У меня здесь болит</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">28</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">فين الواي فاي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fēn el-wifi?</p>
+    <p class="ru" dir="ltr" lang="ru">Где Wi-Fi?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">29</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">المفتاح مش شغال</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-miftaaḥ mish shaghaal</p>
+    <p class="ru" dir="ltr" lang="ru">Ключ не работает</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">30</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">إزاي أوصل هناك؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">izzaay awṣal hunaak?</p>
+    <p class="ru" dir="ltr" lang="ru">Как мне туда добраться?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">31</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">ده قريب من هنا؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">da ʔariib min hina?</p>
+    <p class="ru" dir="ltr" lang="ru">Это близко отсюда?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">32</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">ده بعيد؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">da baʿiid?</p>
+    <p class="ru" dir="ltr" lang="ru">Это далеко?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">33</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">أنا متأخر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana mitʔakhkhar</p>
+    <p class="ru" dir="ltr" lang="ru">Я опаздываю м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">34</span>
+  <div class="line-body">
+    
+    <p class="ar" dir="rtl" lang="ar">استنى شوية</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">istanna shwayya</p>
+    <p class="ru" dir="ltr" lang="ru">Подожди немного</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-03" data-kind="lesson" data-file="lesson-m1l1.mp3">
+  <header class="track-head">
+    <span class="track-no">03</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A0</span>
+      </div>
+      <h2 dir="auto">01. Главные звуки египетского арабского <span class="ar-title" dir="rtl" lang="ar">— أهم أصوات المصري</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m1l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:16</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-03" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-03">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Мина</span>
+    <p class="ar" dir="rtl" lang="ar">أهلاً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ahlan</p>
+    <p class="ru" dir="ltr" lang="ru">Привет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Анна</span>
+    <p class="ar" dir="rtl" lang="ar">أهلاً وسهلاً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ahlan wa sahlan</p>
+    <p class="ru" dir="ltr" lang="ru">Добро пожаловать / привет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Мина</span>
+    <p class="ar" dir="rtl" lang="ar">اسمك إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">esmak eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Как тебя зовут?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Анна</span>
+    <p class="ar" dir="rtl" lang="ar">أنا اسمي آنا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana esmi Anna</p>
+    <p class="ru" dir="ltr" lang="ru">Меня зовут Анна</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Мина</span>
+    <p class="ar" dir="rtl" lang="ar">بتتكلمي عربي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bititkallimi ʿarabi?</p>
+    <p class="ru" dir="ltr" lang="ru">Ты говоришь по-арабски?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Анна</span>
+    <p class="ar" dir="rtl" lang="ar">شوية</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">shwayya</p>
+    <p class="ru" dir="ltr" lang="ru">Немного</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Мина</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، عربيك حلو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, ʿarabik ḥelw</p>
+    <p class="ru" dir="ltr" lang="ru">Да, твой арабский хороший</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Анна</span>
+    <p class="ar" dir="rtl" lang="ar">مش أوي، لسه بتعلم</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mish awi, lissa batʿallim</p>
+    <p class="ru" dir="ltr" lang="ru">Не очень, я ещё учусь</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-04" data-kind="lesson" data-file="lesson-m1l2.mp3">
+  <header class="track-head">
+    <span class="track-no">04</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A0</span>
+      </div>
+      <h2 dir="auto">02. Приветствия и вежливость <span class="ar-title" dir="rtl" lang="ar">— التحية والذوق</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m1l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:17</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-04" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-04">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">صباح الخير</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṣabaaḥ el-kheer</p>
+    <p class="ru" dir="ltr" lang="ru">Доброе утро</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Ирина</span>
+    <p class="ar" dir="rtl" lang="ar">صباح النور</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṣabaaḥ en-nuur</p>
+    <p class="ru" dir="ltr" lang="ru">Доброе утро в ответ</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">إزيّك؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">izzayyik?</p>
+    <p class="ru" dir="ltr" lang="ru">Как ты?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Ирина</span>
+    <p class="ar" dir="rtl" lang="ar">كويسة الحمد لله، وإنت؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">kwayyisa el-ḥamdu lillah, w enta?</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, слава Богу. А ты?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، شكراً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, shokran</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично, спасибо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Ирина</span>
+    <p class="ar" dir="rtl" lang="ar">عفواً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿafwan</p>
+    <p class="ru" dir="ltr" lang="ru">Не за что</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">تصبحي على خير</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭṣabbiḥi ʿala khayr</p>
+    <p class="ru" dir="ltr" lang="ru">Спокойной ночи ж.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Ирина</span>
+    <p class="ar" dir="rtl" lang="ar">وإنتِ من كدة، مع السلامة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w enti min kida, maʿ es-salaama</p>
+    <p class="ru" dir="ltr" lang="ru">И тебе того же, до свидания</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-05" data-kind="lesson" data-file="lesson-m1l3.mp3">
+  <header class="track-head">
+    <span class="track-no">05</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A0</span>
+      </div>
+      <h2 dir="auto">03. Знакомство и страны <span class="ar-title" dir="rtl" lang="ar">— التعارف والبلاد</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m1l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:24</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-05" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-05">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Карим</span>
+    <p class="ar" dir="rtl" lang="ar">أهلاً، أنا اسمي كريم</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ahlan, ana esmi Kariim</p>
+    <p class="ru" dir="ltr" lang="ru">Привет, меня зовут Карим</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Елена</span>
+    <p class="ar" dir="rtl" lang="ar">وأنا اسمي إلينا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w ana esmi Elena</p>
+    <p class="ru" dir="ltr" lang="ru">А меня зовут Елена</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Карим</span>
+    <p class="ar" dir="rtl" lang="ar">إنتي منين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">enti minēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Ты откуда?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Елена</span>
+    <p class="ar" dir="rtl" lang="ar">أنا من روسيا. وإنت؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana min Ruusya. W enta?</p>
+    <p class="ru" dir="ltr" lang="ru">Я из России. А ты?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Карим</span>
+    <p class="ar" dir="rtl" lang="ar">أنا من مصر. بتتكلمي عربي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana min Maṣr. Bititkallimi ʿarabi?</p>
+    <p class="ru" dir="ltr" lang="ru">Я из Египта. Ты говоришь по-арабски?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Еلена</span>
+    <p class="ar" dir="rtl" lang="ar">شوية. تشرفنا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">shwayya. Tsharrafna</p>
+    <p class="ru" dir="ltr" lang="ru">Немного. Приятно познакомиться</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Карим</span>
+    <p class="ar" dir="rtl" lang="ar">عربيك حلو كمان</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿarabik ḥelw kamaan</p>
+    <p class="ru" dir="ltr" lang="ru">Твой арабский ещё и хороший</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Елена</span>
+    <p class="ar" dir="rtl" lang="ar">مش أوي، لسه بتعلم. العربي سهل؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mish awi, lissa batʿallim. El-ʿarabi sahl?</p>
+    <p class="ru" dir="ltr" lang="ru">Не очень, я ещё учусь. Арабский лёгкий?</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-06" data-kind="lesson" data-file="lesson-m2l1.mp3">
+  <header class="track-head">
+    <span class="track-no">06</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">04. Местоимения и предложения без есть <span class="ar-title" dir="rtl" lang="ar">— الضمائر والجملة الاسمية</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m2l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:21</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-06" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-06">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Сара</span>
+    <p class="ar" dir="rtl" lang="ar">إنت مهندس؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">enta mohandis?</p>
+    <p class="ru" dir="ltr" lang="ru">Ты инженер?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Алексей</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، أنا مهندس إلكترونيات</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, ana mohandis elektroniyyaat</p>
+    <p class="ru" dir="ltr" lang="ru">Да, я инженер-электронщик</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Сара</span>
+    <p class="ar" dir="rtl" lang="ar">وهي مهندسة كمان؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w heyya mohandisa kamaan?</p>
+    <p class="ru" dir="ltr" lang="ru">И она тоже инженер?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Алексей</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، هي دكتورة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, heyya doktoora</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, она врач</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Сара</span>
+    <p class="ar" dir="rtl" lang="ar">إنتو من روسيا؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">entu min Ruusya?</p>
+    <p class="ru" dir="ltr" lang="ru">Вы из России?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Алексей</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، إحنا من موسكو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, eḥna min Mosko</p>
+    <p class="ru" dir="ltr" lang="ru">Да, мы из Москвы</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Сара</span>
+    <p class="ar" dir="rtl" lang="ar">وإنتِ شغّالة إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w enti shaghghaala eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">А ты кто по профессии ж.?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Алексей</span>
+    <p class="ar" dir="rtl" lang="ar">أنا مهندس، وهي دكتورة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana mohandis, w heyya doktoora</p>
+    <p class="ru" dir="ltr" lang="ru">Я инженер, а она врач</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-07" data-kind="lesson" data-file="lesson-m2l2.mp3">
+  <header class="track-head">
+    <span class="track-no">07</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">05. Род прилагательные и определённость <span class="ar-title" dir="rtl" lang="ar">— المذكر والمؤنث والصفة</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m2l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:18</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-07" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-07">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Надя</span>
+    <p class="ar" dir="rtl" lang="ar">العربية دي جديدة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-ʿarabiyya di gidiida?</p>
+    <p class="ru" dir="ltr" lang="ru">Эта машина новая?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Хасан</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، قديمة بس حلوة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, ʔadiima bas ḥelwa</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, старая, но хорошая</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Надя</span>
+    <p class="ar" dir="rtl" lang="ar">هي سريعة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">heyya sariiʿa?</p>
+    <p class="ru" dir="ltr" lang="ru">Она быстрая?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Хасан</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، وسعرها رخيص</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, w seʿraha rakhiiṣ</p>
+    <p class="ru" dir="ltr" lang="ru">Да, и её цена низкая</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Надя</span>
+    <p class="ar" dir="rtl" lang="ar">البيت ده كبير أوي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-bēt da kibiir awi</p>
+    <p class="ru" dir="ltr" lang="ru">Этот дом очень большой</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Хасан</span>
+    <p class="ar" dir="rtl" lang="ar">بس غالي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bas ghaali</p>
+    <p class="ru" dir="ltr" lang="ru">Но дорогой</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Надя</span>
+    <p class="ar" dir="rtl" lang="ar">فيه أوض كتير؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fiih owaḍ kitiir?</p>
+    <p class="ru" dir="ltr" lang="ru">Там много комнат?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Хасан</span>
+    <p class="ar" dir="rtl" lang="ar">تلات أوضات</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">talaat owaḍaat</p>
+    <p class="ru" dir="ltr" lang="ru">Три комнаты</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-08" data-kind="lesson" data-file="lesson-m2l3.mp3">
+  <header class="track-head">
+    <span class="track-no">08</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">06. Семья и принадлежность <span class="ar-title" dir="rtl" lang="ar">— العيلة والملكية</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m2l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:17</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-08" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-08">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Лейла</span>
+    <p class="ar" dir="rtl" lang="ar">مين في الصورة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">miin fiṣ-ṣuura?</p>
+    <p class="ru" dir="ltr" lang="ru">Кто на фотографии?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Павел</span>
+    <p class="ar" dir="rtl" lang="ar">دي عيلتي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">di ʿeelti</p>
+    <p class="ru" dir="ltr" lang="ru">Это моя семья</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Лейла</span>
+    <p class="ar" dir="rtl" lang="ar">وده أخوك؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w da akhuuk?</p>
+    <p class="ru" dir="ltr" lang="ru">А это твой брат?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Павел</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، اسمه أندريه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, esmu Andrey</p>
+    <p class="ru" dir="ltr" lang="ru">Да, его зовут Андрей</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Лейла</span>
+    <p class="ar" dir="rtl" lang="ar">والبنت دي مين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">wel-bent di miin?</p>
+    <p class="ru" dir="ltr" lang="ru">А эта девушка кто?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Павел</span>
+    <p class="ar" dir="rtl" lang="ar">دي أختي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">di okhti</p>
+    <p class="ru" dir="ltr" lang="ru">Это моя сестра</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Лейла</span>
+    <p class="ar" dir="rtl" lang="ar">وإنت اتجوزت؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w enta itgawwizt?</p>
+    <p class="ru" dir="ltr" lang="ru">А ты женат?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Павел</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، عندي ولاد اتنين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, ʿandi wilaad etnēn</p>
+    <p class="ru" dir="ltr" lang="ru">Да, у меня двое детей</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-09" data-kind="lesson" data-file="lesson-m3l1.mp3">
+  <header class="track-head">
+    <span class="track-no">09</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">07. Вопросительные слова <span class="ar-title" dir="rtl" lang="ar">— كلمات السؤال</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m3l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:18</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-09" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-09">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">اسمك إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">esmak eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Как тебя зовут?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Студент</span>
+    <p class="ar" dir="rtl" lang="ar">اسمي سيرجي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">esmi Sergey</p>
+    <p class="ru" dir="ltr" lang="ru">Меня зовут Сергей</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">ساكن فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">saakin fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Где ты живёшь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Студент</span>
+    <p class="ar" dir="rtl" lang="ar">ساكن في الجيزة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">saakin fil-Giiza</p>
+    <p class="ru" dir="ltr" lang="ru">Живу в Гизе</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">بتتعلم عربي ليه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bititʿallim ʿarabi lēh?</p>
+    <p class="ru" dir="ltr" lang="ru">Почему ты учишь арабский?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Студент</span>
+    <p class="ar" dir="rtl" lang="ar">عشان الشغل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿashaan esh-shoghl</p>
+    <p class="ru" dir="ltr" lang="ru">Для работы</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">عايز تشتغل فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿaayiz tishtighal fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Где хочешь работать?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Студент</span>
+    <p class="ar" dir="rtl" lang="ar">مش عارف برضه، ممكن مصر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mish ʿaarif barḍo, mumkin Maṣr</p>
+    <p class="ru" dir="ltr" lang="ru">Пока не знаю, может быть, Египет</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-10" data-kind="lesson" data-file="lesson-m3l2.mp3">
+  <header class="track-head">
+    <span class="track-no">10</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">08. Числа возраст и телефон <span class="ar-title" dir="rtl" lang="ar">— الأرقام والسن والتليفون</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m3l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:18</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-10" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-10">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Сотрудник</span>
+    <p class="ar" dir="rtl" lang="ar">رقم تليفونك كام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">raʔm telefuunak kaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Какой у вас номер телефона?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">زيرو عشرة، اتنين تلاتة…</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ziiro ʿashara, etnēn talaata…</p>
+    <p class="ru" dir="ltr" lang="ru">Ноль десять, два три…</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Сотрудник</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن تاني بالراحة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin taani bir-raaḥa?</p>
+    <p class="ru" dir="ltr" lang="ru">Можно ещё раз, медленно?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">طبعاً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭabʿan</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Сотрудник</span>
+    <p class="ar" dir="rtl" lang="ar">وسنك كام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w sinnak kaam?</p>
+    <p class="ru" dir="ltr" lang="ru">А сколько вам лет?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">عندي تمانية وعشرين سنة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿandi tamaanya w ʿishriin sana</p>
+    <p class="ru" dir="ltr" lang="ru">Мне двадцать восемь лет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Сотрудник</span>
+    <p class="ar" dir="rtl" lang="ar">والفروع كام واحد؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w el-furuuʿ kaam waaḥid?</p>
+    <p class="ru" dir="ltr" lang="ru">А сколько отделений?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">تلاتة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">talaata</p>
+    <p class="ru" dir="ltr" lang="ru">Три</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-11" data-kind="lesson" data-file="lesson-m3l3.mp3">
+  <header class="track-head">
+    <span class="track-no">11</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">09. Время дни и даты <span class="ar-title" dir="rtl" lang="ar">— الوقت والأيام والتاريخ</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m3l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:20</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-11" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-11">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Антон</span>
+    <p class="ar" dir="rtl" lang="ar">الميعاد إمتى؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-miiʿaad emta?</p>
+    <p class="ru" dir="ltr" lang="ru">Когда встреча?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Дина</span>
+    <p class="ar" dir="rtl" lang="ar">بكرة الساعة اتنين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bokra es-saaʿa etnēn</p>
+    <p class="ru" dir="ltr" lang="ru">Завтра в два</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Антон</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن اتنين ونص؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin etnēn w noṣṣ?</p>
+    <p class="ru" dir="ltr" lang="ru">Можно в половине третьего?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Дина</span>
+    <p class="ar" dir="rtl" lang="ar">ماشي، مافيش مشكلة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">maashi, mafiish moshkila</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, без проблем</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Антон</span>
+    <p class="ar" dir="rtl" lang="ar">في المكتب؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fil-maktab?</p>
+    <p class="ru" dir="ltr" lang="ru">В офисе?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Дина</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، أونلاين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, online</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, онлайн</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Антон</span>
+    <p class="ar" dir="rtl" lang="ar">والميعاد بعد الفطور؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w el-miiʿaad baʿd el-fiṭuur?</p>
+    <p class="ru" dir="ltr" lang="ru">Встреча после завтрака?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Дина</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، الساعة عشرة بالظبط</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, es-saaʿa ʿashara bi-ẓẓabṭ</p>
+    <p class="ru" dir="ltr" lang="ru">Да, ровно в десять</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-12" data-kind="lesson" data-file="lesson-m4l1.mp3">
+  <header class="track-head">
+    <span class="track-no">12</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">10. Настоящее время и приставка b <span class="ar-title" dir="rtl" lang="ar">— المضارع وحرف الباء</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m4l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:17</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-12" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-12">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Мариам</span>
+    <p class="ar" dir="rtl" lang="ar">بتشتغل إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitishtighal eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Кем ты работаешь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Игорь</span>
+    <p class="ar" dir="rtl" lang="ar">بشتغل مهندس</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bashtighal mohandis</p>
+    <p class="ru" dir="ltr" lang="ru">Я работаю инженером</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Мариам</span>
+    <p class="ar" dir="rtl" lang="ar">بتروح الشغل إزاي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitruuḥ esh-shoghl izzaay?</p>
+    <p class="ru" dir="ltr" lang="ru">Как ты добираешься на работу?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Игорь</span>
+    <p class="ar" dir="rtl" lang="ar">بروح بالمترو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">baruuḥ bil-metro</p>
+    <p class="ru" dir="ltr" lang="ru">Езжу на метро</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Мариам</span>
+    <p class="ar" dir="rtl" lang="ar">وبترجع إمتى؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w bitirgaʿ emta?</p>
+    <p class="ru" dir="ltr" lang="ru">А когда возвращаешься?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Игорь</span>
+    <p class="ar" dir="rtl" lang="ar">برجع الساعة ستة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bargaʿ es-saaʿa setta</p>
+    <p class="ru" dir="ltr" lang="ru">Возвращаюсь в шесть</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Мариам</span>
+    <p class="ar" dir="rtl" lang="ar">بتشتغل في البيت كمان؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitishtighal fil-bēt kamaan?</p>
+    <p class="ru" dir="ltr" lang="ru">Работаешь ещё и дома?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Игорь</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، أفضّل أفصل الشغل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, afaḍḍil afṣil esh-shoghl</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, предпочитаю разделять работу</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-13" data-kind="lesson" data-file="lesson-m4l2.mp3">
+  <header class="track-head">
+    <span class="track-no">13</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1</span>
+      </div>
+      <h2 dir="auto">11. Распорядок дня и частотность <span class="ar-title" dir="rtl" lang="ar">— الروتين اليومي والتكرار</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m4l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:21</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-13" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-13">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Нур</span>
+    <p class="ar" dir="rtl" lang="ar">بتصحى الساعة كام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitṣḥa es-saaʿa kaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Во сколько ты просыпаешься?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Виктор</span>
+    <p class="ar" dir="rtl" lang="ar">بصحى سبعة ونص</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">baṣḥa sabʿa w noṣṣ</p>
+    <p class="ru" dir="ltr" lang="ru">Просыпаюсь в половине восьмого</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Нур</span>
+    <p class="ar" dir="rtl" lang="ar">وبتفطر؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w bitafṭar?</p>
+    <p class="ru" dir="ltr" lang="ru">А завтракаешь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Виктор</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، دايماً بفطر في البيت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, daayman bafṭar fil-bēt</p>
+    <p class="ru" dir="ltr" lang="ru">Да, всегда завтракаю дома</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Нур</span>
+    <p class="ar" dir="rtl" lang="ar">بتنام بدري؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitnaam badri?</p>
+    <p class="ru" dir="ltr" lang="ru">Ложишься рано?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Виктор</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، غالباً بنام متأخر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, ghaaliban banaam mitʔakhkhar</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, обычно ложусь поздно</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Нур</span>
+    <p class="ar" dir="rtl" lang="ar">وبتمرن كويس؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w bitmarran kwayyis?</p>
+    <p class="ru" dir="ltr" lang="ru">И хорошо тренируешься?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Виктор</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، ساعات في النادي وبعدين بنام</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, saaʿaat fin-naadi w baʿdēn banaam</p>
+    <p class="ru" dir="ltr" lang="ru">Да, иногда в клубе, а потом сплю</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-14" data-kind="lesson" data-file="lesson-m4l3.mp3">
+  <header class="track-head">
+    <span class="track-no">14</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1–A2</span>
+      </div>
+      <h2 dir="auto">12. Отрицание желания и возможность <span class="ar-title" dir="rtl" lang="ar">— النفي والرغبة والإمكانية</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m4l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:20</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-14" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-14">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">عايز حاجة تانية؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿaayiz ḥaaga tanya?</p>
+    <p class="ru" dir="ltr" lang="ru">Хотите что-нибудь ещё?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">لأ شكراً، بس محتاج كيس</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ shokran, bas miḥtaag kiis</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, спасибо, но мне нужен пакет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن تدفع كارت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin tidfaʿ kaart</p>
+    <p class="ru" dir="ltr" lang="ru">Можно заплатить картой</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">الكارت مش شغال</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-kaart mish shaghghaal</p>
+    <p class="ru" dir="ltr" lang="ru">Карта не работает</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">معلش، لازم كاش</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">maʿlesh, laazim kaash</p>
+    <p class="ru" dir="ltr" lang="ru">Извините, нужна наличка</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">مافيش مشكلة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mafiish moshkila</p>
+    <p class="ru" dir="ltr" lang="ru">Без проблем</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">لو سمحت، اتفضل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">law samaḥt, itfaḍḍal</p>
+    <p class="ru" dir="ltr" lang="ru">Пожалуйста, возьмите</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">شكراً، تسلم</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">shokran, tislam</p>
+    <p class="ru" dir="ltr" lang="ru">Спасибо большое</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-15" data-kind="lesson" data-file="lesson-m5l1.mp3">
+  <header class="track-head">
+    <span class="track-no">15</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">13. Прошедшее время <span class="ar-title" dir="rtl" lang="ar">— الماضي</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m5l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:18</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-15" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-15">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Хода</span>
+    <p class="ar" dir="rtl" lang="ar">عملت إيه امبارح؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿamalt eeh embaareḥ?</p>
+    <p class="ru" dir="ltr" lang="ru">Что ты делал вчера?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Дмитрий</span>
+    <p class="ar" dir="rtl" lang="ar">رحت المتحف المصري</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">roḥt el-matḥaf el-maṣri</p>
+    <p class="ru" dir="ltr" lang="ru">Я ходил в Египетский музей</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Хода</span>
+    <p class="ar" dir="rtl" lang="ar">عجبك؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿagabak?</p>
+    <p class="ru" dir="ltr" lang="ru">Тебе понравилось?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Дмитрий</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، عجبني أوي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, ʿagabni awi</p>
+    <p class="ru" dir="ltr" lang="ru">Да, очень понравилось</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Хода</span>
+    <p class="ar" dir="rtl" lang="ar">روحت لوحدك؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">roḥt li-waḥdak?</p>
+    <p class="ru" dir="ltr" lang="ru">Ты ходил один?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Дмитрий</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، رحت مع أصحابي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, roḥt maʿ aṣḥaabi</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, ходил с друзьями</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Хода</span>
+    <p class="ar" dir="rtl" lang="ar">وبعدين رجعت فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w baʿdēn ragaʿt fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">А потом куда пошёл?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Дмитрий</span>
+    <p class="ar" dir="rtl" lang="ar">رجعت البيت وقعدت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ragaʿt el-bēt w ʔaʿadt</p>
+    <p class="ru" dir="ltr" lang="ru">Вернулся домой и отдыхал</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-16" data-kind="lesson" data-file="lesson-m5l2.mp3">
+  <header class="track-head">
+    <span class="track-no">16</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">14. Будущее и планы <span class="ar-title" dir="rtl" lang="ar">— المستقبل والخطط</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m5l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:20</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-16" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-16">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Самир</span>
+    <p class="ar" dir="rtl" lang="ar">هتعمل إيه في الويك إند؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">hatʿamil eeh fil-weekend?</p>
+    <p class="ru" dir="ltr" lang="ru">Что будешь делать на выходных?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Ольга</span>
+    <p class="ar" dir="rtl" lang="ar">هاروح إسكندرية</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">haruuḥ Eskendereyya</p>
+    <p class="ru" dir="ltr" lang="ru">Поеду в Александрию</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Самир</span>
+    <p class="ar" dir="rtl" lang="ar">هتسافري إمتى؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">hat-saafri emta?</p>
+    <p class="ru" dir="ltr" lang="ru">Когда поедешь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Ольга</span>
+    <p class="ar" dir="rtl" lang="ar">الجمعة الصبح إن شاء الله</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-gomʿa eṣ-ṣobḥ in shaaʔ Allah</p>
+    <p class="ru" dir="ltr" lang="ru">В пятницу утром, если Бог даст</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Самир</span>
+    <p class="ar" dir="rtl" lang="ar">وهترجعي إمتى؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w hatirgaʿi emta?</p>
+    <p class="ru" dir="ltr" lang="ru">А когда вернёшься?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Ольга</span>
+    <p class="ar" dir="rtl" lang="ar">الأحد بالليل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-ḥadd bil-lēl</p>
+    <p class="ru" dir="ltr" lang="ru">В воскресенье вечером</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Самир</span>
+    <p class="ar" dir="rtl" lang="ar">هتكلميني لما توصلي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">hatkallimiini lamma tiwṣali?</p>
+    <p class="ru" dir="ltr" lang="ru">Позвонишь, когда доберёшься?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Ольга</span>
+    <p class="ar" dir="rtl" lang="ar">أكيد، هكلمك</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">akiid, hakallimak</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно, позвоню</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-17" data-kind="lesson" data-file="lesson-m5l3.mp3">
+  <header class="track-head">
+    <span class="track-no">17</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">15. Повелительное наклонение и вежливые просьбы <span class="ar-title" dir="rtl" lang="ar">— الأمر والطلب بأدب</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m5l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:23</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-17" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-17">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">لو سمحت، ممكن تساعدني؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">law samaḥt, momkin tsaʿidni?</p>
+    <p class="ru" dir="ltr" lang="ru">Извините, можете мне помочь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">طبعاً، قول</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭabʿan, ʔuul</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно, говорите</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن تقول لي المكان فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin tʔuul-li el-makaan fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Скажите, пожалуйста, где это место?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">بص، امشي على طول</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">boṣṣ, imshi ʿala ṭuul</p>
+    <p class="ru" dir="ltr" lang="ru">Смотрите, идите прямо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن بالراحة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin bir-raaḥa?</p>
+    <p class="ru" dir="ltr" lang="ru">Можно помедленнее?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">حاضر، ما تقلقش</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥaaḍir, ma-tiʔlaʔ-sh</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, не волнуйтесь</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">اشكرك أوي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ashkurak awi</p>
+    <p class="ru" dir="ltr" lang="ru">Очень вам благодарен</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">العفو، وممكن ترجع لو احتجت حاجة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-ʿafu, w mumkin tirgaʿ law iḥtaagt ḥaaga</p>
+    <p class="ru" dir="ltr" lang="ru">Пожалуйста, и можете вернуться, если понадобится</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-18" data-kind="lesson" data-file="lesson-m6l1.mp3">
+  <header class="track-head">
+    <span class="track-no">18</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1–A2</span>
+      </div>
+      <h2 dir="auto">16. Система спряжения: основы глагола <span class="ar-title" dir="rtl" lang="ar">— نظام التصريف: جذر الفعل</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m6l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:18</span>
+        <span aria-hidden="true">·</span><span>6 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-18" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-18">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">إحنا النهارده هناخد الأفعال</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">eḥna en-naharda hanakhod el-afʿaal</p>
+    <p class="ru" dir="ltr" lang="ru">Сегодня мы займёмся глаголами</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Ученик</span>
+    <p class="ar" dir="rtl" lang="ar">مثلاً إزاي بنصرف نكتب؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mathalan izzaay binsarrif niktib?</p>
+    <p class="ru" dir="ltr" lang="ru">Например, как спрягать «писать»?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">من جذر ك-ت-ب</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">min gidr k-t-b</p>
+    <p class="ru" dir="ltr" lang="ru">От корня ك-ت-ب</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Ученик</span>
+    <p class="ar" dir="rtl" lang="ar">يعني حافض الجذر أهم</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">yaʿni ḥaafiḍ el-gidr ahamm</p>
+    <p class="ru" dir="ltr" lang="ru">Значит, главное — запомнить корень</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">بالظبط. سافر زيّه: س-ف-ر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bil-ẓabṭ. Saafar zayyu: s-f-r</p>
+    <p class="ru" dir="ltr" lang="ru">Точно. Как в «путешествовать»: س-ف-ر</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Ученик</span>
+    <p class="ar" dir="rtl" lang="ar">فهمت، شكراً للشرح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fhimt, shokran lesh-sharḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Понял, спасибо за объяснение</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-19" data-kind="lesson" data-file="lesson-m6l2.mp3">
+  <header class="track-head">
+    <span class="track-no">19</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1–A2</span>
+      </div>
+      <h2 dir="auto">17. Настоящее время: приставки и чередование гласных <span class="ar-title" dir="rtl" lang="ar">— المضارع: البادئات وتبادل الحركات</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m6l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:14</span>
+        <span aria-hidden="true">·</span><span>6 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-19" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-19">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Лена</span>
+    <p class="ar" dir="rtl" lang="ar">بتشتغل فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitshtaghal fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Где ты работаешь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">بشتغل في شركة برمجة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitshtaghal fi sharikat barmaga</p>
+    <p class="ru" dir="ltr" lang="ru">Я работаю в IT-компании</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Лена</span>
+    <p class="ar" dir="rtl" lang="ar">بتعمل إيه بالظبط؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitiʿmil eeh bil-ẓabṭ?</p>
+    <p class="ru" dir="ltr" lang="ru">Что именно ты делаешь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">بكتب برامج وبحلّ مشاكل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">baktib baraamig w baḥill mashaakil</p>
+    <p class="ru" dir="ltr" lang="ru">Пишу программы и решаю задачи</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Лена</span>
+    <p class="ar" dir="rtl" lang="ar">وبتدرس إنجليزي كمان؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w bitidris inglizi kamaan?</p>
+    <p class="ru" dir="ltr" lang="ru">И учишь английский тоже?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، بدور على وقت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, badawwar ʿala waʔt</p>
+    <p class="ru" dir="ltr" lang="ru">Да, ищу время</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-20" data-kind="lesson" data-file="lesson-m6l3.mp3">
+  <header class="track-head">
+    <span class="track-no">20</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A1–A2</span>
+      </div>
+      <h2 dir="auto">18. Разные породы: faʿʿala и faaʿala <span class="ar-title" dir="rtl" lang="ar">— أوزان مختلفة: فيعلَ وفيعلَ</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m6l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:16</span>
+        <span aria-hidden="true">·</span><span>6 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-20" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-20">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Саша</span>
+    <p class="ar" dir="rtl" lang="ar">عايز أتعلّم أعمل أكل مصري</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿaayiz itʿallam aʿmil akl maṣri</p>
+    <p class="ru" dir="ltr" lang="ru">Хочу научиться готовить египетскую еду</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Девочка</span>
+    <p class="ar" dir="rtl" lang="ar">حلو! إنتِ جربتي فول وطعمية؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥelw! Inta garrabt fuul w ṭaʿmiyya?</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично! Ты пробовал фул и таамию?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Саша</span>
+    <p class="ar" dir="rtl" lang="ar">جربت فول بالزيت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">garrabt fuul biz-zeet</p>
+    <p class="ru" dir="ltr" lang="ru">Пробовал фул с маслом</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Девочка</span>
+    <p class="ar" dir="rtl" lang="ar">تعالّي أطبّخلنا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">taʿaali aṭabbakhlna</p>
+    <p class="ru" dir="ltr" lang="ru">Приходи, приготовлю нам</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Сашا</span>
+    <p class="ar" dir="rtl" lang="ar">هات نرتّب نشرب قهوة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">haat, nirtabb, nishrab ʔahwa</p>
+    <p class="ru" dir="ltr" lang="ru">Давай приберёмся и выпьем кофе</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Девочка</span>
+    <p class="ar" dir="rtl" lang="ar">ابتدّينا نحضّر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ibtadeena niḥaḍḍir</p>
+    <p class="ru" dir="ltr" lang="ru">Мы уже начали готовить</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-21" data-kind="lesson" data-file="lesson-m7l1.mp3">
+  <header class="track-head">
+    <span class="track-no">21</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">19. Приставка it-: возвратные и страдательные глаголы <span class="ar-title" dir="rtl" lang="ar">— it-: الانعكاس والمبني للمجهول</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m7l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:15</span>
+        <span aria-hidden="true">·</span><span>6 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-21" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-21">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Мама</span>
+    <p class="ar" dir="rtl" lang="ar">إيه اللي حصل في المطبخ؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">eeh illi ḥaṣal fil-maṭbakh?</p>
+    <p class="ru" dir="ltr" lang="ru">Что случилось на кухне?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Сын</span>
+    <p class="ar" dir="rtl" lang="ar">القدح اكسر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-ʔodaḥ inkasar</p>
+    <p class="ru" dir="ltr" lang="ru">Стакан разбился</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Мама</span>
+    <p class="ar" dir="rtl" lang="ar">إزاي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">izzaay?</p>
+    <p class="ru" dir="ltr" lang="ru">Как?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Сын</span>
+    <p class="ar" dir="rtl" lang="ar">وقع من إيدي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">wiʔiʿ min iidi</p>
+    <p class="ru" dir="ltr" lang="ru">Упал из моих рук</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Мама</span>
+    <p class="ar" dir="rtl" lang="ar">لا مشكلة، المهم حدّك صحيح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laa mishkila, el-muhimm ḥaddak ṣaḥīḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Нет проблем, главное — ты цел</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Сын</span>
+    <p class="ar" dir="rtl" lang="ar">أنا كويس، الحمد لله</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ana kwayyis, el-ḥamdu lillaah</p>
+    <p class="ru" dir="ltr" lang="ru">Я в порядке, слава Богу</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-22" data-kind="lesson" data-file="lesson-m7l2.mp3">
+  <header class="track-head">
+    <span class="track-no">22</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">20. Команды, просьбы и формы для всех <span class="ar-title" dir="rtl" lang="ar">— الأمر والطلبات لكل الأشخاص</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m7l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:17</span>
+        <span aria-hidden="true">·</span><span>6 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-22" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-22">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">افتح الكراسة وقول الكلمة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">iftaḥ el-kurrāsa w ʔuul el-kalima</p>
+    <p class="ru" dir="ltr" lang="ru">Открой тетрадь и скажи слово</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Ученик</span>
+    <p class="ar" dir="rtl" lang="ar">يعني «باب»؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">yaʿni «baab»?</p>
+    <p class="ru" dir="ltr" lang="ru">Это значит «дверь»?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، وبصّ على الصورة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, w boṣṣ ʿala eṣ-ṣuura</p>
+    <p class="ru" dir="ltr" lang="ru">Да, и посмотри на картинку</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Ученик</span>
+    <p class="ar" dir="rtl" lang="ar">هذا «شباك»</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">da «shobbaak»</p>
+    <p class="ru" dir="ltr" lang="ru">Это «окно»</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Учитель</span>
+    <p class="ar" dir="rtl" lang="ar">ممتاز! ساعها قل «اقفل الشباك»</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mumtaaz! Saʿha, ʔuul «iʔfil esh-shobbaak»</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично! Теперь скажи «закрой окно»</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Ученик</span>
+    <p class="ar" dir="rtl" lang="ar">اقفل الشباك</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">iʔfil esh-shobbaak</p>
+    <p class="ru" dir="ltr" lang="ru">Закрой окно</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-23" data-kind="lesson" data-file="lesson-m7l3.mp3">
+  <header class="track-head">
+    <span class="track-no">23</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">21. Глаголы движения и предлоги <span class="ar-title" dir="rtl" lang="ar">— أفعال الحركة وحروف الجر</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m7l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:17</span>
+        <span aria-hidden="true">·</span><span>6 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-23" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-23">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Аня</span>
+    <p class="ar" dir="rtl" lang="ar">هتروح المكان ده إزاي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">hatruḥ el-makaan da izzaay?</p>
+    <p class="ru" dir="ltr" lang="ru">Как ты поедешь в это место?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">أول حاجة أنزل المحطة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">awwil ḥaaga anzil el-maḥaṭṭa</p>
+    <p class="ru" dir="ltr" lang="ru">Сначала спущусь на станцию</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Аня</span>
+    <p class="ar" dir="rtl" lang="ar">وبعدين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w baʿdeen?</p>
+    <p class="ru" dir="ltr" lang="ru">А потом?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">بعدين أمشي وآخد المترو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">baʿdeen amshi w aakhod el-metro</p>
+    <p class="ru" dir="ltr" lang="ru">Потом пройдусь и возьму метро</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Аня</span>
+    <p class="ar" dir="rtl" lang="ar">مش متأخر قوي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mesh mitʔakhkhar ʔawi?</p>
+    <p class="ru" dir="ltr" lang="ru">Не слишком ли поздно?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Омар</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، ألحق رحلة قبل الساعة تسعة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, alḥaʔ riḥla ʔabl es-saaʿa tatsaʿa</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, успею на рейс до девяти</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-24" data-kind="lesson" data-file="lesson-m8l1.mp3">
+  <header class="track-head">
+    <span class="track-no">24</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">22. Дом комнаты и местоположение <span class="ar-title" dir="rtl" lang="ar">— البيت والمكان</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m8l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:23</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-24" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-24">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Риелтор</span>
+    <p class="ar" dir="rtl" lang="ar">الشقة فيها أوضتين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">esh-shaʔʔa fiiha ooḍtēn</p>
+    <p class="ru" dir="ltr" lang="ru">В квартире две комнаты</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">وفيه بلكونة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w fiih balakoona?</p>
+    <p class="ru" dir="ltr" lang="ru">А балкон есть?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Риелтор</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، البلكونة جنب المطبخ</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, el-balakoona gamb el-maṭbakh</p>
+    <p class="ru" dir="ltr" lang="ru">Да, балкон рядом с кухней</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">الحمّام فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-ḥammaam fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Где ванная?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Риелтор</span>
+    <p class="ar" dir="rtl" lang="ar">قدّام أوضة النوم</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʔoddaam ooḍit en-noom</p>
+    <p class="ru" dir="ltr" lang="ru">Напротив спальни</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">حلو، بس مافيش أسانسير؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥelw, bas mafiish asanseer?</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, но лифта нет?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Риелтор</span>
+    <p class="ar" dir="rtl" lang="ar">فيه أسانسير في المبنى</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fiih asanseer fil-mabna</p>
+    <p class="ru" dir="ltr" lang="ru">В здании есть лифт</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">حلو، والشقة بعيدة عن المترو؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥelw, w esh-shaʔʔa baʿiida ʿan el-metro?</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично, а квартира далеко от метро?</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-25" data-kind="lesson" data-file="lesson-m8l2.mp3">
+  <header class="track-head">
+    <span class="track-no">25</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">23. Дорога и ориентиры <span class="ar-title" dir="rtl" lang="ar">— السؤال عن الطريق</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m8l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:22</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-25" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-25">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">لو سمحت، أنا تايه. المترو فين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">law samaḥt, ana taayih. El-metro fēn?</p>
+    <p class="ru" dir="ltr" lang="ru">Извините, я заблудился. Где метро?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">قريب، امشي على طول</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʔorayyib, imshi ʿala ṭuul</p>
+    <p class="ru" dir="ltr" lang="ru">Близко, идите прямо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">وبعدين؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w baʿdēn?</p>
+    <p class="ru" dir="ltr" lang="ru">А потом?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">عدّي الإشارة ولف شمال</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿaddi el-ishaara w leff shimaal</p>
+    <p class="ru" dir="ltr" lang="ru">Пройдите светофор и поверните налево</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">هو بعيد؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">howwa baʿiid?</p>
+    <p class="ru" dir="ltr" lang="ru">Это далеко?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، خمس دقايق</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, khamas daʔaayeʔ</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, пять минут</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Турист</span>
+    <p class="ar" dir="rtl" lang="ar">بعد الإشارة في كوبري؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">baʿd el-ishaara fi kobri?</p>
+    <p class="ru" dir="ltr" lang="ru">За светофором есть мост?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Прохожий</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، عدّيه ولف يمين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, ʿaddihu w leff yimiin</p>
+    <p class="ru" dir="ltr" lang="ru">Да, перейдите его и направо</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-26" data-kind="lesson" data-file="lesson-m8l3.mp3">
+  <header class="track-head">
+    <span class="track-no">26</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">24. Транспорт и такси <span class="ar-title" dir="rtl" lang="ar">— المواصلات والتاكسي</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m8l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:21</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-26" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-26">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Пассажир</span>
+    <p class="ar" dir="rtl" lang="ar">لو سمحت، خدني للمطار</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">law samaḥt, khodni lil-maṭaar</p>
+    <p class="ru" dir="ltr" lang="ru">Отвезите меня в аэропорт, пожалуйста</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Водитель</span>
+    <p class="ar" dir="rtl" lang="ar">حاضر. مستعجل؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥaaḍir. Mistaʿgil?</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо. Вы спешите?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Пассажир</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، الطيارة الساعة تسعة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, eṭ-ṭayyaara es-saaʿa tesʿa</p>
+    <p class="ru" dir="ltr" lang="ru">Да, самолёт в девять</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Водитель</span>
+    <p class="ar" dir="rtl" lang="ar">الطريق زحمة شوية</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">eṭ-ṭariiʔ zaḥma shwayya</p>
+    <p class="ru" dir="ltr" lang="ru">На дороге небольшая пробка</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Пассажир</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن تشغّل العداد؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin tshaghghal el-ʿaddaad?</p>
+    <p class="ru" dir="ltr" lang="ru">Можете включить счётчик?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Водитель</span>
+    <p class="ar" dir="rtl" lang="ar">طبعاً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭabʿan</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Пассажир</span>
+    <p class="ar" dir="rtl" lang="ar">وكام الأجرة للمطار؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w kaam el-ogra lil-maṭaar?</p>
+    <p class="ru" dir="ltr" lang="ru">А сколько стоит проезд до аэропорта?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Водитель</span>
+    <p class="ar" dir="rtl" lang="ar">حوالي ميتين جنيه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥawaalee miteen gineeh</p>
+    <p class="ru" dir="ltr" lang="ru">Около двухсот фунтов</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-27" data-kind="lesson" data-file="lesson-m9l1.mp3">
+  <header class="track-head">
+    <span class="track-no">27</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">25. Еда и заказ в кафе <span class="ar-title" dir="rtl" lang="ar">— الأكل والطلب في الكافيه</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m9l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:21</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-27" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-27">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Официант</span>
+    <p class="ar" dir="rtl" lang="ar">تحب تطلب إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tiḥibb tiṭlob eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Что желаете заказать?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">عايز فراخ مع رز وسلطة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿaayiz firaakh maʿ rozz w salaṭa</p>
+    <p class="ru" dir="ltr" lang="ru">Хочу курицу с рисом и салатом</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Официант</span>
+    <p class="ar" dir="rtl" lang="ar">تشرب إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tishrab eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Что будете пить?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">مَيّة وقهوة من غير سكر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mayya w ʔahwa min gheir sokkar</p>
+    <p class="ru" dir="ltr" lang="ru">Воду и кофе без сахара</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Официант</span>
+    <p class="ar" dir="rtl" lang="ar">حاجة تانية؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥaaga tanya?</p>
+    <p class="ru" dir="ltr" lang="ru">Что-нибудь ещё?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">لأ شكراً. الحساب لو سمحت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ shokran. El-ḥisaab law samaḥt</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, спасибо. Счёт, пожалуйста</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Официант</span>
+    <p class="ar" dir="rtl" lang="ar">يلا، يكون كله حلو؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">yallah, yikuun kullu ḥelwa?</p>
+    <p class="ru" dir="ltr" lang="ru">Всё было хорошо?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">ممتاز، شكراً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mumtaaz, shokran</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично, спасибо</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-28" data-kind="lesson" data-file="lesson-m9l2.mp3">
+  <header class="track-head">
+    <span class="track-no">28</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">26. Рынок цены и количества <span class="ar-title" dir="rtl" lang="ar">— السوق والأسعار والكميات</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m9l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:20</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-28" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-28">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">المانجا بكام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-manga bikaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Сколько стоит манго?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">الكيلو بمية جنيه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-kiilo bi-meyya geneeh</p>
+    <p class="ru" dir="ltr" lang="ru">Сто фунтов за килограмм</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">غالي أوي. مافيش خصم؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ghaali awi. Mafiish khaṣm?</p>
+    <p class="ru" dir="ltr" lang="ru">Очень дорого. Скидки нет?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">عشانك تسعين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿashaanak tesʿiin</p>
+    <p class="ru" dir="ltr" lang="ru">Для вас девяносто</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، عايز نص كيلو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, ʿaayiz noṣṣ kiilo</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, хочу полкилограмма</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">حاضر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥaaḍir</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">وتفاح كمان كيلو</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w tuffāḥ kamaan kiilo</p>
+    <p class="ru" dir="ltr" lang="ru">И яблок тоже килограмм</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">اتفضل، كله طازة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">itfaḍḍal, kullu ṭaaza</p>
+    <p class="ru" dir="ltr" lang="ru">Пожалуйста, всё свежее</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-29" data-kind="lesson" data-file="lesson-m9l3.mp3">
+  <header class="track-head">
+    <span class="track-no">29</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">27. Одежда размер и цвет <span class="ar-title" dir="rtl" lang="ar">— الهدوم والمقاس واللون</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m9l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:20</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-29" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-29">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن أقيس القميص ده؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin aʔiis el-ʔamiiṣ da?</p>
+    <p class="ru" dir="ltr" lang="ru">Можно примерить эту рубашку?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">طبعاً. مقاسك كام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭabʿan. Maʔaasak kaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно. Какой у вас размер?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">غالباً لارج</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ghaaliban large</p>
+    <p class="ru" dir="ltr" lang="ru">Обычно L</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">اتفضل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">itfaḍḍal</p>
+    <p class="ru" dir="ltr" lang="ru">Пожалуйста, возьмите</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">واسع شوية. فيه مقاس أصغر؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">waasiʿ shwayya. Fiih maʔaas aṣghar?</p>
+    <p class="ru" dir="ltr" lang="ru">Немного широко. Есть размер поменьше?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، لحظة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, laḥẓa</p>
+    <p class="ru" dir="ltr" lang="ru">Да, минуту</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Покупатель</span>
+    <p class="ar" dir="rtl" lang="ar">دي مظبوطة أكتر</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">di maẓbuuṭa akthar</p>
+    <p class="ru" dir="ltr" lang="ru">Эта подходит лучше ж.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Продавец</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، وهتبقي حلوة عليك</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, w hatiibʔa ḥelwa ʿalēk</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично, она будет хорошо на вас выглядеть</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-30" data-kind="lesson" data-file="lesson-m10l1.mp3">
+  <header class="track-head">
+    <span class="track-no">30</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">28. Работа профессии и обязанности <span class="ar-title" dir="rtl" lang="ar">— الشغل والمهن والمسؤوليات</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m10l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:24</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-30" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-30">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Интервьюер</span>
+    <p class="ar" dir="rtl" lang="ar">عندك خبرة قد إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿandak khibra ʔadd eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Сколько у вас опыта?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Кандидат</span>
+    <p class="ar" dir="rtl" lang="ar">عندي خمس سنين خبرة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿandi khamas siniin khibra</p>
+    <p class="ru" dir="ltr" lang="ru">У меня пять лет опыта</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Интервьюер</span>
+    <p class="ar" dir="rtl" lang="ar">كنت مسؤول عن إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">kunt masʔuul ʿan eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">За что вы отвечали?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Кандидат</span>
+    <p class="ar" dir="rtl" lang="ar">كنت مسؤول عن صيانة الأجهزة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">kunt masʔuul ʿan ṣiyaanit el-aghiiza</p>
+    <p class="ru" dir="ltr" lang="ru">Я отвечал за ремонт оборудования</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Интервьюер</span>
+    <p class="ar" dir="rtl" lang="ar">بتعرف تشتغل ضمن فريق؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitaʿraf tishtaghal ḍimn fariiʔ?</p>
+    <p class="ru" dir="ltr" lang="ru">Умеете работать в команде?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Кандидат</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، طبعاً</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, ṭabʿan</p>
+    <p class="ru" dir="ltr" lang="ru">Да, конечно</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Интервьюер</span>
+    <p class="ar" dir="rtl" lang="ar">ودوامك في النهار ولا الليل؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w dawaamak fin-nahaar wala lil-lēl?</p>
+    <p class="ru" dir="ltr" lang="ru">У вас график дневной или ночной?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Кандидат</span>
+    <p class="ar" dir="rtl" lang="ar">بالنهار، بس ممكن اجتماعات</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bin-nahaar, bas mumkin igtimaaʿaat</p>
+    <p class="ru" dir="ltr" lang="ru">Дневной, но бывают совещания</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-31" data-kind="lesson" data-file="lesson-m10l2.mp3">
+  <header class="track-head">
+    <span class="track-no">31</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">29. Офис звонки и договорённости <span class="ar-title" dir="rtl" lang="ar">— المكتب والمكالمات والمواعيد</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m10l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:26</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-31" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-31">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Секретарь</span>
+    <p class="ar" dir="rtl" lang="ar">ألو، شركة النور</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aloo, sharikit en-Nuur</p>
+    <p class="ru" dir="ltr" lang="ru">Алло, компания «Ан-Нур»</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">مساء الخير، ممكن أكلّم المهندس سامح؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">masaaʔ el-kheer, momkin akallim el-mohandis Saamiḥ?</p>
+    <p class="ru" dir="ltr" lang="ru">Добрый вечер, можно поговорить с инженером Самехом?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Секретарь</span>
+    <p class="ar" dir="rtl" lang="ar">هو مشغول دلوقتي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">howwa mashghuul dilwaʔti</p>
+    <p class="ru" dir="ltr" lang="ru">Он сейчас занят</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن تسيب له رسالة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin tsiib-lu risaala?</p>
+    <p class="ru" dir="ltr" lang="ru">Можете оставить ему сообщение?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Секретарь</span>
+    <p class="ar" dir="rtl" lang="ar">طبعاً، اسم حضرتك إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṭabʿan, esm ḥaḍritak eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно, как вас зовут?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">أليكسي، وهو معاه رقمي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">Aleksey, w howwa maʿaah raʔmi</p>
+    <p class="ru" dir="ltr" lang="ru">Алексей, у него есть мой номер</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Секретарь</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن يرجّعلك المكالمة الساعة خمسة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin yirgaʿ-lak el-mukaalma es-saaʿa khamsa?</p>
+    <p class="ru" dir="ltr" lang="ru">Может перезвонить вам в пять?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، أو بعدين</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, aw baʿdeen</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, или позже</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-32" data-kind="lesson" data-file="lesson-m10l3.mp3">
+  <header class="track-head">
+    <span class="track-no">32</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2–B1</span>
+      </div>
+      <h2 dir="auto">30. Телефон интернет и техника <span class="ar-title" dir="rtl" lang="ar">— الموبايل والإنترنت والتكنولوجيا</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m10l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:21</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-32" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-32">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">الواي فاي مش شغال</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-wifi mish shaghghaal</p>
+    <p class="ru" dir="ltr" lang="ru">Wi-Fi не работает</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Поддержка</span>
+    <p class="ar" dir="rtl" lang="ar">النور في الراوتر عامل إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">en-nuur fir-router ʿaamil eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Как ведёт себя индикатор на роутере?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">بينوّر أحمر وبيفصل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">biyinawwar aḥmar w biyifṣal</p>
+    <p class="ru" dir="ltr" lang="ru">Светится красным и отключается</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Поддержка</span>
+    <p class="ar" dir="rtl" lang="ar">اقفل الراوتر وافتحه تاني</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">iʔfil er-router w iftaḥu taani</p>
+    <p class="ru" dir="ltr" lang="ru">Выключите роутер и включите снова</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">عملت كده ولسه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿamalt kida w lissa</p>
+    <p class="ru" dir="ltr" lang="ru">Я так сделал, но проблема осталась</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Поддержка</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، هنبعت فني</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, hanibʿat fanni</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, мы отправим техника</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">وهو هيجيله إمتى؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w howwa hayiigi-lu imta?</p>
+    <p class="ru" dir="ltr" lang="ru">И когда он придёт?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Поддержка</span>
+    <p class="ar" dir="rtl" lang="ar">بكرة الصبح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bokra eṣ-ṣubḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Завтра утром</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-33" data-kind="lesson" data-file="lesson-m11l1.mp3">
+  <header class="track-head">
+    <span class="track-no">33</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2</span>
+      </div>
+      <h2 dir="auto">31. Тело и симптомы <span class="ar-title" dir="rtl" lang="ar">— الجسم والأعراض</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m11l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:18</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-33" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-33">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Врач</span>
+    <p class="ar" dir="rtl" lang="ar">حاسس بإيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥaasis bi-eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Что вы чувствуете? м.</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Пациент</span>
+    <p class="ar" dir="rtl" lang="ar">راسي وجعاني وعندي دوخة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">raasi wagaʿaani w ʿandi dookha</p>
+    <p class="ru" dir="ltr" lang="ru">У меня болит голова и кружится</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Врач</span>
+    <p class="ar" dir="rtl" lang="ar">عندك سخونية؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿandak sokhuuniyya?</p>
+    <p class="ru" dir="ltr" lang="ru">Есть температура?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Пациент</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، من امبارح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, min embaareḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Да, со вчерашнего дня</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Врач</span>
+    <p class="ar" dir="rtl" lang="ar">بتاخد دوا؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">bitaakhod dawa?</p>
+    <p class="ru" dir="ltr" lang="ru">Вы принимаете лекарства?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Пациент</span>
+    <p class="ar" dir="rtl" lang="ar">لأ، لسه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ, lissa</p>
+    <p class="ru" dir="ltr" lang="ru">Нет, пока нет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Врач</span>
+    <p class="ar" dir="rtl" lang="ar">حيسكّن ونقيس السخونية تاني</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ḥayiskin w niʔiis es-sokhuuniyya taani</p>
+    <p class="ru" dir="ltr" lang="ru">Назначим лекарство и снова измерим температуру</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Пациент</span>
+    <p class="ar" dir="rtl" lang="ar">مظبوط، شكرًا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">maẓbuuṭ, shokran</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, спасибо</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-34" data-kind="lesson" data-file="lesson-m11l2.mp3">
+  <header class="track-head">
+    <span class="track-no">34</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2–B1</span>
+      </div>
+      <h2 dir="auto">32. Аптека врач и экстренная помощь <span class="ar-title" dir="rtl" lang="ar">— الصيدلية والدكتور والطوارئ</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m11l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:19</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-34" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-34">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Фармацевт</span>
+    <p class="ar" dir="rtl" lang="ar">محتاج إيه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">miḥtaag eeh?</p>
+    <p class="ru" dir="ltr" lang="ru">Что вам нужно?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">الدكتور كتبلي الدوا ده</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ed-doktoor katab-li ed-dawa da</p>
+    <p class="ru" dir="ltr" lang="ru">Врач выписал мне это лекарство</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Фармацевт</span>
+    <p class="ar" dir="rtl" lang="ar">عندك حساسية من أدوية؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿandak ḥasaasiyya min adweya?</p>
+    <p class="ru" dir="ltr" lang="ru">Есть аллергия на лекарства?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">لأ</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">laʔ</p>
+    <p class="ru" dir="ltr" lang="ru">Нет</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Фармацевт</span>
+    <p class="ar" dir="rtl" lang="ar">قرص مرتين بعد الأكل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʔorṣ marratēn baʿd el-akl</p>
+    <p class="ru" dir="ltr" lang="ru">По таблетке два раза после еды</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">لمدة كام يوم؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">li-moddit kaam yoom?</p>
+    <p class="ru" dir="ltr" lang="ru">На сколько дней?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Фармацевт</span>
+    <p class="ar" dir="rtl" lang="ar">خمسة أيام</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">khamsit ayyaam</p>
+    <p class="ru" dir="ltr" lang="ru">Пять дней</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">مفيش حساسية، كويس</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mafiish ḥasaasiyya, kwayyis</p>
+    <p class="ru" dir="ltr" lang="ru">Нет аллергии, хорошо</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-35" data-kind="lesson" data-file="lesson-m11l3.mp3">
+  <header class="track-head">
+    <span class="track-no">35</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">A2–B1</span>
+      </div>
+      <h2 dir="auto">33. Ремонт и бытовые услуги <span class="ar-title" dir="rtl" lang="ar">— الصيانة والخدمات</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m11l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:24</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-35" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-35">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">التكييف مش بيبرّد</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">et-takyiif mish biybarrid</p>
+    <p class="ru" dir="ltr" lang="ru">Кондиционер не охлаждает</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Техник</span>
+    <p class="ar" dir="rtl" lang="ar">المشكلة بدأت إمتى؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-moshkila bidʔit emta?</p>
+    <p class="ru" dir="ltr" lang="ru">Когда началась проблема?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">من امبارح، وفي صوت غريب</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">min embaareḥ, w fi ṣoot ghariib</p>
+    <p class="ru" dir="ltr" lang="ru">Со вчерашнего дня, и есть странный звук</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Техник</span>
+    <p class="ar" dir="rtl" lang="ar">ممكن يكون في تسريب. لازم أكشف عليه</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">momkin yikuun fi tasriib. Laazim akshif ʿalēh</p>
+    <p class="ru" dir="ltr" lang="ru">Возможно, утечка. Нужно его проверить</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">الكشف بكام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">el-kashf bikaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Сколько стоит диагностика?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Техник</span>
+    <p class="ar" dir="rtl" lang="ar">هقولك التكلفة قبل التصليح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">haʔuul-lak et-taklifa ʔabl et-taṣliiḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Я назову стоимость до ремонта</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Клиент</span>
+    <p class="ar" dir="rtl" lang="ar">وفيه ضمان؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">w fiih ḍamaan?</p>
+    <p class="ru" dir="ltr" lang="ru">И есть гарантия?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Техник</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، سنة على التصليح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, sana ʿala et-taṣliiḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Да, год на ремонт</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-36" data-kind="lesson" data-file="lesson-m12l1.mp3">
+  <header class="track-head">
+    <span class="track-no">36</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">B1</span>
+      </div>
+      <h2 dir="auto">34. Приглашения чувства и общение <span class="ar-title" dir="rtl" lang="ar">— العزومات والمشاعر والتواصل</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m12l1.mp3</code>
+        <span aria-hidden="true">·</span><span>0:25</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-36" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-36">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Маха</span>
+    <p class="ar" dir="rtl" lang="ar">إحنا عاملين عزومة الجمعة. تيجي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">eḥna ʿaamliin ʿazuuma el-gomʿa. Tiigi?</p>
+    <p class="ru" dir="ltr" lang="ru">Мы устраиваем ужин в пятницу. Придёшь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Светлана</span>
+    <p class="ar" dir="rtl" lang="ar">شكراً أوي، الساعة كام؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">shokran awi, es-saaʿa kaam?</p>
+    <p class="ru" dir="ltr" lang="ru">Большое спасибо, во сколько?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Маха</span>
+    <p class="ar" dir="rtl" lang="ar">الساعة سبعة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">es-saaʿa sabʿa</p>
+    <p class="ru" dir="ltr" lang="ru">В семь</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Светлана</span>
+    <p class="ar" dir="rtl" lang="ar">للأسف عندي شغل لحد تمانية</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">lil-asaf ʿandi shoghl li-ḥadd tamaanya</p>
+    <p class="ru" dir="ltr" lang="ru">К сожалению, я работаю до восьми</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Маха</span>
+    <p class="ar" dir="rtl" lang="ar">تعالي بعد الشغل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">taʿaali baʿd esh-shoghl</p>
+    <p class="ru" dir="ltr" lang="ru">Приходи после работы</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Светлана</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، هاجي إن شاء الله</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, haagi in shaaʔ Allah</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, приду, если Бог даст</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Маха</span>
+    <p class="ar" dir="rtl" lang="ar">ممتاز، نورت البيت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">mumtaaz, nawwart el-bēt</p>
+    <p class="ru" dir="ltr" lang="ru">Отлично, будем рады (у нас дома)</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Светлана</span>
+    <p class="ar" dir="rtl" lang="ar">تسلم يا حبيبتي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tislam ya ḥabiibti</p>
+    <p class="ru" dir="ltr" lang="ru">Спасибо, дорогая</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-37" data-kind="lesson" data-file="lesson-m12l2.mp3">
+  <header class="track-head">
+    <span class="track-no">37</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">B1</span>
+      </div>
+      <h2 dir="auto">35. Мнение сравнение и связная речь <span class="ar-title" dir="rtl" lang="ar">— الرأي والمقارنة وربط الكلام</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m12l2.mp3</code>
+        <span aria-hidden="true">·</span><span>0:27</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-37" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-37">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Роман</span>
+    <p class="ar" dir="rtl" lang="ar">نروح بالمترو ولا تاكسي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">niruuḥ bil-metro wala taaksi?</p>
+    <p class="ru" dir="ltr" lang="ru">Поедем на метро или на такси?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Юсеф</span>
+    <p class="ar" dir="rtl" lang="ar">في رأيي المترو أحسن</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">fi raʔyi el-metro aḥsan</p>
+    <p class="ru" dir="ltr" lang="ru">По-моему, метро лучше</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Роман</span>
+    <p class="ar" dir="rtl" lang="ar">ليه؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">lēh?</p>
+    <p class="ru" dir="ltr" lang="ru">Почему?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Юсеф</span>
+    <p class="ar" dir="rtl" lang="ar">عشان أسرع وأرخص، مع إن التاكسي أريح</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ʿashaan asraʿ w arkhaṣ, maʿ inn et-taaksi aryaḥ</p>
+    <p class="ru" dir="ltr" lang="ru">Потому что быстрее и дешевле, хотя такси удобнее</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Роман</span>
+    <p class="ar" dir="rtl" lang="ar">لو المحطة قريبة، ماشي</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">law el-maḥaṭṭa ʔorayyiba, maashi</p>
+    <p class="ru" dir="ltr" lang="ru">Если станция близко, хорошо</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Юсеф</span>
+    <p class="ar" dir="rtl" lang="ar">هي دي المحطة اللي قدامنا</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">heyya di el-maḥaṭṭa illi ʔoddaamna</p>
+    <p class="ru" dir="ltr" lang="ru">Это та станция, которая перед нами</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Роман</span>
+    <p class="ar" dir="rtl" lang="ar">بصراحة، عشان كده بنختارها</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">biṣaraaḥa, ʿashaan kida binkhtaarha</p>
+    <p class="ru" dir="ltr" lang="ru">Честно говоря, поэтому и выбираем её</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Юсеف</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، أحسن حل</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, aḥsan ḥal</p>
+    <p class="ru" dir="ltr" lang="ru">Да, лучшее решение</p>
+  </div>
+</li>
+  </ol>
+</article>
+
+<article class="track" id="track-38" data-kind="lesson" data-file="lesson-m12l3.mp3">
+  <header class="track-head">
+    <span class="track-no">38</span>
+    <div class="track-title">
+      <div class="chips">
+        <span class="chip">درس صوتي</span>
+        <span class="chip ghost" dir="ltr">B1</span>
+      </div>
+      <h2 dir="auto">36. Путешествие гостиница и итоговая практика <span class="ar-title" dir="rtl" lang="ar">— السفر والفندق والمراجعة النهائية</span></h2>
+      <p class="track-sub">
+        <code dir="ltr">lesson-m12l3.mp3</code>
+        <span aria-hidden="true">·</span><span>0:29</span>
+        <span aria-hidden="true">·</span><span>8 أسطر حوار</span>
+        <span aria-hidden="true">·</span><span dir="ltr">Аудиоурок</span>
+      </p>
+    </div>
+    <div class="track-actions">
+      <button class="done-btn" type="button" data-done="track-38" aria-pressed="false">تم التسجيل</button>
+      <button class="copy-btn" type="button" data-copy="track-38">نسخ النص</button>
+    </div>
+  </header>
+  <ol class="lines">
+<li class="line">
+  <span class="line-no" aria-hidden="true">01</span>
+  <div class="line-body">
+    <span class="speaker">Администратор</span>
+    <p class="ar" dir="rtl" lang="ar">أهلاً بحضرتك. عندك حجز؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ahlan bi-ḥaḍritak. ʿandak ḥagz?</p>
+    <p class="ru" dir="ltr" lang="ru">Добро пожаловать. У вас есть бронь?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">02</span>
+  <div class="line-body">
+    <span class="speaker">Гость</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، الحجز باسم إيفان بيتروف</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, el-ḥagz bi-ism Ivan Petrov</p>
+    <p class="ru" dir="ltr" lang="ru">Да, бронь на имя Иван Петров</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">03</span>
+  <div class="line-body">
+    <span class="speaker">Администратор</span>
+    <p class="ar" dir="rtl" lang="ar">أوضة مفردة لتلات ليالي، صح؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ooḍa mofrada li-talaat layaali, ṣaḥḥ?</p>
+    <p class="ru" dir="ltr" lang="ru">Одноместный номер на три ночи, верно?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">04</span>
+  <div class="line-body">
+    <span class="speaker">Гость</span>
+    <p class="ar" dir="rtl" lang="ar">صح. الفطار شامل؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">ṣaḥḥ. El-fiṭaar shaamil?</p>
+    <p class="ru" dir="ltr" lang="ru">Верно. Завтрак включён?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">05</span>
+  <div class="line-body">
+    <span class="speaker">Администратор</span>
+    <p class="ar" dir="rtl" lang="ar">أيوه، من سبعة لعشرة</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">aywa, min sabʿa li-ʿashara</p>
+    <p class="ru" dir="ltr" lang="ru">Да, с семи до десяти</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">06</span>
+  <div class="line-body">
+    <span class="speaker">Гость</span>
+    <p class="ar" dir="rtl" lang="ar">تمام، وممكن واي فاي؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">tamaam, w momkin wifi?</p>
+    <p class="ru" dir="ltr" lang="ru">Хорошо, а можно Wi-Fi?</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">07</span>
+  <div class="line-body">
+    <span class="speaker">Администратор</span>
+    <p class="ar" dir="rtl" lang="ar">أكيد، الباسورد على الكارت</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">akiid, el-password ʿala el-kaart</p>
+    <p class="ru" dir="ltr" lang="ru">Конечно, пароль на карточке</p>
+  </div>
+</li>
+<li class="line">
+  <span class="line-no" aria-hidden="true">08</span>
+  <div class="line-body">
+    <span class="speaker">Гость</span>
+    <p class="ar" dir="rtl" lang="ar">شكراً. وميعاد المغادرة؟</p>
+    <p class="tr" dir="ltr" lang="ar-Latn">shokran. W miiʿaad el-mughaadara?</p>
+    <p class="ru" dir="ltr" lang="ru">Спасибо. А время выезда?</p>
+  </div>
+</li>
+  </ol>
+</article>
+</main>
+
+<footer>MASRI RU · سكريبت التسجيل · 2026-11-09</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span></span></div>
+
+<script>
+(function () {
+  var body = document.body;
+  var toast = document.getElementById('toast');
+  var toastText = toast.querySelector('span');
+  var toastTimer = null;
+  var doneCount = document.getElementById('doneCount');
+  var doneBar = document.getElementById('doneBar');
+  var total = 38;
+  var viewButtons = Array.prototype.slice.call(document.querySelectorAll('[data-view]'));
+
+  function readStore(key, fallback) {
+    try {
+      var value = window.localStorage.getItem(key);
+      return value === null ? fallback : value;
+    } catch (e) { return fallback; }
+  }
+  function writeStore(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (e) {}
+  }
+
+  function showToast(message, isError) {
+    toastText.textContent = message;
+    toastText.className = isError ? 'is-error' : '';
+    toast.classList.add('is-visible');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toast.classList.remove('is-visible');
+    }, 2200);
+  }
+
+  function setView(view, persist) {
+    var recording = view === 'record';
+    body.classList.toggle('recording', recording);
+    viewButtons.forEach(function (button) {
+      var active = button.getAttribute('data-view') === view;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (persist) writeStore('masri-script-view', view);
+  }
+
+  viewButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      setView(button.getAttribute('data-view'), true);
+    });
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function () {
+    window.print();
+  });
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () {
+        return legacyCopy(text);
+      });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+  function legacyCopy(text) {
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(area);
+    return ok;
+  }
+
+  document.querySelectorAll('[data-copy]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var track = document.getElementById(button.getAttribute('data-copy'));
+      if (!track) return;
+      var lines = Array.prototype.map.call(track.querySelectorAll('.ar'), function (node) {
+        return node.textContent.trim();
+      }).filter(Boolean);
+      copyText(lines.join('\n')).then(function (ok) {
+        showToast(ok ? 'تم نسخ ' + lines.length + ' سطرًا' : 'تعذر النسخ — حدّد النص يدويًا', !ok);
+      });
+    });
+  });
+
+  function doneSet() {
+    try {
+      var raw = JSON.parse(readStore('masri-script-done', '[]'));
+      return Array.isArray(raw) ? raw : [];
+    } catch (e) { return []; }
+  }
+  function saveDone(set) {
+    writeStore('masri-script-done', JSON.stringify(set));
+  }
+  function updateProgress() {
+    var done = doneSet().length;
+    doneCount.textContent = String(done);
+    doneBar.style.width = (done / total * 100) + '%';
+  }
+
+  document.querySelectorAll('[data-done]').forEach(function (button) {
+    var id = button.getAttribute('data-done');
+    if (doneSet().indexOf(id) !== -1) {
+      button.setAttribute('aria-pressed', 'true');
+    }
+    button.addEventListener('click', function () {
+      var set = doneSet();
+      var index = set.indexOf(id);
+      if (index === -1) set.push(id); else set.splice(index, 1);
+      saveDone(set);
+      button.setAttribute('aria-pressed', index === -1 ? 'true' : 'false');
+      updateProgress();
+    });
+  });
+
+  setView(readStore('masri-script-view', 'full') === 'record' ? 'record' : 'full', false);
+  updateProgress();
+})();
+</script>
+</body>
+</html>

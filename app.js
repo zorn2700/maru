@@ -23,6 +23,9 @@ import {
   textbookParts,
   textbookPdfCount,
   textbookUnits,
+  wordAudioCount,
+  wordAudioFor,
+  wordAudioUniqueCount,
 } from "./library-data.js";
 import {
   clearRecordings,
@@ -33,6 +36,7 @@ import {
 } from "./audio-db.js";
 
 const main = document.querySelector("#main");
+const audioTotalCount = audioLibrary.length + wordAudioCount;
 const nav = document.querySelector(".bottom-nav");
 const searchDialog = document.querySelector("#searchDialog");
 const searchInput = document.querySelector("#searchInput");
@@ -639,7 +643,7 @@ function playTrack(track, queue = null) {
   showAudioDock();
   audioPlayer.play().catch(() => showToast("Не удалось запустить аудиофайл"));
   state.audioPlays = (Number(state.audioPlays) || 0) + 1;
-  if (!String(track.id || "").startsWith("rec:")) state.lastAudio = track.id || "";
+  if (!String(track.id || "").startsWith("rec:") && track.kind !== "word") state.lastAudio = track.id || "";
   bumpHistory("audio", 1);
   saveState();
   checkAchievements();
@@ -656,6 +660,19 @@ function playAdjacentTrack(step) {
   if (audioQueueIndex < 0) audioQueueIndex = 0;
   const nextIndex = (audioQueueIndex + step + audioQueue.length) % audioQueue.length;
   playTrack(audioQueue[nextIndex], audioQueue);
+}
+
+function playWordList(lessonId) {
+  const lesson = lessons.find((item) => item.id === lessonId);
+  if (!lesson) return;
+  const queue = lesson.vocabulary
+    .map((item, index) => wordTrack(item.ar, `${lesson.id}:${index + 1}`))
+    .filter(Boolean);
+  if (!queue.length) {
+    showToast("Для этого урока пока нет аудио слов");
+    return;
+  }
+  playTrack(queue[0], queue);
 }
 
 function closeAudioPlayer() {
@@ -681,12 +698,30 @@ function meaningFor(text) {
   return "";
 }
 
+function wordTrack(text, key = "") {
+  const src = wordAudioFor(text, key);
+  if (!src) return null;
+  return {
+    id: `word:${key || text}`,
+    src,
+    title: text,
+    subtitle: key ? "Слово урока · аудио курса" : "Слово · аудио курса",
+    kind: "word",
+    isWord: true,
+  };
+}
+
 async function playPhrase(text, options = {}) {
   if (state.audioMode !== "tts") {
     const record = await getRecording(text);
     if (record) {
       const url = URL.createObjectURL(record.blob);
       playTrack({ id: `rec:${text}`, src: url, title: text, subtitle: "Ваша запись", objectUrl: url, isRecording: true });
+      return true;
+    }
+    const word = wordTrack(text, options.wordKey || "");
+    if (word) {
+      playTrack(word, [word]);
       return true;
     }
   }
@@ -718,6 +753,9 @@ async function refreshAudioDialogStatus() {
     const updated = new Date(record.updated || Date.now());
     audioDialogStatus.textContent = `Есть ваша запись · ${Math.max(1, Math.round((record.size || 0) / 1024))} КБ · ${updated.toLocaleDateString("ru-RU")} · ${updated.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`;
     audioDeletePhrase.disabled = false;
+  } else if (wordAudioFor(audioDialogText)) {
+    audioDialogStatus.textContent = "Есть аудио курса. Можно прослушать его или записать свою версию.";
+    audioDeletePhrase.disabled = true;
   } else {
     audioDialogStatus.textContent = "Записи пока нет. Можно записать голос или загрузить готовый аудиофайл.";
     audioDeletePhrase.disabled = true;
@@ -870,7 +908,7 @@ async function importBackup(file) {
 
 function activateNav(route) {
   let root = route;
-  if (["module", "lesson", "library", "colors", "programs", "program", "grammar", "culture", "writing"].includes(route)) root = "course";
+  if (["module", "lesson", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing"].includes(route)) root = "course";
   else if (route === "verb") root = "verbs";
   else if (["phrases", "reference", "exams", "exam"].includes(route)) root = "practice";
   else if (route === "recordings" || route === "certificate") root = "settings";
@@ -915,28 +953,40 @@ function homeView() {
 
   return `
     <section class="hero">
-      <p class="eyebrow">${escapeHtml(courseMeta.levels)} · ${courseMeta.lessonCount} уроков · офлайн</p>
-      <h1>${escapeHtml(courseMeta.title)}</h1>
-      <p class="arabic-display" lang="ar">${escapeHtml(courseMeta.arabicTitle)}</p>
-      <p class="hero-copy">Практический каирский диалект: живые диалоги, аудиофайлы, запись своего голоса, умное повторение и большая лаборатория глаголов.</p>
-      <div class="hero-actions">
-        <button class="primary-button" type="button" data-open-lesson="${nextLesson.id}">${done ? "Продолжить" : "Начать курс"}</button>
-        <button class="soft-button" type="button" data-route="library">🎧 Аудиокурс</button>
-        <button class="soft-button" type="button" data-practice-mode="smart">Умное повторение</button>
+      <div class="hero-grid">
+        <div class="hero-main">
+          <p class="eyebrow">${escapeHtml(courseMeta.levels)} · ${courseMeta.lessonCount} уроков · офлайн</p>
+          <h1>${escapeHtml(courseMeta.title)}</h1>
+          <p class="arabic-display" lang="ar">${escapeHtml(courseMeta.arabicTitle)}</p>
+          <p class="hero-copy">Практический каирский диалект: живые диалоги, аудиофайлы, запись своего голоса, умное повторение и большая лаборатория глаголов.</p>
+          <div class="hero-actions">
+            <button class="primary-button" type="button" data-open-lesson="${nextLesson.id}">${done ? "Продолжить" : "Начать курс"}</button>
+            <button class="soft-button" type="button" data-route="library">🎧 Аудиокурс</button>
+            <button class="soft-button" type="button" data-practice-mode="smart">Умное повторение</button>
+          </div>
+        </div>
+        <aside class="hero-progress" aria-label="Прогресс курса">
+          <div class="hero-ring" style="--progress:${progress}">
+            <span><strong>${progress}%</strong><small>курс</small></span>
+          </div>
+          <strong class="hero-progress-title">${done} из ${lessons.length} уроков</strong>
+          <span class="hero-progress-meta">🔥 ${streak} · ⭐ ${level.level} уровень</span>
+          <span class="hero-progress-meta">${due} слов к повторению</span>
+        </aside>
       </div>
     </section>
 
     <section class="stat-grid" aria-label="Статистика обучения">
-      <article class="stat-card"><strong>${progress}%</strong><span>общий прогресс · ${done}/${lessons.length} уроков</span></article>
-      <article class="stat-card"><strong>🔥 ${streak}</strong><span>${streak === 1 ? "день подряд" : "дней подряд"}</span></article>
-      <article class="stat-card"><strong>⭐ ${level.level}</strong><span>уровень · ${state.xp || 0} XP</span></article>
-      <article class="stat-card"><strong>${due}</strong><span>слов к повторению</span></article>
+      <article class="stat-card"><span class="stat-icon" aria-hidden="true">📈</span><div><strong>${progress}%</strong><span>общий прогресс · ${done}/${lessons.length} уроков</span></div></article>
+      <article class="stat-card"><span class="stat-icon" aria-hidden="true">🔥</span><div><strong>${streak}</strong><span>${streak === 1 ? "день подряд" : "дней подряд"}</span></div></article>
+      <article class="stat-card"><span class="stat-icon" aria-hidden="true">⭐</span><div><strong>${level.level}</strong><span>уровень · ${state.xp || 0} XP</span></div></article>
+      <article class="stat-card"><span class="stat-icon" aria-hidden="true">🧠</span><div><strong>${due}</strong><span>слов к повторению</span></div></article>
     </section>
 
     <section class="section card home-audio-card">
       <div class="continue-track">
         <span class="continue-art" aria-hidden="true">🎧</span>
-        <div><strong>${state.lastAudio ? "Продолжить аудио" : "Аудиокурс и учебник"}</strong><small>${state.lastAudio ? `${escapeHtml(lastTrack.title)} · ${escapeHtml(lastTrack.subtitle)}` : `${audioLibrary.length} записанных треков, ${textbookPdfCount} PDF-глав и ваши собственные записи`}</small></div>
+        <div><strong>${state.lastAudio ? "Продолжить аудио" : "Аудиокурс и учебник"}</strong><small>${state.lastAudio ? `${escapeHtml(lastTrack.title)} · ${escapeHtml(lastTrack.subtitle)}` : `${audioTotalCount} аудиофайлов, ${textbookPdfCount} PDF-глав и ваши собственные записи`}</small></div>
       </div>
       <div class="lesson-actions">
         <button class="primary-button" type="button" data-play-audio="${lastTrack.id}">▶ ${state.lastAudio ? "Продолжить" : "Слушать"}</button>
@@ -976,46 +1026,55 @@ function homeView() {
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Быстрый доступ</h2><p>Новые инструменты для самостоятельной практики</p></div></div>
-      <div class="feature-grid">
-        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><strong>Аудиокурс</strong><small>${audioLibrary.length} файлов · уроки, алфавит и фразы выживания</small></button>
-        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">📖</span><strong>Учебник PDF</strong><small>${textbookPdfCount} глав по частям и модулям</small></button>
-        <button class="card feature-card" type="button" data-route="recordings"><span class="feature-icon">🎙</span><strong>Мои записи</strong><small>${recordingCount ? `${recordingCount} записей своего голоса` : "Записывайте фразы и сравнивайте с курсом"}</small></button>
-        <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов · 5 времён · ${learnedVerbs} освоено</small></button>
-        <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} готовых фраз по ситуациям</small></button>
-        <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Местоимения, предлоги, числа и формулы времён</small></button>
-        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и фразы для покупок</small></button>
-        <button class="card feature-card" type="button" data-route="programs"><span class="feature-icon">🎓</span><strong>Полные курсы</strong><small>${learningPrograms.length} программы · уроки, практика и сертификат</small></button>
-        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><strong>Экзамены</strong><small>12 модульных тестов и финальная аттестация</small></button>
-        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><strong>Грамматика</strong><small>${lessons.reduce((sum, lesson) => sum + lesson.grammar.length, 0)} тем с примерами</small></button>
-        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></button>
-        <button class="card feature-card" type="button" data-route="settings"><span class="feature-icon">🏅</span><strong>Достижения</strong><small>${state.achievements.length} из ${achievementDefs.length} открыто</small></button>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><h2>Полные курсы</h2><p>Выберите программу под свою цель — от разговорника до полного A0–B1</p></div><button class="soft-button" type="button" data-route="programs">Все программы</button></div>
+      <div class="section-head"><div><p class="section-kicker">Программы</p><h2>Выберите свой маршрут</h2><p>Пять полных программ — от первого слова до уверенного общения</p></div><button class="soft-button" type="button" data-route="programs">Все программы</button></div>
       <div class="program-grid">${learningPrograms.map(programCard).join("")}</div>
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Модули курса</h2><p>От первых звуков до самостоятельного общения</p></div></div>
+      <div class="section-head"><div><p class="section-kicker">Основной курс</p><h2>Модули курса</h2><p>12 модулей · 36 уроков · от первых звуков до самостоятельного общения</p></div><button class="soft-button" type="button" data-route="course">Открыть курс</button></div>
       <div class="module-grid">${modules.map(moduleCard).join("")}</div>
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Визуальные уроки</h2><p>Короткие повторения ключевых ситуаций</p></div><button class="soft-button" type="button" data-route="media">Все видео</button></div>
+      <div class="section-head"><div><p class="section-kicker">Академия</p><h2>Учёба и проверка знаний</h2><p>Экзамены, грамматика, письмо, культура и сертификат</p></div><button class="soft-button" type="button" data-route="exams">К экзаменам</button></div>
+      <div class="feature-grid">
+        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><span class="feature-copy"><strong>Экзамены</strong><small>${passedExamCount()} из 12 модулей · финальная аттестация</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><span class="feature-copy"><strong>Грамматика</strong><small>${lessons.reduce((sum, lesson) => sum + lesson.grammar.length, 0)} тем с примерами</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="writing"><span class="feature-icon">✍️</span><span class="feature-copy"><strong>Лаборатория письма</strong><small>${writingDoneCount()} из ${writingTasks.length} заданий выполнено</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><span class="feature-copy"><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="certificate"><span class="feature-icon">🏆</span><span class="feature-copy"><strong>Сертификат</strong><small>${certificateEligibility().eligible ? "Готов к печати" : "Условия и прогресс"}</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="settings"><span class="feature-icon">🏅</span><span class="feature-copy"><strong>Достижения</strong><small>${state.achievements.length} из ${achievementDefs.length} открыто</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><p class="section-kicker">Практика и материалы</p><h2>Всё для живого языка</h2><p>Слушайте, повторяйте, записывайте голос и открывайте учебник</p></div><button class="soft-button" type="button" data-route="library">Библиотека</button></div>
+      <div class="feature-grid">
+        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><span class="feature-copy"><strong>Аудиокурс</strong><small>${audioTotalCount} файлов · уроки, слова, алфавит и фразы</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><span class="feature-copy"><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов · 5 времён · ${learnedVerbs} освоено</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><span class="feature-copy"><strong>Разговорник</strong><small>${allPhrases().length} готовых фраз по ситуациям</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><span class="feature-copy"><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и фразы</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><span class="feature-copy"><strong>Шпаргалка</strong><small>Местоимения, предлоги, числа и времена</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="recordings"><span class="feature-icon">🎙</span><span class="feature-copy"><strong>Мои записи</strong><small>${recordingCount ? `${recordingCount} записей своего голоса` : "Записывайте фразы и сравнивайте"}</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><p class="section-kicker">Видео</p><h2>Визуальные уроки</h2><p>Короткие повторения ключевых ситуаций</p></div><button class="soft-button" type="button" data-route="media">Все видео</button></div>
       <div class="media-grid">${mediaCards}</div>
     </section>`;
 }
 
 function courseView() {
   return `
-    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioLibrary.length} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="programs">🎓 Программы</button><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button></div></header>
-    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
-    <div class="module-grid">${modules.map(moduleCard).join("")}</div>
+    <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioTotalCount} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="programs">🎓 Программы</button><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button></div></header>
+    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
+    <section class="section course-modules">
+      <div class="section-head"><div><p class="section-kicker">12 модулей</p><h2>Программа обучения</h2><p>Каждый модуль — три урока, аудио, PDF-глава и экзамен</p></div><span class="chip">${completedCount()} из ${lessons.length} уроков</span></div>
+      <div class="module-grid">${modules.map(moduleCard).join("")}</div>
+    </section>
     <section class="section">
-      <div class="section-head"><div><h2>План на 16 недель</h2><p>Оптимальный ритм — три учебных дня и один день повторения в неделю</p></div></div>
+      <div class="section-head"><div><p class="section-kicker">Расписание</p><h2>План на 16 недель</h2><p>Оптимальный ритм — три учебных дня и один день повторения в неделю</p></div></div>
       <div class="plan-table"><table><thead><tr><th>Недели</th><th>Материал</th><th>Результат</th></tr></thead><tbody>
         ${studyPlan.map((item) => `<tr><td>${item.weeks}</td><td>${escapeHtml(item.focus)}</td><td>${escapeHtml(item.target)}</td></tr>`).join("")}
       </tbody></table></div>
@@ -1059,16 +1118,18 @@ function moduleView(moduleId) {
     </div>`;
 }
 
-function speakButton(text, label = "Прослушать") {
-  return `<button class="speak-button" type="button" data-say="${escapeHtml(text)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">🔊</button>`;
+function speakButton(text, label = "Прослушать", wordKey = "") {
+  const hasFile = !!wordAudioFor(text, wordKey);
+  const keyAttr = wordKey ? ` data-word-key="${escapeHtml(wordKey)}"` : "";
+  return `<button class="speak-button${hasFile ? " has-file" : ""}" type="button" data-say="${escapeHtml(text)}"${keyAttr} aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">🔊</button>`;
 }
 
 function recordButton(text, label = "Записать свой голос") {
   return `<button class="record-button" type="button" data-record-say="${escapeHtml(text)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">🎙</button>`;
 }
 
-function audioActions(text, label = "Прослушать") {
-  return `<span class="audio-actions">${speakButton(text, label)}${recordButton(text)}</span>`;
+function audioActions(text, label = "Прослушать", wordKey = "") {
+  return `<span class="audio-actions">${speakButton(text, label, wordKey)}${recordButton(text)}</span>`;
 }
 
 function lessonView(lessonId) {
@@ -1081,7 +1142,7 @@ function lessonView(lessonId) {
   state.lastLesson = lesson.id;
   saveState();
 
-  const vocabulary = lesson.vocabulary.map((item) => `
+  const vocabulary = lesson.vocabulary.map((item, index) => `
     <article class="vocab-item">
       <div>
         <div class="vocab-ar arabic" lang="ar">${escapeHtml(item.ar)}</div>
@@ -1089,7 +1150,7 @@ function lessonView(lessonId) {
         <div class="vocab-ru">${escapeHtml(item.ru)}</div>
         ${item.note ? `<div class="vocab-note">${escapeHtml(item.note)}</div>` : ""}
       </div>
-      ${audioActions(item.ar)}
+      ${audioActions(item.ar, "Прослушать", `${lesson.id}:${index + 1}`)}
     </article>`).join("");
 
   const grammarBlocks = lesson.grammar.map((item) => `
@@ -1114,7 +1175,7 @@ function lessonView(lessonId) {
       <p class="eyebrow">Урок ${lesson.order} · ${escapeHtml(lesson.level)}</p>
       <h1>${escapeHtml(lesson.title)}</h1>
       <div class="arabic-display" lang="ar">${escapeHtml(lesson.arTitle)}</div>
-      <div class="lesson-meta"><span class="chip">${lesson.minutes} минут</span><span class="chip">${lesson.vocabulary.length} слов и фраз</span><span class="chip">Диалог</span><span class="chip">Тест</span>${track ? `<span class="chip">🎧 Аудиофайл урока</span>` : ""}</div>
+      <div class="lesson-meta"><span class="chip">${lesson.minutes} минут</span><span class="chip">${lesson.vocabulary.length} слов и фраз</span><span class="chip">Диалог</span><span class="chip">Тест</span>${track ? `<span class="chip">🎧 Аудиофайл урока</span>` : ""}<span class="chip">🗣 Слова озвучены</span></div>
     </section>
 
     ${track || chapter ? `<section class="lesson-audio-card">
@@ -1133,7 +1194,7 @@ function lessonView(lessonId) {
     <div class="lesson-layout">
       <div class="lesson-content">
         <section class="lesson-section"><h2>Цели урока</h2><ul class="goal-list">${lesson.goals.map((goal) => `<li>${escapeHtml(goal)}</li>`).join("")}</ul></section>
-        <section class="lesson-section"><h2>Слова и фразы</h2><div class="vocab-list">${vocabulary}</div></section>
+        <section class="lesson-section"><div class="section-head"><div><h2>Слова и фразы</h2><p>Нажмите 🔊, чтобы услышать слово, или включите весь список подряд</p></div><button class="soft-button" type="button" data-play-word-list="${lesson.id}">▶ Все слова</button></div><div class="vocab-list">${vocabulary}</div></section>
         <section class="lesson-section"><h2>Грамматика без перегруза</h2>${grammarBlocks}</section>
         <section class="lesson-section"><h2>Живой диалог</h2><div class="dialogue">${dialogue}</div></section>
         <section class="lesson-section"><h2>Контекст и культура</h2><p class="culture-note">${escapeHtml(lesson.culture)}</p></section>
@@ -1461,6 +1522,45 @@ function audioRow(track) {
   </button>`;
 }
 
+function wordAudioRow(item, lessonId, index) {
+  return `<article class="word-audio-row">
+    <div class="word-audio-main">
+      <strong class="arabic" lang="ar">${escapeHtml(item.ar)}</strong>
+      <small>${state.showTranscription ? `<span dir="ltr">${escapeHtml(item.tr)}</span> · ` : ""}${escapeHtml(item.ru)}</small>
+    </div>
+    <button class="speak-button has-file" type="button" data-say="${escapeHtml(item.ar)}" data-word-key="${lessonId}:${index}" aria-label="Прослушать слово" title="Прослушать слово">🔊</button>
+  </article>`;
+}
+
+function wordAudioSet(lesson) {
+  const rows = lesson.vocabulary.map((item, index) => wordAudioRow(item, lesson.id, index + 1)).join("");
+  return `<details class="word-audio-set">
+    <summary>
+      <span class="word-audio-summary-main">
+        <strong>Урок ${String(lesson.order).padStart(2, "0")} · ${escapeHtml(lesson.title)}</strong>
+        <small>${escapeHtml(lesson.arTitle)} · ${escapeHtml(lesson.level)} · ${lesson.vocabulary.length} слов и фраз</small>
+      </span>
+      <span class="chip">${lesson.vocabulary.length} MP3</span>
+    </summary>
+    <div class="word-audio-body">
+      <button class="soft-button" type="button" data-play-word-list="${lesson.id}">▶ Прослушать все слова</button>
+      <div class="word-audio-list">${rows}</div>
+    </div>
+  </details>`;
+}
+
+function wordsAudioBody() {
+  return `<div class="section-head"><div><h2>Слова с аудио</h2><p>${wordAudioUniqueCount} уникальных слов · ${wordAudioCount} записанных клипов · каждый урок можно слушать целиком</p></div><span class="chip">${wordAudioCount} MP3</span></div>
+    ${modules.map((module) => {
+      const moduleLessons = lessons.filter((lesson) => lesson.module === module.id);
+      const moduleWords = moduleLessons.reduce((sum, lesson) => sum + lesson.vocabulary.length, 0);
+      return `<section class="word-audio-module">
+        <div class="audio-group-head"><h3>Модуль ${module.id} · ${escapeHtml(module.title)}</h3><span>${moduleWords} слов · ${moduleLessons.length} уроков</span></div>
+        ${moduleLessons.map(wordAudioSet).join("")}
+      </section>`;
+    }).join("")}`;
+}
+
 function pdfCard(item) {
   return `<article class="pdf-card">
     <span class="pdf-cover" aria-hidden="true">📖</span>
@@ -1477,10 +1577,12 @@ function pdfCard(item) {
 
 function libraryView() {
   const tab = state.libraryTab || "audio";
-  const tabs = [["audio", "🎧 Аудиокурс"], ["text", "📖 Учебник PDF"], ["colors", "🎨 Цвета"], ["video", "🎬 Видео"]];
+  const tabs = [["audio", "🎧 Аудиокурс"], ["words", "🗣 Слова"], ["text", "📖 Учебник PDF"], ["colors", "🎨 Цвета"], ["video", "🎬 Видео"]];
   let body = "";
   if (tab === "colors") {
     body = colorsBody();
+  } else if (tab === "words") {
+    body = wordsAudioBody();
   } else if (tab === "text") {
     body = `
       <div class="section-head"><div><h2>Введение и алфавит</h2><p>Бесплатные материалы для старта</p></div></div>
@@ -1509,7 +1611,7 @@ function libraryView() {
         <div class="audio-list">${tracks.map(audioRow).join("")}</div>
       </section>`).join("")}`;
   }
-  return `<header class="page-head"><div><p class="eyebrow">Аудио, учебник и видео</p><h1>Библиотека</h1><p>${audioLibrary.length} аудиофайлов · ${textbookPdfCount} PDF-глав · ${colorLesson.colors.length} цветов · ${mediaLessons.length} видео · всё доступно офлайн после загрузки</p></div><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></header>
+  return `<header class="page-head"><div><p class="eyebrow">Аудио, учебник и видео</p><h1>Библиотека</h1><p>${audioTotalCount} аудиофайлов · ${wordAudioUniqueCount} слов · ${textbookPdfCount} PDF-глав · ${colorLesson.colors.length} цветов · ${mediaLessons.length} видео · всё доступно офлайн после загрузки</p></div><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></header>
     <div class="library-tabs">${tabs.map(([id, label]) => `<button class="${tab === id ? "primary-button" : "soft-button"}" type="button" data-library-tab="${id}">${label}</button>`).join("")}</div>
     ${body}`;
 }
@@ -1630,7 +1732,7 @@ function programProgress(program) {
   }
   if (program.kind === "audio") {
     const plays = Number(state.audioPlays) || 0;
-    return { done: Math.min(plays, audioLibrary.length), total: audioLibrary.length, label: `${plays} запусков · ${audioLibrary.length} аудиофайлов`, percent: percent(Math.min(plays, audioLibrary.length), audioLibrary.length) };
+    return { done: Math.min(plays, audioTotalCount), total: audioTotalCount, label: `${plays} запусков · ${audioTotalCount} аудиофайлов`, percent: percent(Math.min(plays, audioTotalCount), audioTotalCount) };
   }
   return { done: 0, total: 1, label: "", percent: 0 };
 }
@@ -1652,7 +1754,7 @@ function programCard(program) {
 function programsView() {
   const status = certificateEligibility();
   return `<header class="page-head">
-    <div><p class="eyebrow">Академия Masri RU</p><h1>Полные курсы</h1><p>${learningPrograms.length} программы · ${lessons.length} уроков · ${verbLibrary.length} глаголов · ${audioLibrary.length} аудио · ${textbookPdfCount} PDF</p></div>
+    <div><p class="eyebrow">Академия Masri RU</p><h1>Полные курсы</h1><p>${learningPrograms.length} программы · ${lessons.length} уроков · ${verbLibrary.length} глаголов · ${audioTotalCount} аудио · ${textbookPdfCount} PDF</p></div>
     <div class="lesson-actions"><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button></div>
   </header>
   <section class="section">
@@ -1963,7 +2065,7 @@ function settingsView() {
     </section>
 
     <section class="section lesson-section">
-      <div class="section-head"><div><h2>Аудио и произношение</h2><p>Файлы курса, ваши записи и системный голос</p></div><span class="chip">${audioLibrary.length} MP3</span></div>
+      <div class="section-head"><div><h2>Аудио и произношение</h2><p>Файлы курса, ваши записи и системный голос</p></div><span class="chip">${audioTotalCount} MP3</span></div>
       <div class="settings-list">
         <label class="setting-row"><span><strong>Источник звука</strong><small>Файлы и записи в первую очередь, системный голос как запасной вариант</small></span><select id="audioModeSelect"><option value="auto" ${state.audioMode === "auto" ? "selected" : ""}>Файлы + системный голос</option><option value="files" ${state.audioMode === "files" ? "selected" : ""}>Только файлы и записи</option><option value="tts" ${state.audioMode === "tts" ? "selected" : ""}>Только системный голос</option></select></label>
         <label class="setting-row"><span><strong>Автовоспроизведение карточек</strong><small>Автоматически включать аудио при переходе к следующей карточке</small></span><span class="switch"><input id="autoplayCardsToggle" type="checkbox" ${state.autoplayCards ? "checked" : ""}><span></span></span></label>
@@ -2004,18 +2106,18 @@ function settingsView() {
     <section class="section lesson-section">
       <div class="section-head"><div><h2>Инструменты</h2><p>Дополнительные разделы работают без интернета</p></div></div>
       <div class="feature-grid">
-        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><strong>Аудио и учебник</strong><small>${audioLibrary.length} MP3 и ${textbookPdfCount} PDF</small></button>
-        <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов и 5 времён</small></button>
-        <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><strong>Разговорник</strong><small>${allPhrases().length} фраз и избранное</small></button>
-        <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><strong>Шпаргалка</strong><small>Грамматика в таблицах</small></button>
-        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и грамматика</small></button>
-        <button class="card feature-card" type="button" data-route="programs"><span class="feature-icon">🎓</span><strong>Полные курсы</strong><small>${learningPrograms.length} программы обучения</small></button>
-        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><strong>Экзамены</strong><small>${passedExamCount()} из ${moduleExamIds().length} модулей сдано</small></button>
-        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><strong>Грамматика</strong><small>Полный справочник по модулям</small></button>
-        <button class="card feature-card" type="button" data-route="writing"><span class="feature-icon">✍️</span><strong>Письмо</strong><small>${writingDoneCount()} из ${writingTasks.length} заданий</small></button>
-        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></button>
-        <button class="card feature-card" type="button" data-route="certificate"><span class="feature-icon">🏆</span><strong>Сертификат</strong><small>${certificateEligibility().eligible ? "Готов к печати" : "Условия и прогресс"}</small></button>
-        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎛</span><strong>Оформление</strong><small>8 акцентов, светлый и тёмный режим</small></button>
+        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><span class="feature-copy"><strong>Аудио и учебник</strong><small>${audioTotalCount} MP3 и ${textbookPdfCount} PDF</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><span class="feature-copy"><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов и 5 времён</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><span class="feature-copy"><strong>Разговорник</strong><small>${allPhrases().length} фраз и избранное</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><span class="feature-copy"><strong>Шпаргалка</strong><small>Грамматика в таблицах</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><span class="feature-copy"><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и грамматика</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="programs"><span class="feature-icon">🎓</span><span class="feature-copy"><strong>Полные курсы</strong><small>${learningPrograms.length} программы обучения</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><span class="feature-copy"><strong>Экзамены</strong><small>${passedExamCount()} из ${moduleExamIds().length} модулей сдано</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><span class="feature-copy"><strong>Грамматика</strong><small>Полный справочник по модулям</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="writing"><span class="feature-icon">✍️</span><span class="feature-copy"><strong>Письмо</strong><small>${writingDoneCount()} из ${writingTasks.length} заданий</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><span class="feature-copy"><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="certificate"><span class="feature-icon">🏆</span><span class="feature-copy"><strong>Сертификат</strong><small>${certificateEligibility().eligible ? "Готов к печати" : "Условия и прогресс"}</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-open-palette><span class="feature-icon">🎛</span><span class="feature-copy"><strong>Оформление</strong><small>8 акцентов, светлый и тёмный режим</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
       </div>
     </section>
 
@@ -2124,7 +2226,7 @@ function updateSearch(query) {
     searchResults.innerHTML = `<div class="empty-state">
       <strong>Ищите по всему курсу</strong>
       <p>Уроки · слова · курсы · грамматика · экзамены · культура · цвета · аудио · PDF</p>
-      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${learningPrograms.length} программ · ${verbLibrary.length} глаголов · ${colorLesson.colors.length} цветов · ${audioLibrary.length} аудиофайлов</p>
+      <p class="small muted">${lessons.length} уроков · ${allPhrases().length} фраз · ${learningPrograms.length} программ · ${verbLibrary.length} глаголов · ${colorLesson.colors.length} цветов · ${audioTotalCount} аудиофайлов</p>
       <p class="small"><span class="keyboard-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd> или <kbd>/</kbd> — открыть поиск</span></p>
     </div>`;
     return;
@@ -2288,7 +2390,7 @@ document.addEventListener("click", (event) => {
   else if (target.hasAttribute("data-print-certificate")) {
     window.print?.();
   }
-  else if (target.dataset.say) playPhrase(target.dataset.say);
+  else if (target.dataset.say) playPhrase(target.dataset.say, { wordKey: target.dataset.wordKey || "" });
   else if (target.dataset.recordSay) openAudioDialog(target.dataset.recordSay);
   else if (target.dataset.openMedia) openMedia(target.dataset.openMedia);
   else if (target.dataset.playAudio) {
@@ -2300,6 +2402,8 @@ document.addEventListener("click", (event) => {
     } else {
       playTrackById(id);
     }
+  } else if (target.dataset.playWordList) {
+    playWordList(target.dataset.playWordList);
   } else if (target.dataset.openPdf) {
     openPdf(target.dataset.openPdf, target.dataset.pdfTitle || "");
   } else if (target.hasAttribute("data-open-palette")) {

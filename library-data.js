@@ -6,6 +6,13 @@ import {
 } from "./textbook-data.js";
 
 export { textbookMeta, textbookParts, textbookFrontMatter, textbookUnits };
+export {
+  wordAudioByKey,
+  wordAudioByText,
+  wordAudioCount,
+  wordAudioFor,
+  wordAudioUniqueCount,
+} from "./word-audio.js";
 
 export const lessonAudioMap = {};
 export const lessonTextbookMap = {};

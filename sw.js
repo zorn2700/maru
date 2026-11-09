@@ -1,6 +1,6 @@
-const CACHE = "masri-ru-v5";
+const CACHE = "masri-ru-v7";
 const LESSON_TRACKS = Array.from({ length: 12 }, (_, month) =>
-  Array.from({ length: 3 }, (__, index) => `./assets/textbook/audio/lesson-m${month + 1}l${index + 1}.mp3`),
+  Array.from({ length: 3 }, (__, index) => `./assets/audio/lessons/lesson-m${month + 1}l${index + 1}.mp3`),
 ).flat();
 const CHAPTERS = Array.from(
   { length: 12 },
@@ -15,6 +15,7 @@ const CORE = [
   "./extra-data.js",
   "./verb-data.js",
   "./textbook-data.js",
+  "./word-audio.js",
   "./colors-data.js",
   "./academy-data.js",
   "./library-data.js",
@@ -31,8 +32,8 @@ const CORE = [
   "./assets/captions/02-cafe.vtt",
   "./assets/captions/03-directions.vtt",
   "./assets/captions/04-buying.vtt",
-  "./assets/textbook/audio/alphabet.mp3",
-  "./assets/textbook/audio/survival.mp3",
+  "./assets/audio/foundations/alphabet.mp3",
+  "./assets/audio/foundations/survival.mp3",
   ...LESSON_TRACKS,
   ...CHAPTERS,
   "./assets/textbook/chapters/chapter-introduction.pdf",
