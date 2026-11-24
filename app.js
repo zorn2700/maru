@@ -3215,7 +3215,8 @@ document.addEventListener("change", (event) => {
     setTheme();
   } else if (event.target.id === "transcriptionToggle") {
     state.showTranscription = event.target.checked;
-    saveState();
+    ensureMaruState(state).preferences.showTranscription = event.target.checked;
+    persistMaru();
   } else if (event.target.id === "speechRateSelect") {
     state.speechRate = Number(event.target.value);
     saveState();

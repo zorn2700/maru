@@ -544,12 +544,6 @@ export function maruSettingsExtras(ctx) {
     <p class="section-kicker">Интерфейс</p>
     <h2>Удобство</h2>
     <div class="settings-rows">
-      <label>Основной язык интерфейса
-        <select data-maru-pref="interfaceLang">
-          <option value="ru" ${prefs.interfaceLang === "ru" ? "selected" : ""}>Русский</option>
-          <option value="ar" ${prefs.interfaceLang === "ar" ? "selected" : ""}>العربية</option>
-        </select>
-      </label>
       <label>Размер шрифта
         <select data-maru-pref="fontSize">
           <option value="normal" ${prefs.fontSize === "normal" ? "selected" : ""}>Обычный</option>
@@ -560,10 +554,8 @@ export function maruSettingsExtras(ctx) {
       <label class="switch-row">Показывать транскрипцию
         <input type="checkbox" data-maru-pref="showTranscription" ${prefs.showTranscription ? "checked" : ""}>
       </label>
-      <label class="switch-row">Показывать латиницу рядом с арабским
-        <input type="checkbox" data-maru-pref="showLatin" ${prefs.showLatin ? "checked" : ""}>
-      </label>
     </div>
+    <p class="muted small">Язык объяснений — русский; целевой язык — египетский арабский. Переключение языка интерфейса и латиницы пока не реализовано.</p>
   </section>
   <section class="card settings-extra">
     <p class="section-kicker">Приватность · الخصوصية</p>

@@ -1,4 +1,4 @@
-const CACHE = "masri-ru-v13";
+const CACHE = "masri-ru-v14";
 const LESSON_TRACKS = Array.from({ length: 12 }, (_, month) =>
   Array.from({ length: 3 }, (__, index) => `./assets/audio/lessons/lesson-m${month + 1}l${index + 1}.mp3`),
 ).flat();

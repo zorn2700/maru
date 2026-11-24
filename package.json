@@ -1,0 +1,18 @@
+{
+  "name": "maru-masri-ru",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Maru 2.0 — офлайн-академия египетского арабского для русскоговорящих",
+  "scripts": {
+    "dev": "python3 -m http.server 8012 --directory site",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check": "node --check site/app.js && node --check site/maru-core.js && node --check site/maru-views.js && node --check site/maru-data.js && node --check site/sw.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "vitest": "^2.1.8"
+  }
+}

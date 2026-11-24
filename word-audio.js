@@ -1,5 +1,6 @@
 // Generated from course-data.js — one audio clip per vocabulary item.
-// 664 files, grouped by module inside assets/audio/words/.
+// 663 files, grouped by module inside assets/audio/words/.
+// The word «طازة» has no MP3 yet and falls back to speech synthesis.
 // Replace any MP3 with your own recording using the same path.
 
 export const wordAudioByText = {
@@ -435,7 +436,6 @@ export const wordAudioByText = {
   'حتة': 'assets/audio/words/m09/m9l2-05-hetta.mp3',
   'كتير': 'assets/audio/words/m09/m9l2-07-kitiir.mp3',
   'كفاية': 'assets/audio/words/m09/m9l2-08-kifaaya.mp3',
-  'طازة': 'assets/audio/words/m09/m9l2-09-taaza.mp3',
   'رخيص': 'assets/audio/words/m09/m9l2-11-rakhiis.mp3',
   'خصم': 'assets/audio/words/m09/m9l2-12-khasm.mp3',
   'فكة': 'assets/audio/words/m09/m9l2-13-fakka.mp3',
@@ -1095,7 +1095,6 @@ export const wordAudioByKey = {
   'm9l2:6': 'assets/audio/words/m09/m9l2-06-shwayya.mp3',
   'm9l2:7': 'assets/audio/words/m09/m9l2-07-kitiir.mp3',
   'm9l2:8': 'assets/audio/words/m09/m9l2-08-kifaaya.mp3',
-  'm9l2:9': 'assets/audio/words/m09/m9l2-09-taaza.mp3',
   'm9l2:10': 'assets/audio/words/m09/m9l2-10-ghaali.mp3',
   'm9l2:11': 'assets/audio/words/m09/m9l2-11-rakhiis.mp3',
   'm9l2:12': 'assets/audio/words/m09/m9l2-12-khasm.mp3',
@@ -1312,8 +1311,8 @@ export const wordAudioByKey = {
   'm12l3:23': 'assets/audio/words/m12/m12l3-23-hammaam.mp3',
 };
 
-export const wordAudioCount = 664;
-export const wordAudioUniqueCount = 640;
+export const wordAudioCount = 663;
+export const wordAudioUniqueCount = 639;
 
 export function wordAudioFor(text, key = "") {
   return (key && wordAudioByKey[key]) || wordAudioByText[text] || "";
