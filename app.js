@@ -34,6 +34,37 @@ import {
   listRecordings,
   putRecording,
 } from "./audio-db.js";
+import {
+  BackupEngine,
+  ContentEngine,
+  ConversationEngine,
+  DictionaryEngine,
+  LearningEngine,
+  ListeningEngine,
+  PrivacyEngine,
+  ProgressEngine,
+  RecommendationEngine,
+  createDefaultMaruState,
+  ensureMaruState,
+  normalizeText as normalizeMaruText,
+} from "./maru-core.js";
+import { conversationScenarios, levelGoals } from "./maru-data.js";
+import {
+  adminView,
+  challengeView,
+  chatMessagesHtml,
+  conversationView,
+  dictionaryView,
+  guidedLessonView,
+  homeView as maruHomeView,
+  listeningLabView,
+  maruSettingsExtras,
+  notebookView,
+  offlineView,
+  speakingView,
+  progressView,
+  suggestionsHtml,
+} from "./maru-views.js";
 
 const main = document.querySelector("#main");
 const audioTotalCount = audioLibrary.length + wordAudioCount;
@@ -125,6 +156,7 @@ const defaultState = {
   writingDone: [],
   grammarModule: "all",
   learnerName: "",
+  maru: createDefaultMaruState(),
 };
 
 let state = loadState();
@@ -148,6 +180,202 @@ let mediaRecorder = null;
 let recordChunks = [];
 let recordStream = null;
 let isRecording = false;
+let dictionaryFilters = { query: "", level: "all", kind: "all", favoritesOnly: false, historyOnly: false, weakOnly: false };
+let dictionaryEntries = [];
+let guidedSession = null;
+let speakIndex = 0;
+let listeningSession = null;
+let listeningFeedback = null;
+let adminEditorText = null;
+let adminMessage = null;
+let offlineStats = null;
+
+function activeScenarios() {
+  const custom = state.maru?.content?.scenarios;
+  return Array.isArray(custom) && custom.length ? custom : conversationScenarios;
+}
+
+function maruCtx() {
+  return {
+    state,
+    maru: ensureMaruState(state),
+    lessons,
+    vocab: allVocab(),
+    levelGoals,
+    dictionaryEntries,
+    dictionaryFilters,
+    scenarios: activeScenarios(),
+  };
+}
+
+function rebuildDictionary() {
+  dictionaryEntries = DictionaryEngine.collectSources({
+    lessons,
+    phrases: allPhrases(),
+    verbs: verbLibrary,
+    colors: colorLesson.colors,
+  });
+  return dictionaryEntries;
+}
+
+function persistMaru() {
+  state.maru = ensureMaruState(state);
+  saveState();
+}
+
+function downloadJson(filename, data, mime = "application/json") {
+  const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function setBackupStatus(message, ok = true) {
+  const box = document.querySelector("#backupStatus");
+  if (!box) return;
+  box.textContent = message;
+  box.className = `backup-status ${ok ? "ok" : "warn"}`;
+}
+
+function setCacheStatus(message, ok = true) {
+  const box = document.querySelector("#cacheStatus");
+  if (!box) return;
+  box.textContent = message;
+  box.className = `backup-status ${ok ? "ok" : "warn"}`;
+}
+
+function setSpeechResult(html, tone = "") {
+  const box = document.querySelector("#speechCheckResult");
+  if (!box) return;
+  box.innerHTML = html;
+  box.className = `speech-check-result ${tone}`;
+}
+
+function checkSpeechRecognition(expected) {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    setSpeechResult("Распознавание речи недоступно в этом браузере. Используйте запись и сравнение на слух.", "warn");
+    return;
+  }
+  const recognition = new Recognition();
+  recognition.lang = "ar-EG";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.continuous = false;
+  setSpeechResult("Слушаю… произнесите фразу в микрофон.", "listening");
+  recognition.onresult = (event) => {
+    const heard = event.results?.[0]?.[0]?.transcript || "";
+    const expectedText = normalizeArabic(expected);
+    const heardText = normalizeArabic(heard);
+    const matched = !!heardText && (heardText === expectedText || heardText.includes(expectedText) || expectedText.includes(heardText));
+    setSpeechResult(
+      `<span lang="ar" dir="rtl"><strong>${escapeHtml(heard)}</strong></span><br>` +
+        (matched
+          ? "Текст распознан совпадающе — вас поняли. Это не оценка качества произношения."
+          : `Ожидалось: <span lang="ar" dir="rtl">${escapeHtml(expected)}</span>. Повторите медленнее и громче.`),
+      matched ? "ok" : "warn",
+    );
+  };
+  recognition.onerror = (event) => {
+    const errors = {
+      "not-allowed": "Доступ к микрофону запрещён. Разрешите его в настройках браузера.",
+      "no-speech": "Речь не распознана. Попробуйте ещё раз.",
+      network: "Для распознавания нужна сеть. Проверьте подключение.",
+    };
+    setSpeechResult(errors[event.error] || "Не удалось распознать речь. Попробуйте ещё раз.", "warn");
+  };
+  recognition.onend = () => {
+    const box = document.querySelector("#speechCheckResult");
+    if (box?.textContent.includes("Слушаю")) setSpeechResult("Распознавание завершено без результата. Попробуйте ещё раз.", "warn");
+  };
+  try {
+    recognition.start();
+  } catch {
+    setSpeechResult("Не удалось запустить микрофон. Проверьте разрешения браузера.", "warn");
+  }
+}
+
+function postToServiceWorker(type) {
+  if (!("serviceWorker" in navigator)) {
+    setCacheStatus("Этот браузер не поддерживает офлайн-хранение.", false);
+    return;
+  }
+  navigator.serviceWorker.ready
+    .then((registration) => registration.active?.postMessage({ type }))
+    .catch(() => setCacheStatus("Не удалось связаться с офлайн-хранилищем.", false));
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type === "CACHE_STATUS") {
+      offlineStats = event.data;
+      if (getRoute()[0] === "offline") main.innerHTML = offlineView(maruCtx(), offlineStats);
+    } else if (event.data?.type === "CACHE_DONE") {
+      setCacheStatus(`Обновлено файлов: ${event.data.ok} из ${event.data.total}`, event.data.ok === event.data.total);
+      postToServiceWorker("CACHE_STATUS");
+    }
+  });
+}
+
+async function importBackupFile(file) {
+  if (!file) return;
+  try {
+    const raw = JSON.parse(await file.text());
+    const payload = raw.format === "maru-encrypted-v1"
+      ? await BackupEngine.decrypt(raw, window.prompt("Пароль к копии:") || "")
+      : raw;
+    const restored = BackupEngine.restore(payload);
+    if (!restored.ok) {
+      setBackupStatus(restored.error, false);
+      return;
+    }
+    Object.keys(state).forEach((key) => delete state[key]);
+    Object.assign(state, restored.state);
+    persistMaru();
+    setBackupStatus("Прогресс восстановлен. Обновите страницу, чтобы применить все настройки.", true);
+    showToast("Резервная копия восстановлена");
+  } catch (error) {
+    setBackupStatus(`Не удалось восстановить: ${error.message}`, false);
+  }
+}
+
+function renderConversationChat(feedback = null) {
+  const messages = document.querySelector("#chatMessages");
+  const suggestions = document.querySelector("#chatSuggestions");
+  const feedbackBox = document.querySelector("#chatFeedback");
+  const session = state.maru.conversation;
+  if (messages) messages.innerHTML = chatMessagesHtml(session);
+  if (suggestions) suggestions.innerHTML = suggestionsHtml(session);
+  if (feedbackBox) {
+    feedbackBox.innerHTML = feedback
+      ? `<span class="chat-feedback-pill ${feedback.ok ? "ok" : "warn"}">${escapeHtml(feedback.ru)}${feedback.expected ? ` · ${escapeHtml(feedback.expected)}` : ""}</span>`
+      : "";
+  }
+  const scroller = document.querySelector("#chatMessages");
+  if (scroller) scroller.scrollTop = scroller.scrollHeight;
+}
+
+function submitChatAnswer(input) {
+  const session = state.maru.conversation;
+  if (!session?.scenarioId) return;
+  const result = ConversationEngine.step(session, input, activeScenarios());
+  state.maru.conversation = result.session;
+  state.maru = ensureMaruState(state);
+  if (result.feedback.ok) {
+    ProgressEngine.bumpChallenge(state.maru, "talk", 1, state);
+    awardXp(4);
+    checkAchievements();
+  }
+  persistMaru();
+  renderConversationChat(result.feedback);
+  const field = document.querySelector("#chatInput");
+  if (field) field.value = "";
+}
 
 
 const achievementDefs = [
@@ -196,9 +424,10 @@ function loadState() {
       writingDone: Array.isArray(saved.writingDone) ? saved.writingDone : [],
       grammarModule: typeof saved.grammarModule === "string" ? saved.grammarModule : "all",
       learnerName: typeof saved.learnerName === "string" ? saved.learnerName : "",
+      maru: ensureMaruState({ ...saved, maru: saved.maru }),
     };
   } catch {
-    return { ...defaultState };
+    return { ...defaultState, maru: createDefaultMaruState() };
   }
 }
 
@@ -354,25 +583,11 @@ function wordStat(item) {
 function rateWord(item, quality) {
   touchStreak();
   const key = vocabKey(item);
-  const stat = { ...wordStat(item) };
-  stat.seen += 1;
-  stat.last = Date.now();
-  if (quality === "again") {
-    stat.wrong += 1;
-    stat.streak = 0;
-    stat.interval = 0;
-    stat.due = Date.now() + 10 * 60 * 1000;
-  } else {
-    stat.right += 1;
-    stat.streak += 1;
-    if (quality === "easy") stat.interval = Math.max(4, Math.round((stat.interval || 1) * 2.6));
-    else stat.interval = stat.interval ? Math.min(60, stat.interval * 2) : 1;
-    stat.due = Date.now() + stat.interval * 86400000;
-  }
-  state.wordStats[key] = stat;
+  state.wordStats[key] = LearningEngine.grade(wordStat(item), quality, Date.now());
   recordReviewActivity();
+  ProgressEngine.bumpChallenge(ensureMaruState(state), "five-words", 1, state);
   awardXp(quality === "again" ? 2 : 6);
-  saveState();
+  persistMaru();
 }
 
 function verbStat(verbId) {
@@ -908,10 +1123,11 @@ async function importBackup(file) {
 
 function activateNav(route) {
   let root = route;
-  if (["module", "lesson", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing"].includes(route)) root = "course";
-  else if (route === "verb") root = "verbs";
-  else if (["phrases", "reference", "exams", "exam"].includes(route)) root = "practice";
-  else if (route === "recordings" || route === "certificate") root = "settings";
+  if (["module", "lesson", "guided", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing", "dictionary"].includes(route)) root = "course";
+  else if (route === "verb") root = "course";
+  else if (["phrases", "reference", "exams", "exam", "challenge", "colors"].includes(route)) root = "practice";
+  else if (["progress", "recordings", "certificate", "notebook", "admin", "offline"].includes(route)) root = "settings";
+  else if (route === "conversation") root = "conversation";
   nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.route === root));
 }
 
@@ -931,144 +1147,11 @@ function moduleCard(module) {
     </button>`;
 }
 
-function homeView() {
-  const done = completedCount();
-  const progress = percent(done, lessons.length);
-  const vocabTotal = lessons.reduce((sum, lesson) => sum + lesson.vocabulary.length, 0);
-  const nextLesson = lessons.find((lesson) => !state.completed.includes(lesson.id)) || lessons.at(-1);
-  const mediaCards = mediaLessons.slice(0, 3).map(mediaCard).join("");
-  const level = levelInfo();
-  const streak = activeStreak();
-  const due = dueCount();
-  const goal = Number(state.dailyGoal) || 20;
-  const today = Number(state.todayReviews) || 0;
-  const goalPercent = Math.min(100, percent(today, goal));
-  const verb = verbOfTheDay();
-  const firstForm = verb.forms.present[0];
-  const learnedVerbs = Object.values(state.verbStats).filter((item) => item.right >= 3).length;
-  const dayIndex = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  const dayWord = allVocab()[dayIndex % allVocab().length];
-  const lastTrack = audioById[state.lastAudio] || audioLibrary[0];
-  const recordingCount = Number(state.recordingsMade) || 0;
-
-  return `
-    <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-main">
-          <p class="eyebrow">${escapeHtml(courseMeta.levels)} · ${courseMeta.lessonCount} уроков · офлайн</p>
-          <h1>${escapeHtml(courseMeta.title)}</h1>
-          <p class="arabic-display" lang="ar">${escapeHtml(courseMeta.arabicTitle)}</p>
-          <p class="hero-copy">Практический каирский диалект: живые диалоги, аудиофайлы, запись своего голоса, умное повторение и большая лаборатория глаголов.</p>
-          <div class="hero-actions">
-            <button class="primary-button" type="button" data-open-lesson="${nextLesson.id}">${done ? "Продолжить" : "Начать курс"}</button>
-            <button class="soft-button" type="button" data-route="library">🎧 Аудиокурс</button>
-            <button class="soft-button" type="button" data-practice-mode="smart">Умное повторение</button>
-          </div>
-        </div>
-        <aside class="hero-progress" aria-label="Прогресс курса">
-          <div class="hero-ring" style="--progress:${progress}">
-            <span><strong>${progress}%</strong><small>курс</small></span>
-          </div>
-          <strong class="hero-progress-title">${done} из ${lessons.length} уроков</strong>
-          <span class="hero-progress-meta">🔥 ${streak} · ⭐ ${level.level} уровень</span>
-          <span class="hero-progress-meta">${due} слов к повторению</span>
-        </aside>
-      </div>
-    </section>
-
-    <section class="stat-grid" aria-label="Статистика обучения">
-      <article class="stat-card"><span class="stat-icon" aria-hidden="true">📈</span><div><strong>${progress}%</strong><span>общий прогресс · ${done}/${lessons.length} уроков</span></div></article>
-      <article class="stat-card"><span class="stat-icon" aria-hidden="true">🔥</span><div><strong>${streak}</strong><span>${streak === 1 ? "день подряд" : "дней подряд"}</span></div></article>
-      <article class="stat-card"><span class="stat-icon" aria-hidden="true">⭐</span><div><strong>${level.level}</strong><span>уровень · ${state.xp || 0} XP</span></div></article>
-      <article class="stat-card"><span class="stat-icon" aria-hidden="true">🧠</span><div><strong>${due}</strong><span>слов к повторению</span></div></article>
-    </section>
-
-    <section class="section card home-audio-card">
-      <div class="continue-track">
-        <span class="continue-art" aria-hidden="true">🎧</span>
-        <div><strong>${state.lastAudio ? "Продолжить аудио" : "Аудиокурс и учебник"}</strong><small>${state.lastAudio ? `${escapeHtml(lastTrack.title)} · ${escapeHtml(lastTrack.subtitle)}` : `${audioTotalCount} аудиофайлов, ${textbookPdfCount} PDF-глав и ваши собственные записи`}</small></div>
-      </div>
-      <div class="lesson-actions">
-        <button class="primary-button" type="button" data-play-audio="${lastTrack.id}">▶ ${state.lastAudio ? "Продолжить" : "Слушать"}</button>
-        <button class="soft-button" type="button" data-route="library">Библиотека</button>
-        <button class="soft-button" type="button" data-route="recordings">🎙 Мои записи${recordingCount ? ` (${recordingCount})` : ""}</button>
-      </div>
-    </section>
-
-    <section class="section dashboard-grid">
-      <article class="card daily-card">
-        <div class="daily-top">
-          <div><p class="eyebrow">Цель дня</p><h2>${today} / ${goal} повторений</h2></div>
-          <span class="daily-badge">${goalPercent >= 100 ? "выполнено ✓" : `${goalPercent}%`}</span>
-        </div>
-        <span class="progress-track big-track" aria-label="Цель дня ${goalPercent}%"><span class="progress-fill" style="width:${goalPercent}%"></span></span>
-        <p class="muted">${due ? `${due} слов уже ждут повторения. Умный режим сам подберёт слабые места.` : "Расписание свободно: можно взять новые слова или закрепить глаголы."}</p>
-        <div class="lesson-actions"><button class="primary-button" type="button" data-practice-mode="smart">Повторить умно</button><button class="soft-button" type="button" data-practice-mode="drill">Тренажёр глаголов</button></div>
-      </article>
-      <article class="card word-of-day">
-        <p class="eyebrow">Слово дня</p>
-        <div class="word-of-day-ar arabic" lang="ar">${escapeHtml(dayWord.ar)}</div>
-        ${state.showTranscription ? `<p class="vocab-tr">${escapeHtml(dayWord.tr)}</p>` : ""}
-        <p><strong>${escapeHtml(dayWord.ru)}</strong></p>
-        <p class="muted small">${escapeHtml(dayWord.lessonTitle || "Из курса")}</p>
-        <div class="audio-actions">${speakButton(dayWord.ar)}${recordButton(dayWord.ar)}</div>
-      </article>
-      <article class="card verb-of-day">
-        <div class="verb-of-day-head">
-          <div><p class="eyebrow">Глагол дня</p><div class="verb-of-day-ar arabic" lang="ar">${escapeHtml(verb.ar)}</div></div>
-          ${speakButton(verb.ar)}
-        </div>
-        <p class="verb-of-day-ru"><strong>${escapeHtml(verb.ru)}</strong> · ${escapeHtml(verb.tr)}</p>
-        <div class="mini-form"><span>${escapeHtml(firstForm.person)}</span><span class="arabic" lang="ar">${escapeHtml(firstForm.ar)}</span><small>${escapeHtml(firstForm.tr)}</small></div>
-        <p class="muted">Корень ${escapeHtml(verb.root)} · ${escapeHtml(verb.pattern)}</p>
-        <button class="soft-button" type="button" data-open-verb="${verb.id}">Открыть спряжение →</button>
-      </article>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><p class="section-kicker">Программы</p><h2>Выберите свой маршрут</h2><p>Пять полных программ — от первого слова до уверенного общения</p></div><button class="soft-button" type="button" data-route="programs">Все программы</button></div>
-      <div class="program-grid">${learningPrograms.map(programCard).join("")}</div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><p class="section-kicker">Основной курс</p><h2>Модули курса</h2><p>12 модулей · 36 уроков · от первых звуков до самостоятельного общения</p></div><button class="soft-button" type="button" data-route="course">Открыть курс</button></div>
-      <div class="module-grid">${modules.map(moduleCard).join("")}</div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><p class="section-kicker">Академия</p><h2>Учёба и проверка знаний</h2><p>Экзамены, грамматика, письмо, культура и сертификат</p></div><button class="soft-button" type="button" data-route="exams">К экзаменам</button></div>
-      <div class="feature-grid">
-        <button class="card feature-card" type="button" data-route="exams"><span class="feature-icon">📝</span><span class="feature-copy"><strong>Экзамены</strong><small>${passedExamCount()} из 12 модулей · финальная аттестация</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="grammar"><span class="feature-icon">🧠</span><span class="feature-copy"><strong>Грамматика</strong><small>${lessons.reduce((sum, lesson) => sum + lesson.grammar.length, 0)} тем с примерами</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="writing"><span class="feature-icon">✍️</span><span class="feature-copy"><strong>Лаборатория письма</strong><small>${writingDoneCount()} из ${writingTasks.length} заданий выполнено</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="culture"><span class="feature-icon">🏛</span><span class="feature-copy"><strong>Культурный гид</strong><small>${cultureGuide.length} тем о жизни в Египте</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="certificate"><span class="feature-icon">🏆</span><span class="feature-copy"><strong>Сертификат</strong><small>${certificateEligibility().eligible ? "Готов к печати" : "Условия и прогресс"}</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="settings"><span class="feature-icon">🏅</span><span class="feature-copy"><strong>Достижения</strong><small>${state.achievements.length} из ${achievementDefs.length} открыто</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><p class="section-kicker">Практика и материалы</p><h2>Всё для живого языка</h2><p>Слушайте, повторяйте, записывайте голос и открывайте учебник</p></div><button class="soft-button" type="button" data-route="library">Библиотека</button></div>
-      <div class="feature-grid">
-        <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><span class="feature-copy"><strong>Аудиокурс</strong><small>${audioTotalCount} файлов · уроки, слова, алфавит и фразы</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><span class="feature-copy"><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов · 5 времён · ${learnedVerbs} освоено</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><span class="feature-copy"><strong>Разговорник</strong><small>${allPhrases().length} готовых фраз по ситуациям</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="colors"><span class="feature-icon">🎨</span><span class="feature-copy"><strong>Цвета · الألوان</strong><small>${colorLesson.colors.length} цветов, женские формы и фразы</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><span class="feature-copy"><strong>Шпаргалка</strong><small>Местоимения, предлоги, числа и времена</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-        <button class="card feature-card" type="button" data-route="recordings"><span class="feature-icon">🎙</span><span class="feature-copy"><strong>Мои записи</strong><small>${recordingCount ? `${recordingCount} записей своего голоса` : "Записывайте фразы и сравнивайте"}</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><div><p class="section-kicker">Видео</p><h2>Визуальные уроки</h2><p>Короткие повторения ключевых ситуаций</p></div><button class="soft-button" type="button" data-route="media">Все видео</button></div>
-      <div class="media-grid">${mediaCards}</div>
-    </section>`;
-}
 
 function courseView() {
   return `
     <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioTotalCount} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="programs">🎓 Программы</button><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button></div></header>
-    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button></div>
+    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button><button class="soft-button" type="button" data-route="conversation">💬 Диалоги</button><button class="soft-button" type="button" data-route="dictionary">📖 Словарь</button><button class="soft-button" type="button" data-route="challenge">⚡ Тренировка дня</button><button class="soft-button" type="button" data-route="progress">📊 Отчёт</button></div>
     <section class="section course-modules">
       <div class="section-head"><div><p class="section-kicker">12 модулей</p><h2>Программа обучения</h2><p>Каждый модуль — три урока, аудио, PDF-глава и экзамен</p></div><span class="chip">${completedCount()} из ${lessons.length} уроков</span></div>
       <div class="module-grid">${modules.map(moduleCard).join("")}</div>
@@ -1178,6 +1261,11 @@ function lessonView(lessonId) {
       <div class="lesson-meta"><span class="chip">${lesson.minutes} минут</span><span class="chip">${lesson.vocabulary.length} слов и фраз</span><span class="chip">Диалог</span><span class="chip">Тест</span>${track ? `<span class="chip">🎧 Аудиофайл урока</span>` : ""}<span class="chip">🗣 Слова озвучены</span></div>
     </section>
 
+    <section class="lesson-audio-card guided-callout">
+      <div><strong>🧭 Пошаговый урок</strong><small>8 шагов: слово → перевод → транскрипция → аудио → пример → вопрос → речь → тест</small></div>
+      <div class="lesson-actions"><button class="primary-button" type="button" data-guided-start="${esc(lesson.id)}">Пройти по шагам →</button></div>
+    </section>
+
     ${track || chapter ? `<section class="lesson-audio-card">
       <div><strong>🎧 Аудиоматериалы урока</strong><small>${track ? "Полная запись урока в MP3" : "PDF-глава учебника"}${chapter ? " · PDF учебника" : ""}</small></div>
       <div class="lesson-actions">
@@ -1211,7 +1299,7 @@ function lessonView(lessonId) {
 function practiceView(mode = state.practiceMode) {
   state.practiceMode = mode;
   saveState();
-  const modeButtons = `<div class="practice-controls mode-scroll"><button class="${mode === "smart" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="smart">Умное повторение</button><button class="${mode === "cards" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="cards">Карточки</button><button class="${mode === "quiz" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="quiz">Общий тест</button><button class="${mode === "drill" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="drill">Глаголы</button><button class="${mode === "listen" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="listen">Аудирование</button><button class="${mode === "phrases" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="phrases">Разговорник</button></div>`;
+  const modeButtons = `<div class="practice-controls mode-scroll"><button class="${mode === "smart" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="smart">Умное повторение</button><button class="${mode === "cards" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="cards">Карточки</button><button class="${mode === "quiz" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="quiz">Общий тест</button><button class="${mode === "drill" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="drill">Глаголы</button><button class="${mode === "listen" ? "primary-button" : "soft-button"}" type="button" data-route="practice/listen">🎧 Аудирование</button><button class="${mode === "speak" ? "primary-button" : "soft-button"}" type="button" data-route="practice/speak">🎙 Произношение</button><button class="${mode === "phrases" ? "primary-button" : "soft-button"}" type="button" data-practice-mode="phrases">Разговорник</button></div>`;
   let body = "";
   if (mode === "quiz") body = quizView(null);
   else if (mode === "phrases") body = phrasebookView(true);
@@ -2083,6 +2171,8 @@ function settingsView() {
       </div>
     </section>
 
+    ${maruSettingsExtras(maruCtx())}
+
     <section class="section lesson-section">
       <div class="section-head"><div><h2>Активность</h2><p>Последние 14 дней · ${state.xp || 0} XP всего</p></div><span class="chip">Серия ${activeStreak()} дн.</span></div>
       ${activityChart()}
@@ -2134,7 +2224,21 @@ function notFoundView() {
 function renderRoute() {
   const [route, value] = getRoute();
   activateNav(route);
-  if (route === "home") main.innerHTML = homeView();
+  if (route === "home") main.innerHTML = maruHomeView(maruCtx());
+  else if (route === "guided") {
+    const lesson = lessons.find((item) => item.id === value);
+    if (!lesson) main.innerHTML = notFoundView();
+    else {
+      if (!guidedSession || guidedSession.lessonId !== lesson.id) {
+        guidedSession = { lessonId: lesson.id, lesson, wordIndex: 0, step: 0, revealed: false, choice: "" };
+      }
+      main.innerHTML = guidedLessonView(maruCtx(), guidedSession);
+    }
+  }
+  else if (route === "conversation") main.innerHTML = conversationView(maruCtx());
+  else if (route === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+  else if (route === "challenge") main.innerHTML = challengeView(maruCtx());
+  else if (route === "progress") main.innerHTML = progressView(maruCtx());
   else if (route === "course") main.innerHTML = courseView();
   else if (route === "module") main.innerHTML = moduleView(value);
   else if (route === "lesson") main.innerHTML = lessonView(value);
@@ -2142,7 +2246,18 @@ function renderRoute() {
   else if (route === "verb") main.innerHTML = verbDetailView(value);
   else if (route === "phrases") main.innerHTML = phrasebookView();
   else if (route === "reference") main.innerHTML = referenceView();
+  else if (route === "practice" && value === "listen") {
+    if (!listeningSession) listeningSession = ListeningEngine.buildSession();
+    main.innerHTML = listeningLabView(maruCtx(), listeningSession, listeningFeedback);
+  }
+  else if (route === "practice" && value === "speak") main.innerHTML = speakingView(maruCtx(), speakIndex);
   else if (route === "practice") main.innerHTML = practiceView();
+  else if (route === "notebook") main.innerHTML = notebookView(maruCtx());
+  else if (route === "offline") {
+    main.innerHTML = offlineView(maruCtx(), offlineStats);
+    if (!offlineStats) postToServiceWorker("CACHE_STATUS");
+  }
+  else if (route === "admin") main.innerHTML = adminView(maruCtx(), adminEditorText, adminMessage);
   else if (route === "media") main.innerHTML = mediaView();
   else if (route === "library") main.innerHTML = libraryView();
   else if (route === "colors") main.innerHTML = colorsView();
@@ -2314,6 +2429,303 @@ function updateSearch(query) {
 document.addEventListener("click", (event) => {
   const target = event.target.closest("button, [data-flip-card]");
   if (!target) return;
+
+  // Maru 2.0 — тренажёр произношения
+  if (target.dataset.speakRate) {
+    const vocabItem = allVocab()[speakIndex % Math.max(1, allVocab().length)];
+    if (vocabItem) rateWord(vocabItem, target.dataset.speakRate);
+    ProgressEngine.bumpChallenge(ensureMaruState(state), "speak", 1, state);
+    persistMaru();
+    showToast("Оценка сохранена — интервал повтора обновлён");
+    return;
+  }
+  if (target.hasAttribute("data-speak-next")) {
+    speakIndex = (speakIndex + 1) % Math.max(1, allVocab().length);
+    if (getRoute()[0] === "practice" && getRoute()[1] === "speak") main.innerHTML = speakingView(maruCtx(), speakIndex);
+    return;
+  }
+  if (target.dataset.speechCheck) {
+    checkSpeechRecognition(target.dataset.speechCheck);
+    return;
+  }
+
+  // Maru 2.0 — пошаговый урок
+  if (target.dataset.guidedStart) {
+    const lesson = lessons.find((item) => item.id === target.dataset.guidedStart);
+    if (lesson) {
+      guidedSession = { lessonId: lesson.id, lesson, wordIndex: 0, step: 0, revealed: false, choice: "" };
+      routeTo(`guided/${lesson.id}`);
+    }
+    return;
+  }
+  if (target.dataset.guidedGoto !== undefined) {
+    if (!guidedSession) return;
+    guidedSession.step = Number(target.dataset.guidedGoto);
+    guidedSession.revealed = false;
+    guidedSession.choice = "";
+    main.innerHTML = guidedLessonView(maruCtx(), guidedSession);
+    return;
+  }
+  if (target.hasAttribute("data-guided-back")) {
+    if (!guidedSession) return;
+    if (guidedSession.step === 0) {
+      if (guidedSession.wordIndex > 0) {
+        guidedSession.wordIndex -= 1;
+        guidedSession.step = 7;
+      }
+    } else guidedSession.step -= 1;
+    guidedSession.revealed = false;
+    guidedSession.choice = "";
+    main.innerHTML = guidedLessonView(maruCtx(), guidedSession);
+    return;
+  }
+  if (target.hasAttribute("data-guided-next")) {
+    if (!guidedSession) return;
+    if (guidedSession.step < 7) guidedSession.step += 1;
+    else if (guidedSession.wordIndex < guidedSession.lesson.vocabulary.length - 1) {
+      guidedSession.wordIndex += 1;
+      guidedSession.step = 0;
+      rateWord({ ...guidedSession.lesson.vocabulary[guidedSession.wordIndex], lessonId: guidedSession.lesson.id }, "good");
+    }
+    guidedSession.revealed = false;
+    guidedSession.choice = "";
+    main.innerHTML = guidedLessonView(maruCtx(), guidedSession);
+    return;
+  }
+  if (target.dataset.guidedChoice) {
+    if (!guidedSession || guidedSession.revealed) return;
+    guidedSession.choice = target.dataset.guidedChoice;
+    guidedSession.revealed = true;
+    if (target.dataset.guidedChoice === guidedSession.lesson.vocabulary[guidedSession.wordIndex].ru) {
+      rateWord({ ...guidedSession.lesson.vocabulary[guidedSession.wordIndex], lessonId: guidedSession.lesson.id }, "good");
+    } else {
+      rateWord({ ...guidedSession.lesson.vocabulary[guidedSession.wordIndex], lessonId: guidedSession.lesson.id }, "again");
+    }
+    main.innerHTML = guidedLessonView(maruCtx(), guidedSession);
+    return;
+  }
+  if (target.hasAttribute("data-guided-finish")) {
+    if (!guidedSession) return;
+    const lesson = guidedSession.lesson;
+    if (!state.completed.includes(lesson.id)) {
+      state.completed.push(lesson.id);
+      state.lastLesson = lesson.id;
+      ProgressEngine.bumpChallenge(ensureMaruState(state), "one-lesson", 1, state);
+      awardXp(20);
+    }
+    guidedSession = null;
+    persistMaru();
+    checkAchievements();
+    routeTo(`lesson/${lesson.id}`);
+    showToast("Урок завершён! +20 XP");
+    return;
+  }
+
+  // Maru 2.0 — المحادثة والتحدث
+  if (target.dataset.scenario) {
+    const mode = state.maru.conversation?.mode || "guided";
+    state.maru.conversation = ConversationEngine.start(target.dataset.scenario, mode, activeScenarios());
+    persistMaru();
+    if (getRoute()[0] === "conversation") main.innerHTML = conversationView(maruCtx());
+    return;
+  }
+  if (target.dataset.conversationMode) {
+    const scenarioId = state.maru.conversation?.scenarioId || "restaurant";
+    state.maru.conversation = ConversationEngine.start(scenarioId, target.dataset.conversationMode, activeScenarios());
+    persistMaru();
+    if (getRoute()[0] === "conversation") main.innerHTML = conversationView(maruCtx());
+    return;
+  }
+  if (target.dataset.chatSuggestion !== undefined) {
+    const suggestion = ConversationEngine.suggestions(state.maru.conversation, activeScenarios())[Number(target.dataset.chatSuggestion)];
+    if (suggestion) submitChatAnswer(suggestion.ar);
+    return;
+  }
+  if (target.dataset.conversationRestart !== undefined) {
+    state.maru.conversation = ConversationEngine.restart(state.maru.conversation, activeScenarios());
+    persistMaru();
+    if (getRoute()[0] === "conversation") main.innerHTML = conversationView(maruCtx());
+    return;
+  }
+
+  // Maru 2.0 — القاموس الذكي
+  if (target.hasAttribute("data-dict-search")) {
+    const query = document.querySelector("#dictQuery")?.value || "";
+    dictionaryFilters.query = query.trim();
+    dictionaryFilters.level = document.querySelector("#dictLevel")?.value || "all";
+    dictionaryFilters.kind = document.querySelector("#dictKind")?.value || "all";
+    if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    return;
+  }
+  if (target.hasAttribute("data-dict-favorites")) {
+    dictionaryFilters.favoritesOnly = !dictionaryFilters.favoritesOnly;
+    dictionaryFilters.historyOnly = false;
+    dictionaryFilters.weakOnly = false;
+    if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    return;
+  }
+  if (target.hasAttribute("data-dict-history")) {
+    dictionaryFilters.historyOnly = true;
+    dictionaryFilters.favoritesOnly = false;
+    dictionaryFilters.weakOnly = false;
+    dictionaryFilters.query = "";
+    if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    return;
+  }
+  if (target.hasAttribute("data-dict-weak")) {
+    dictionaryFilters.weakOnly = !dictionaryFilters.weakOnly;
+    dictionaryFilters.historyOnly = false;
+    dictionaryFilters.favoritesOnly = false;
+    if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    return;
+  }
+  if (target.dataset.dictRemember) {
+    const entry = dictionaryEntries.find((item) => item.key === target.dataset.dictRemember);
+    if (entry) {
+      DictionaryEngine.remember(state.maru, entry);
+      persistMaru();
+    }
+    return;
+  }
+  if (target.dataset.dictFav) {
+    const added = DictionaryEngine.toggleFavorite(state.maru, target.dataset.dictFav);
+    persistMaru();
+    showToast(added ? "Добавлено в избранное" : "Удалено из избранного");
+    target.classList.toggle("is-favorite", added);
+    return;
+  }
+  if (target.dataset.dictAdd) {
+    const selected = document.querySelector("#dictList")?.value || "";
+    const name = selected || window.prompt("Название списка слов:");
+    if (name) {
+      DictionaryEngine.addToList(state.maru, name.trim().slice(0, 48), target.dataset.dictAdd);
+      persistMaru();
+      showToast(`Добавлено в список «${name.trim().slice(0, 48)}»`);
+      if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    }
+    return;
+  }
+  if (target.hasAttribute("data-dict-new-list")) {
+    const name = window.prompt("Название нового списка слов:");
+    if (name?.trim()) {
+      state.maru.dictionary.lists[name.trim().slice(0, 48)] = [];
+      persistMaru();
+      if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    }
+    return;
+  }
+
+  // Maru 2.0 — аудирование на реальных записях
+  if (target.dataset.listenTrack) {
+    playTrackById(target.dataset.listenTrack);
+    if (listeningSession) {
+      listeningSession = { ...listeningSession, plays: Number(listeningSession.plays || 0) + 1 };
+    }
+    return;
+  }
+  if (target.dataset.listenAnswer !== undefined) {
+    if (!listeningSession || listeningSession.finished) return;
+    const result = ListeningEngine.step(listeningSession, Number(target.dataset.listenAnswer));
+    listeningSession = result.session;
+    listeningFeedback = result.feedback;
+    if (result.feedback.ok) {
+      awardXp(3);
+      checkAchievements();
+    }
+    persistMaru();
+    if (getRoute()[0] === "practice" && getRoute()[1] === "listen") {
+      main.innerHTML = listeningLabView(maruCtx(), listeningSession, listeningFeedback);
+    }
+    return;
+  }
+  if (target.hasAttribute("data-listen-next")) {
+    if (!listeningSession) return;
+    listeningFeedback = null;
+    main.innerHTML = listeningLabView(maruCtx(), listeningSession);
+    return;
+  }
+  if (target.hasAttribute("data-listen-restart")) {
+    listeningSession = ListeningEngine.buildSession(listeningSession?.exerciseId);
+    listeningFeedback = null;
+    main.innerHTML = listeningLabView(maruCtx(), listeningSession);
+    return;
+  }
+
+  // Maru 2.0 — дневник слов, резервная копия и редактор контента
+  if (target.dataset.weakWord) {
+    dictionaryFilters.query = target.dataset.weakWord;
+    dictionaryFilters.historyOnly = false;
+    dictionaryFilters.favoritesOnly = false;
+    dictionaryFilters.weakOnly = false;
+    routeTo("dictionary");
+    return;
+  }
+  if (target.hasAttribute("data-export-backup")) {
+    downloadJson(`maru-backup-${new Date().toISOString().slice(0, 10)}.json`, BackupEngine.payload(state));
+    showToast("Копия сохранена");
+    return;
+  }
+  if (target.hasAttribute("data-export-encrypted")) {
+    const passphrase = document.querySelector("#backupPassphrase")?.value || "";
+    BackupEngine.encrypt(BackupEngine.payload(state), passphrase)
+      .then((file) => downloadJson(`maru-encrypted-${new Date().toISOString().slice(0, 10)}.json`, file))
+      .then(() => setBackupStatus("Зашифрованная копия сохранена.", true))
+      .catch((error) => setBackupStatus(error.message, false));
+    return;
+  }
+  if (target.hasAttribute("data-reset-progress")) {
+    if (!window.confirm("Очистить весь прогресс, словарь и настройки? Это нельзя отменить.")) return;
+    const fresh = createDefaultMaruState();
+    Object.keys(state).forEach((key) => delete state[key]);
+    Object.assign(state, defaultState, { maru: fresh });
+    persistMaru();
+    listeningSession = null;
+    guidedSession = null;
+    showToast("Прогресс очищен");
+    routeTo("home");
+    return;
+  }
+  if (target.hasAttribute("data-admin-apply")) {
+    const text = document.querySelector("#adminJson")?.value || "";
+    const parsed = ContentEngine.parseScenarios(text);
+    if (!parsed.ok) {
+      adminMessage = { ok: false, ru: parsed.error };
+    } else {
+      state.maru.content.scenarios = parsed.data;
+      persistMaru();
+      adminEditorText = text;
+      adminMessage = { ok: true, ru: `Применено сценариев: ${parsed.data.length}. Откройте «Диалоги», чтобы проверить.` };
+    }
+    main.innerHTML = adminView(maruCtx(), adminEditorText, adminMessage);
+    return;
+  }
+  if (target.hasAttribute("data-admin-reset")) {
+    state.maru.content.scenarios = null;
+    persistMaru();
+    adminEditorText = null;
+    adminMessage = { ok: true, ru: "Восстановлены исходные сценарии." };
+    main.innerHTML = adminView(maruCtx(), adminEditorText, adminMessage);
+    return;
+  }
+  if (target.hasAttribute("data-admin-download")) {
+    const text = document.querySelector("#adminJson")?.value || "";
+    downloadJson("maru-scenarios.json", text, "application/json");
+    showToast("JSON со сценариями сохранён");
+    return;
+  }
+
+  // Maru 2.0 — офлайн-копия курса
+  if (target.hasAttribute("data-cache-check")) {
+    setCacheStatus("Проверяем сохранённые файлы…");
+    postToServiceWorker("CACHE_STATUS");
+    return;
+  }
+  if (target.hasAttribute("data-cache-download")) {
+    setCacheStatus("Обновляем копию курса…");
+    postToServiceWorker("CACHE_ALL");
+    return;
+  }
+
   if (target.dataset.route) routeTo(target.dataset.route);
   else if (target.dataset.openModule) routeTo(`module/${target.dataset.openModule}`);
   else if (target.dataset.openLesson) routeTo(`lesson/${target.dataset.openLesson}`);
@@ -2879,14 +3291,112 @@ installButton.addEventListener("click", async () => {
   installButton.classList.add("hidden");
 });
 
+// Maru 2.0 — чат и настройки
+document.addEventListener("submit", (event) => {
+  if (event.target?.id !== "chatForm") return;
+  event.preventDefault();
+  const input = document.querySelector("#chatInput");
+  if (input?.value.trim()) submitChatAnswer(input.value);
+});
+
+document.addEventListener("change", (event) => {
+  const target = event.target;
+  if (target?.dataset?.maruPref) {
+    const key = target.dataset.maruPref;
+    const maru = ensureMaruState(state);
+    if (key === "showTranscription") state.showTranscription = target.checked;
+    maru.preferences[key] = target.type === "checkbox" ? target.checked : target.value;
+    if (key === "fontSize") applyFontSize(target.value);
+    persistMaru();
+    showToast("Настройка сохранена");
+    return;
+  }
+  if (target?.dataset?.maruPrivacy) {
+    const key = target.dataset.maruPrivacy;
+    const maru = ensureMaruState(state);
+    PrivacyEngine.set(maru, key, target.checked);
+    if (key === "cloudSync" && target.checked && !maru.privacy.recordingNoticeSeen) {
+      showToast("Внимание: синхронизация может передавать данные с устройства");
+      maru.privacy.recordingNoticeSeen = true;
+    }
+    persistMaru();
+    return;
+  }
+  if (target?.id === "dictLevel" || target?.id === "dictKind") {
+    dictionaryFilters.level = document.querySelector("#dictLevel")?.value || "all";
+    dictionaryFilters.kind = document.querySelector("#dictKind")?.value || "all";
+    if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+    return;
+  }
+  if (target?.hasAttribute("data-listen-exercise")) {
+    listeningSession = ListeningEngine.buildSession(target.value);
+    listeningFeedback = null;
+    main.innerHTML = listeningLabView(maruCtx(), listeningSession);
+    return;
+  }
+  if (target?.hasAttribute("data-import-backup")) {
+    importBackupFile(target.files?.[0]);
+  }
+});
+
+function applyFontSize(size) {
+  document.documentElement.dataset.maruFont = size || "normal";
+}
+
+document.querySelector("#dictionaryButton")?.addEventListener("click", () => routeTo("dictionary"));
+
+document.addEventListener("keydown", (event) => {
+  if (event.target?.id === "dictQuery" && event.key === "Enter") {
+    event.preventDefault();
+    dictionaryFilters.query = event.target.value.trim();
+    dictionaryFilters.historyOnly = false;
+    dictionaryFilters.weakOnly = false;
+    if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+  }
+});
+
+// Учитываем время прослушивания для ежедневного задания.
+let listenTickStart = 0;
+audioPlayer.addEventListener("play", () => { listenTickStart = Date.now(); });
+audioPlayer.addEventListener("pause", () => {
+  if (!listenTickStart) return;
+  const minutes = (Date.now() - listenTickStart) / 60000;
+  listenTickStart = 0;
+  if (minutes < 0.02) return;
+  const maru = ensureMaruState(state);
+  ProgressEngine.ensureDaily(maru, state);
+  maru.daily.listeningMinutes = Number(maru.daily.listeningMinutes || 0) + minutes;
+  state.listenPlays = Number(state.listenPlays || 0) + 1;
+  persistMaru();
+});
+audioPlayer.addEventListener("ended", () => {
+  if (!listenTickStart) return;
+  audioPlayer.dispatchEvent(new Event("pause"));
+});
+
+const offlineNotice = document.querySelector("#offlineNotice");
+function syncOfflineNotice() {
+  offlineNotice?.classList.toggle("hidden", navigator.onLine !== false);
+}
+window.addEventListener("online", syncOfflineNotice);
+window.addEventListener("offline", syncOfflineNotice);
+syncOfflineNotice();
+
 window.addEventListener("hashchange", renderRoute);
 const colorSchemeQuery = matchMedia("(prefers-color-scheme: dark)");
 const syncSystemTheme = () => { if (state.theme === "system") setTheme(); };
 if (colorSchemeQuery.addEventListener) colorSchemeQuery.addEventListener("change", syncSystemTheme);
 else colorSchemeQuery.addListener(syncSystemTheme);
 setTheme();
+applyFontSize(ensureMaruState(state).preferences.fontSize);
 touchStreak();
 checkAchievements();
+rebuildDictionary();
+ProgressEngine.ensureDaily(ensureMaruState(state), state);
+if (!state.maru.conversation?.scenarioId) {
+  state.maru.conversation = ConversationEngine.start("restaurant", "guided", activeScenarios());
+  persistMaru();
+}
 if (!location.hash) history.replaceState(null, "", "#/home");
 renderRoute();
 

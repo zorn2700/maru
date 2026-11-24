@@ -23,6 +23,7 @@
         <span><strong>Masri RU</strong><small>Египетский арабский</small></span>
       </button>
       <div class="top-actions">
+        <button id="dictionaryButton" class="icon-button" type="button" aria-label="Умный словарь" title="Словарь">📖</button>
         <button id="libraryButton" class="icon-button" type="button" aria-label="Библиотека аудио и учебника" title="Аудио и учебник">🎧</button>
         <button id="paletteButton" class="icon-button" type="button" aria-label="Цвета и тема" title="Цвета и тема">🎨</button>
         <button id="searchButton" class="icon-button" type="button" aria-label="Поиск" title="Поиск">⌕</button>
@@ -30,13 +31,18 @@
       </div>
     </header>
 
+    <div id="offlineNotice" class="offline-notice hidden" role="status" aria-live="polite">
+      <span aria-hidden="true">📴</span>
+      <span>Нет интернета · работают загруженные уроки, аудио и записи</span>
+    </div>
+
     <main id="main" tabindex="-1" aria-live="polite"></main>
 
     <nav class="bottom-nav" aria-label="Основная навигация">
       <button type="button" data-route="home"><span aria-hidden="true">⌂</span><small>Главная</small></button>
-      <button type="button" data-route="course"><span aria-hidden="true">▤</span><small>Курс</small></button>
-      <button type="button" data-route="practice"><span aria-hidden="true">◇</span><small>Практика</small></button>
-      <button type="button" data-route="verbs"><span aria-hidden="true">🧩</span><small>Глаголы</small></button>
+      <button type="button" data-route="course"><span aria-hidden="true">▤</span><small>Учить</small></button>
+      <button type="button" data-route="practice"><span aria-hidden="true">◇</span><small>Тренажёр</small></button>
+      <button type="button" data-route="conversation"><span aria-hidden="true">💬</span><small>Диалог</small></button>
       <button type="button" data-route="settings"><span aria-hidden="true">⚙</span><small>Ещё</small></button>
     </nav>
   </div>

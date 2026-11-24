@@ -1,4 +1,4 @@
-const CACHE = "masri-ru-v7";
+const CACHE = "masri-ru-v11";
 const LESSON_TRACKS = Array.from({ length: 12 }, (_, month) =>
   Array.from({ length: 3 }, (__, index) => `./assets/audio/lessons/lesson-m${month + 1}l${index + 1}.mp3`),
 ).flat();
@@ -20,6 +20,9 @@ const CORE = [
   "./academy-data.js",
   "./library-data.js",
   "./audio-db.js",
+  "./maru-data.js",
+  "./maru-core.js",
+  "./maru-views.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
@@ -51,6 +54,41 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim()),
   );
+});
+
+// Сообщения от приложения: статус офлайн-контента и принудительное докачивание.
+self.addEventListener("message", (event) => {
+  const reply = (data) => event.source?.postMessage(data);
+  if (event.data?.type === "CACHE_STATUS") {
+    event.waitUntil(
+      caches.open(CACHE)
+        .then((cache) => cache.keys())
+        .then((keys) => {
+          const paths = new Set(keys.map((request) => new URL(request.url).pathname));
+          const missing = CORE.filter((path) => !paths.has(new URL(path, self.location.href).pathname));
+          reply({
+            type: "CACHE_STATUS",
+            total: CORE.length,
+            cached: CORE.length - missing.length,
+            missing: missing.slice(0, 8),
+            ready: missing.length === 0,
+          });
+        })
+        .catch(() => reply({ type: "CACHE_STATUS", total: CORE.length, cached: 0, missing: [], ready: false })),
+    );
+    return;
+  }
+  if (event.data?.type === "CACHE_ALL") {
+    event.waitUntil(
+      caches.open(CACHE)
+        .then((cache) => Promise.allSettled(CORE.map((path) => cache.add(path))))
+        .then((results) => reply({
+          type: "CACHE_DONE",
+          ok: results.filter((item) => item.status === "fulfilled").length,
+          total: CORE.length,
+        })),
+    );
+  }
 });
 
 self.addEventListener("fetch", (event) => {

@@ -51,6 +51,24 @@
       "short_name": "Записи",
       "url": "./#/recordings",
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Поговори по-египетски",
+      "short_name": "Диалоги",
+      "url": "./#/conversation",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Умный словарь",
+      "short_name": "Словарь",
+      "url": "./#/dictionary",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Тренировка дня",
+      "short_name": "Тренировка",
+      "url": "./#/challenge",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
