@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#102A43">
+  <meta name="theme-color" content="#0b4a31">
   <meta name="description" content="Офлайн-курс египетского арабского для русскоговорящих">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +12,8 @@
   <link rel="icon" href="assets/icons/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="stylesheet" href="styles.css">
-  <title>Masri RU</title>
+  <link rel="stylesheet" href="quranpedia.css">
+  <title>Maru 2.0 · Египетский арабский</title>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -20,11 +21,36 @@
     <header class="topbar">
       <button id="brandButton" class="brand" type="button" aria-label="На главную">
         <span class="brand-mark" aria-hidden="true">م</span>
-        <span><strong>Masri RU</strong><small>Египетский арабский</small></span>
+        <span><strong>Maru 2.0</strong><small>Египетский арабский</small></span>
       </button>
+
+      <nav class="qp-top-nav" aria-label="Разделы">
+        <button class="qp-top-link active" type="button" data-top-route="home" data-route="home">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 1.9 11.4l1.3 1.5 1.4-1.2V20a1.5 1.5 0 0 0 1.5 1.5h11.8A1.5 1.5 0 0 0 19.4 20v-8.3l1.4 1.2 1.3-1.5zM9.4 21.5v-5.1a2.6 2.6 0 0 1 5.2 0v5.1z"/></svg>
+          <span>Главная</span>
+        </button>
+        <button class="qp-top-link" type="button" data-top-route="course" data-route="course">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1.7 2v16h1.2V4H7.7zm6.3 0v9.2l1.5-1.3 1.5 1.3V4h-3z"/></svg>
+          <span>Курс</span>
+        </button>
+        <button class="qp-top-link" type="button" data-top-route="practice" data-route="practice">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h2v6H4zm14 0h2v6h-2zM8 6h8a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-4a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2z"/></svg>
+          <span>Практика</span>
+        </button>
+        <button class="qp-top-link" type="button" data-top-route="conversation" data-route="conversation">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v11H9l-5 4z"/></svg>
+          <span>Диалог</span>
+        </button>
+        <button class="qp-top-link" type="button" data-top-route="settings" data-route="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-1-8h2l.4 2.3 1.7.8 2-1.2 1.4 1.4-1.2 2 .8 1.7L22 9v2l-2.3.4-.8 1.7 1.2 2-1.4 1.4-2-1.2-1.7.8L13 18h-2l-.4-2.3-1.7-.8-2 1.2-1.4-1.4 1.2-2-.8-1.7L2 11V9l2.3-.4.8-1.7-1.2-2 1.4-1.4 2 1.2 1.7-.8z"/></svg>
+          <span>Ещё</span>
+        </button>
+      </nav>
+
       <div class="top-actions">
         <button id="dictionaryButton" class="icon-button" type="button" aria-label="Умный словарь" title="Словарь">📖</button>
         <button id="libraryButton" class="icon-button" type="button" aria-label="Библиотека аудио и учебника" title="Аудио и учебник">🎧</button>
+        <button id="qpThemeButton" class="icon-button" type="button" aria-label="Переключить тему" title="Светлый / тёмный режим">☀</button>
         <button id="paletteButton" class="icon-button" type="button" aria-label="Цвета и тема" title="Цвета и тема">🎨</button>
         <button id="searchButton" class="icon-button" type="button" aria-label="Поиск" title="Поиск">⌕</button>
         <button id="installButton" class="pill-button hidden" type="button">Установить</button>
@@ -37,6 +63,36 @@
     </div>
 
     <main id="main" tabindex="-1" aria-live="polite"></main>
+
+    <footer class="qp-footer">
+      <div class="qp-container">
+        <div class="qp-footer-grid">
+          <div>
+            <h3>Maru 2.0 · Египетский арабский</h3>
+            <p>Полный офлайн-курс для русскоговорящих: уроки, аудио, словарь, диалоги и тренажёры. Работает без интернета после загрузки.</p>
+          </div>
+          <div>
+            <h3>Разделы</h3>
+            <div class="qp-footer-links">
+              <button type="button" data-footer-route="course">Курс по модулям</button>
+              <button type="button" data-footer-route="basics">Местоимения и времена</button>
+              <button type="button" data-footer-route="conversation">Живые диалоги</button>
+              <button type="button" data-footer-route="dictionary">Умный словарь</button>
+            </div>
+          </div>
+          <div>
+            <h3>Приложение</h3>
+            <div class="qp-footer-links">
+              <button type="button" data-footer-route="offline">Офлайн-копия</button>
+              <button type="button" data-footer-route="progress">Мой прогресс</button>
+              <button type="button" data-footer-route="notebook">Дневник слов</button>
+              <button type="button" data-footer-route="settings">Настройки</button>
+            </div>
+          </div>
+        </div>
+        <p class="qp-footer-bottom"><span class="arabic" lang="ar" dir="rtl">بسيط في الاستخدام، قوي في الداخل</span> · Сделано с заботой о вашем прогрессе</p>
+      </div>
+    </footer>
 
     <nav class="bottom-nav" aria-label="Основная навигация">
       <button type="button" data-route="home"><span aria-hidden="true">⌂</span><small>Главная</small></button>

@@ -1,5 +1,9 @@
 export const VERB_PERSONS = ["я", "ты м.", "ты ж.", "он", "она", "мы", "вы", "они"];
 
+export const VERB_PRONOUNS_AR = ["أنا", "إنتَ", "إنتِ", "هو", "هي", "إحنا", "إنتو", "هما"];
+
+const arabicPerson = (person) => VERB_PRONOUNS_AR[VERB_PERSONS.indexOf(person)] || "";
+
 const futureTr = (tr) => {
   if (tr.startsWith("biy")) return `hay${tr.slice(3)}`;
   if (tr.startsWith("bit")) return `hat${tr.slice(3)}`;
@@ -10,7 +14,7 @@ const futureTr = (tr) => {
 
 const negativeAr = (ar) => (ar.endsWith("وا") ? `ما${ar.slice(0, -1)}ش` : `ما${ar}ش`);
 
-const build = (pairs, people = VERB_PERSONS) => pairs.map(([ar, tr], index) => ({ person: people[index], ar, tr }));
+const build = (pairs, people = VERB_PERSONS) => pairs.map(([ar, tr], index) => ({ person: people[index], personAr: arabicPerson(people[index]), ar, tr }));
 
 const makeVerb = ({ id, ar, tr, ru, root, pattern, level = "A1", note = "", present, past, imperative, example }) => ({
   id,
@@ -25,8 +29,8 @@ const makeVerb = ({ id, ar, tr, ru, root, pattern, level = "A1", note = "", pres
   forms: {
     present: build(present),
     past: build(past),
-    future: present.map(([ar, tr], index) => ({ person: VERB_PERSONS[index], ar: `ه${ar.slice(1)}`, tr: futureTr(tr) })),
-    negative: present.map(([ar, tr], index) => ({ person: VERB_PERSONS[index], ar: negativeAr(ar), tr: `ma-${tr}-sh` })),
+    future: present.map(([ar, tr], index) => ({ person: VERB_PERSONS[index], personAr: VERB_PRONOUNS_AR[index], ar: `ه${ar.slice(1)}`, tr: futureTr(tr) })),
+    negative: present.map(([ar, tr], index) => ({ person: VERB_PERSONS[index], personAr: VERB_PRONOUNS_AR[index], ar: negativeAr(ar), tr: `ma-${tr}-sh` })),
     imperative: build(imperative, ["ты м.", "ты ж.", "вы"]),
   },
 });

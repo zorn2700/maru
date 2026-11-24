@@ -52,103 +52,205 @@ export function homeView(ctx) {
   const name = (state.learnerName || "").trim();
   const hour = new Date().getHours();
   const greetingRu = hour < 5 ? "Доброй ночи" : hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
-  const greetingAr = hour < 5 ? "ليلة سعيدة" : hour < 12 ? "صباح الخير" : hour < 18 ? "مساء الخير" : "مساء الخير";
+  const greetingAr = hour < 5 ? "ليلة سعيدة" : hour < 12 ? "صباح الخير" : "مساء الخير";
   const nextGoal = levelGoals.find((item) => item.id === (nextLesson?.level || "A0")) || levelGoals[0];
 
+  const stats = [
+    [lessons.length, "уроков в курсе"],
+    [vocab.length, "слов и выражений"],
+    [conversationScenarios.length, "жизненных ситуаций"],
+    [state.xp || 0, "XP набрано"],
+    [level.level, "ваш уровень"],
+    [state.streak || 0, "дней подряд"],
+    [dueCount, "слов к повторению"],
+    [`${challengeDone}/${dailyChallenges.length}`, "заданий дня"],
+  ];
+
+  const doors = [
+    { route: "course", icon: "📖", title: "Курс по модулям", count: `${lessons.length} уроков`, desc: "От первых слов до уверенных диалогов. Аудио, карточки и пошаговые задания в одном месте.", links: [["course", "Модули"], ["programs", "Программы"], ["exams", "Экзамены"]] },
+    { route: "basics", icon: "🔤", title: "Местоимения и времена", count: "8 форм · 5 времён", desc: "Все местоимения и все времена одного глагола на одном экране — без лишних переходов.", links: [["reference", "Шпаргалка"], ["verbs", "Глаголы"], ["grammar", "Грамматика"]] },
+    { route: "practice", icon: "⚡", title: "Тренажёры", count: "4 режима", desc: "Карточки, умное повторение, спряжение глаголов и аудирование с обратной связью.", links: [["practice/smart", "Повторение"], ["practice/listen", "Аудирование"], ["challenge", "Вызов дня"]] },
+    { route: "conversation", icon: "💬", title: "Живые диалоги", count: `${conversationScenarios.length} ситуаций`, desc: "Поговори по-египетски: кафе, такси, рынок, дом и ещё десятки настоящих сценариев.", links: [["conversation", "Начать диалог"], ["practice/speak", "Произношение"]] },
+    { route: "dictionary", icon: "📚", title: "Умный словарь", count: `${vocab.length} слов`, desc: "Поиск по русскому, арабскому и латинице. Добавляйте слова в дневник и слушайте произношение.", links: [["dictionary", "Открыть словарь"], ["notebook", "Дневник слов"]] },
+    { route: "library", icon: "🎧", title: "Аудио и учебник", count: "46 треков", desc: "Аудиокурс, учебник PDF и все записи уроков доступны офлайн после загрузки.", links: [["library", "Библиотека"], ["offline", "Офлайн-копия"]] },
+    { route: "progress", icon: "📈", title: "Прогресс", count: `${progress}% курса`, desc: "Уровни, XP, серия дней и достижения — видно, как растёт ваш египетский.", links: [["progress", "Отчёт"], ["certificate", "Сертификат"]] },
+    { route: "settings", icon: "⚙️", title: "Настройки", count: "тема · звук · данные", desc: "Тема, скорость речи, резервная копия и настройки приватности — всё под рукой.", links: [["settings", "Настройки"], ["admin", "Редактор"]] },
+  ];
+
   return `
-  <section class="home-welcome">
-    <div class="home-welcome-copy">
-      <p class="eyebrow">Maru 2.0 · ${esc(greetingAr)}</p>
-      <h1>${esc(greetingRu)}${name ? `, ${esc(name)}` : ""}!</h1>
-      <p class="muted">${esc(nextGoal.ru)} · ${esc(nextGoal.ar)}</p>
+  <section class="qp-hero" aria-labelledby="qpHeroTitle">
+    <div class="qp-dust" aria-hidden="true">
+      ${Array.from({ length: 14 }, (_, index) => `<b style="left:${(index * 7.3 + 3) % 100}%;--w:${3 + (index % 3)}px;--h:${3 + ((index + 1) % 3)}px;--d:${13 + (index % 9)}s;--delay:-${index * 1.4}s"></b>`).join("")}
     </div>
-    <div class="home-welcome-level">
-      <span class="home-level-badge">${level.level}</span>
-      <span class="muted small">уровень · ${state.xp || 0} XP</span>
-    </div>
-  </section>
-
-  <section class="continue-card" aria-label="Продолжить обучение">
-    <div class="continue-card-glow" aria-hidden="true"></div>
-    <div class="continue-card-main">
-      <p class="eyebrow">Продолжить обучение · تابع التعلم</p>
-      <h2>${esc(nextLesson?.title || "Первый урок")}</h2>
-      <p class="continue-ar" lang="ar" dir="rtl">${esc(nextLesson?.arTitle || "الدرس الأول")}</p>
-      <p class="muted">${esc(nextLesson?.level || "A0")} · ${esc(nextLesson?.vocabulary?.length || 0)} слов · ${done ? "вы начали курс" : "начнём с первого слова"}</p>
-    </div>
-    <div class="continue-card-actions">
-      <button class="continue-button" type="button" data-open-lesson="${esc(nextLesson?.id || "m1l1")}">
-        <span aria-hidden="true">▶</span> ${done ? "Продолжить" : "Начать"} <span class="continue-arrow" aria-hidden="true">→</span>
-      </button>
-      <button class="soft-button" type="button" data-route="course">Все уроки</button>
-    </div>
-  </section>
-
-  <section class="home-tiles" aria-label="Главные действия">
-    <button class="home-tile" type="button" data-route="challenge">
-      <span class="home-tile-icon">⚡</span>
-      <strong>Тренировка дня</strong>
-      <small>${challengeDone} из ${dailyChallenges.length} заданий выполнено</small>
-      ${progressBar(Math.round((challengeDone / dailyChallenges.length) * 100))}
-    </button>
-    <button class="home-tile" type="button" data-route="practice/smart">
-      <span class="home-tile-icon">🧠</span>
-      <strong>Повторить</strong>
-      <small>${dueCount ? `${dueCount} слов ждут повторения` : "все слова на месте"}</small>
-      ${progressBar(dueCount ? 60 : 100)}
-    </button>
-    <button class="home-tile" type="button" data-route="conversation">
-      <span class="home-tile-icon">💬</span>
-      <strong>Поговори по-египетски</strong>
-      <small>8 жизненных ситуаций</small>
-      ${progressBar(avgSkill)}
-    </button>
-  </section>
-
-  <section class="home-grid">
-    <article class="card home-words">
-      <div class="section-head compact-head">
-        <div><p class="section-kicker">Кلمات اليوم · Слова дня</p><h2>Пять новых слов</h2></div>
-        <button class="link-button" type="button" data-route="dictionary">Словарь →</button>
+    <div class="qp-container">
+      <div class="qp-logo-wrap" aria-hidden="true">
+        <div class="qp-logo-orbit">
+          ${["م", "أ", "ب", "ت", "ث", "ج"].map((letter, index) => `<span class="qp-orb" style="--i:${index}">${letter}</span>`).join("")}
+        </div>
+        <div class="qp-logo-core">م</div>
       </div>
-      <div class="mini-word-list">
-        ${words.map((item, index) => `
-          <div class="mini-word-row" data-word-key="${esc(`${item.lessonId || "global"}:${item.ar}`)}">
-            <span class="mini-word-index">${index + 1}</span>
-            <span class="mini-word-ar arabic" lang="ar" dir="rtl">${esc(item.ar)}</span>
-            <span class="mini-word-body"><strong>${esc(item.ru)}</strong><small>${esc(item.tr)}</small></span>
-            <button class="mini-icon-button" type="button" data-say="${esc(item.ar)}" aria-label="Прослушать ${esc(item.ar)}">🔊</button>
+      <p class="qp-kicker">Maru 2.0 · ${esc(greetingAr)}</p>
+      <h1 id="qpHeroTitle">${esc(greetingRu)}${name ? `, ${esc(name)}` : ""}!</h1>
+      <p class="qp-hero-tag">Египетский арабский для русскоговорящих · <span class="arabic" lang="ar" dir="rtl">بسيط في الاستخدام، قوي في الداخل</span></p>
+      <p class="qp-hero-tag">${esc(nextGoal.ru)} · <span class="arabic" lang="ar" dir="rtl">${esc(nextGoal.ar)}</span></p>
+
+      <form class="qp-hero-search" id="qpHeroSearch" role="search">
+        <span aria-hidden="true">⌕</span>
+        <label class="sr-only" for="qpHeroInput">Поиск по курсу</label>
+        <input id="qpHeroInput" type="search" autocomplete="off" placeholder="Найти слово, урок или фразу…">
+        <button class="qp-btn-gold" type="submit">Найти</button>
+      </form>
+
+      <div class="qp-cta" aria-label="Быстрый старт">
+        <button class="continue-button" type="button" data-open-lesson="${esc(nextLesson?.id || "m1l1")}">
+          <span aria-hidden="true">▶</span> ${done ? "Продолжить" : "Начать"} <span class="continue-arrow" aria-hidden="true">→</span>
+        </button>
+        <button type="button" data-route="course">Все уроки</button>
+        <button type="button" data-route="basics">🔤 Местоимения и времена</button>
+        <button type="button" data-route="conversation">💬 Поговорить</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="qp-container">
+    <section class="qp-stats-wrap" aria-label="Курс в цифрах">
+      <div class="qp-stats">
+        ${stats.map(([value, label]) => `<div class="qp-stat"><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`).join("")}
+      </div>
+      <p class="qp-stats-note">Цифры считаются из вашего прогресса и содержимого курса — и обновляются сами.</p>
+    </section>
+
+    <section class="qp-section" aria-labelledby="qpDoorsTitle">
+      <header class="qp-section-head">
+        <span class="qp-kicker">Академия Maru</span>
+        <h2 id="qpDoorsTitle">С чего начать?</h2>
+        <p>Восемь дверей курса: слушайте, читайте, повторяйте и говорите. Каждый раздел возвращает вас к живой египетской речи.</p>
+      </header>
+      <div class="qp-doors">
+        ${doors.map((door) => `
+          <div class="qp-door">
+            <button class="qp-door-main" type="button" data-route="${esc(door.route)}">
+              <span class="qp-door-icon" aria-hidden="true">${door.icon}</span>
+              <span class="qp-door-title">${esc(door.title)}<em class="qp-door-count">${esc(door.count)}</em></span>
+              <span class="qp-door-desc">${esc(door.desc)}</span>
+            </button>
+            <div class="qp-door-links">
+              ${door.links.map(([route, label]) => `<button type="button" data-route="${esc(route)}">${esc(label)} →</button>`).join("")}
+            </div>
           </div>`).join("")}
       </div>
-      <button class="soft-button wide-button" type="button" data-route="practice/cards">Учить карточки →</button>
-    </article>
+    </section>
 
-    <article class="card home-progress-card">
-      <div class="section-head compact-head">
-        <div><p class="section-kicker">Твой прогресс</p><h2>Путь от A0 к B1</h2></div>
-        <button class="link-button" type="button" data-route="progress">Отчёт →</button>
+    <section class="qp-section" aria-labelledby="qpContinueTitle">
+      <header class="qp-section-head">
+        <span class="qp-kicker">Продолжить · تابع</span>
+        <h2 id="qpContinueTitle">Ваш следующий урок</h2>
+        <p>${done} из ${lessons.length} уроков пройдено · ${esc(nextGoal.ru)}</p>
+      </header>
+      <div class="continue-card">
+        <div class="continue-card-glow" aria-hidden="true"></div>
+        <div class="continue-card-main">
+          <p class="eyebrow">${esc(nextLesson?.level || "A0")} · ${esc(nextLesson?.vocabulary?.length || 0)} новых слов</p>
+          <h2>${esc(nextLesson?.title || "Первый урок")}</h2>
+          <p class="continue-ar" lang="ar" dir="rtl">${esc(nextLesson?.arTitle || "الدرس الأول")}</p>
+          <p class="muted">${done ? "Вы уже начали курс — продолжим с того же места." : "Начнём с первого слова и первого звука."}</p>
+        </div>
+        <div class="continue-card-actions">
+          <button class="primary-button" type="button" data-open-lesson="${esc(nextLesson?.id || "m1l1")}">
+            <span aria-hidden="true">▶</span> ${done ? "Продолжить" : "Начать"} <span class="continue-arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="soft-button" type="button" data-route="course">Все уроки</button>
+          <button class="soft-button" type="button" data-route="basics">🔤 Местоимения и времена</button>
+        </div>
       </div>
-      <div class="home-progress-ring" style="--progress:${progress}">
-        <strong>${progress}%</strong><small>курс пройден</small>
-      </div>
-      <p class="muted small">${done} из ${lessons.length} уроков · 🔥 ${state.streak || 0} дней подряд</p>
-      <div class="skill-mini-grid">
-        ${skills.map((skill) => `<div class="skill-mini" title="${esc(skill.value)}"><span>${skill.icon || ""}</span><small>${esc(skill.title)}</small><strong>${skill.score}</strong></div>`).join("")}
-      </div>
-    </article>
-  </section>
+    </section>
 
-  <section class="home-review-card card">
-    <div class="home-review-copy">
-      <p class="section-kicker">Умное повторение</p>
-      <h2>Вернуть то, что почти забыли</h2>
-      <p class="muted">Приложение само выбирает слова: сначала просроченные, затем слабые, затем новые.</p>
-    </div>
-    <div class="home-review-actions">
-      ${queue.slice(0, 3).map((item) => ar(item.ar, "review-word") ).join("")}
-      <button class="primary-button" type="button" data-route="practice/smart">Начать повторение →</button>
-    </div>
-  </section>
+    <section class="qp-section" aria-labelledby="qpActionsTitle">
+      <header class="qp-section-head">
+        <span class="qp-kicker">Быстрые действия</span>
+        <h2 id="qpActionsTitle">Тренировка на сегодня</h2>
+        <p>Три коротких пути: закрепить день, вернуть забытое и начать живой диалог.</p>
+      </header>
+      <div class="home-tiles">
+        <button class="home-tile" type="button" data-route="challenge">
+          <span class="home-tile-icon">⚡</span>
+          <strong>Тренировка дня</strong>
+          <small>${challengeDone} из ${dailyChallenges.length} заданий выполнено</small>
+          ${progressBar(Math.round((challengeDone / dailyChallenges.length) * 100))}
+        </button>
+        <button class="home-tile" type="button" data-route="practice/smart">
+          <span class="home-tile-icon">🧠</span>
+          <strong>Повторить</strong>
+          <small>${dueCount ? `${dueCount} слов ждут повторения` : "все слова на месте"}</small>
+          ${progressBar(dueCount ? 60 : 100)}
+        </button>
+        <button class="home-tile" type="button" data-route="conversation">
+          <span class="home-tile-icon">💬</span>
+          <strong>Поговори по-египетски</strong>
+          <small>${conversationScenarios.length} жизненных ситуаций</small>
+          ${progressBar(avgSkill)}
+        </button>
+      </div>
+    </section>
+
+    <section class="qp-section" aria-labelledby="qpWordsTitle">
+      <header class="qp-section-head">
+        <span class="qp-kicker">Кلمات اليوم · Слова дня</span>
+        <h2 id="qpWordsTitle">Пять слов, которые пригодятся</h2>
+        <p>Слушайте произношение и возвращайтесь к словам в тренажёре — они закрепятся сами.</p>
+      </header>
+      <div class="home-grid">
+        <article class="card home-words">
+          <div class="section-head compact-head">
+            <h2>Словарь дня</h2>
+            <button class="link-button" type="button" data-route="dictionary">Весь словарь →</button>
+          </div>
+          <div class="mini-word-list">
+            ${words.map((item, index) => `
+              <div class="mini-word-row" data-word-key="${esc(`${item.lessonId || "global"}:${item.ar}`)}">
+                <span class="mini-word-index">${index + 1}</span>
+                <span class="mini-word-ar arabic" lang="ar" dir="rtl">${esc(item.ar)}</span>
+                <span class="mini-word-body"><strong>${esc(item.ru)}</strong><small>${esc(item.tr)}</small></span>
+                <button class="mini-icon-button" type="button" data-say="${esc(item.ar)}" aria-label="Прослушать ${esc(item.ar)}">🔊</button>
+              </div>`).join("")}
+          </div>
+          <button class="soft-button wide-button" type="button" data-route="practice/cards">Учить карточки →</button>
+        </article>
+
+        <article class="card home-progress-card">
+          <div class="section-head compact-head">
+            <h2>Путь от A0 к B1</h2>
+            <button class="link-button" type="button" data-route="progress">Отчёт →</button>
+          </div>
+          <div class="home-progress-ring" style="--progress:${progress}">
+            <strong>${progress}%</strong><small>курс пройден</small>
+          </div>
+          <p class="muted small">${done} из ${lessons.length} уроков · 🔥 ${state.streak || 0} дней подряд</p>
+          <div class="skill-mini-grid">
+            ${skills.map((skill) => `<div class="skill-mini" title="${esc(skill.value)}"><span>${skill.icon || ""}</span><small>${esc(skill.title)}</small><strong>${skill.score}</strong></div>`).join("")}
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="qp-section" aria-labelledby="qpReviewTitle">
+      <header class="qp-section-head">
+        <span class="qp-kicker">Умное повторение</span>
+        <h2 id="qpReviewTitle">Вернуть то, что почти забыли</h2>
+        <p>Приложение само выбирает слова: сначала просроченные, затем слабые, затем новые.</p>
+      </header>
+      <div class="home-review-card card">
+        <div class="home-review-copy">
+          <h2>${dueCount ? `${dueCount} слов ждут вас` : "Все слова на месте"}</h2>
+          <p class="muted">Пять минут повторения сегодня — и завтра слова всплывают сами.</p>
+        </div>
+        <div class="home-review-actions">
+          ${queue.slice(0, 3).map((item) => ar(item.ar, "review-word")).join("")}
+          <button class="primary-button" type="button" data-route="practice/smart">Начать повторение →</button>
+        </div>
+      </div>
+    </section>
+  </div>
   `;
 }
 

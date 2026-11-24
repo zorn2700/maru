@@ -1,4 +1,4 @@
-const CACHE = "masri-ru-v11";
+const CACHE = "masri-ru-v13";
 const LESSON_TRACKS = Array.from({ length: 12 }, (_, month) =>
   Array.from({ length: 3 }, (__, index) => `./assets/audio/lessons/lesson-m${month + 1}l${index + 1}.mp3`),
 ).flat();
@@ -10,6 +10,7 @@ const CORE = [
   "./",
   "./index.html",
   "./styles.css",
+  "./quranpedia.css",
   "./app.js",
   "./course-data.js",
   "./extra-data.js",

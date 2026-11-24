@@ -118,9 +118,10 @@ const LEGACY_STORAGE_KEY = "masri-ru-state-v2";
 const defaultState = {
   completed: [],
   lastLesson: "m1l1",
-  theme: "system",
-  accent: "blue",
+  theme: "light",
+  accent: "emerald",
   surface: "warm",
+  portalVersion: 2,
   speechRate: 0.82,
   audioMode: "auto",
   audioRate: 1,
@@ -168,6 +169,7 @@ let examState = null;
 let verbTense = "present";
 let drillTense = "present";
 let verbFilter = "all";
+let basicsVerbId = "katab";
 let reviewRevealed = false;
 let reviewKey = "";
 let currentAudioTrack = null;
@@ -411,6 +413,12 @@ function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || "{}";
     const saved = JSON.parse(raw);
+    if (saved.portalVersion !== 2) {
+      saved.theme = "light";
+      saved.accent = "emerald";
+      saved.surface = "warm";
+      saved.portalVersion = 2;
+    }
     return {
       ...defaultState,
       ...saved,
@@ -654,6 +662,13 @@ function verbOfTheDay() {
 
 const accents = [
   {
+    id: "emerald",
+    name: "الموسوعة · زمردي",
+    ar: "زمردي وذهبي",
+    light: { blue: "#0f6b45", soft: "#f1e7d1", navy: "#0b4a31", navy2: "#12694a", deep: "#0b4a31", hero: ["#08301f", "#0f5a3b", "#0a3b28"], glow: "#f1ca72", sand: "#efe5cf" },
+    dark: { blue: "#8fd6b3", soft: "#183c2a", navy: "#f1ca72", navy2: "#d7e3d9", deep: "#14774f", hero: ["#07261a", "#0e4a33", "#082e1f"], glow: "#f1ca72", sand: "#0e1614" },
+  },
+  {
     id: "blue",
     name: "Средиземный",
     ar: "أزرق متوسط",
@@ -738,6 +753,14 @@ function setTheme() {
   else if (state.surface === "plain") sand = dark ? "#121212" : "#f6f6f6";
   set("--sand", sand);
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? sand : colors.navy);
+  const themeButton = document.querySelector("#qpThemeButton");
+  if (themeButton) {
+    const nextTheme = state.theme === "light" ? "dark" : state.theme === "dark" ? "system" : "light";
+    const label = nextTheme === "dark" ? "Тёмный режим" : nextTheme === "system" ? "Системный режим" : "Светлый режим";
+    themeButton.textContent = dark ? "☾" : "☀";
+    themeButton.setAttribute("aria-label", `Переключить тему: ${label}`);
+    themeButton.title = label;
+  }
   renderPaletteChoices();
 }
 
@@ -1125,10 +1148,11 @@ function activateNav(route) {
   let root = route;
   if (["module", "lesson", "guided", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing", "dictionary"].includes(route)) root = "course";
   else if (route === "verb") root = "course";
-  else if (["phrases", "reference", "exams", "exam", "challenge", "colors"].includes(route)) root = "practice";
+  else if (["phrases", "reference", "basics", "exams", "exam", "challenge", "colors"].includes(route)) root = "practice";
   else if (["progress", "recordings", "certificate", "notebook", "admin", "offline"].includes(route)) root = "settings";
   else if (route === "conversation") root = "conversation";
   nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.route === root));
+  document.querySelectorAll(".qp-top-link[data-top-route]").forEach((button) => button.classList.toggle("active", button.dataset.topRoute === root));
 }
 
 function moduleCard(module) {
@@ -1151,7 +1175,7 @@ function moduleCard(module) {
 function courseView() {
   return `
     <header class="page-head"><div><p class="eyebrow">Учебная программа</p><h1>Курс по модулям</h1><p>${lessons.length} уроков · ${courseMeta.levels} · ${courseMeta.studyWeeks} недель · ${audioTotalCount} аудиофайлов</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="programs">🎓 Программы</button><button class="soft-button" type="button" data-route="exams">📝 Экзамены</button></div></header>
-    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button><button class="soft-button" type="button" data-route="conversation">💬 Диалоги</button><button class="soft-button" type="button" data-route="dictionary">📖 Словарь</button><button class="soft-button" type="button" data-route="challenge">⚡ Тренировка дня</button><button class="soft-button" type="button" data-route="progress">📊 Отчёт</button></div>
+    <div class="lesson-actions compact-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="basics">🔤 Местоимения и времена</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="writing">✍️ Письмо</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="soft-button" type="button" data-route="phrases">💬 Разговорник</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="library">🎧 Аудио и PDF</button><button class="soft-button" type="button" data-route="certificate">🏆 Сертификат</button><button class="soft-button" type="button" data-route="recordings">🎙 Мои записи</button><button class="soft-button" type="button" data-route="conversation">💬 Диалоги</button><button class="soft-button" type="button" data-route="dictionary">📖 Словарь</button><button class="soft-button" type="button" data-route="challenge">⚡ Тренировка дня</button><button class="soft-button" type="button" data-route="progress">📊 Отчёт</button></div>
     <section class="section course-modules">
       <div class="section-head"><div><p class="section-kicker">12 модулей</p><h2>Программа обучения</h2><p>Каждый модуль — три урока, аудио, PDF-глава и экзамен</p></div><span class="chip">${completedCount()} из ${lessons.length} уроков</span></div>
       <div class="module-grid">${modules.map(moduleCard).join("")}</div>
@@ -1457,8 +1481,8 @@ function verbDetailView(verbId) {
     <section class="lesson-section">
       <div class="section-head"><div><h2>Спряжение</h2><p>${escapeHtml(tenseInfo.hint)}</p></div><span class="chip">${escapeHtml(tenseInfo.title)}</span></div>
       <div class="tense-tabs">${verbTenses.map((item) => `<button class="${item.id === verbTense ? "active" : ""}" type="button" data-verb-tense="${item.id}">${escapeHtml(item.title)}</button>`).join("")}</div>
-      <div class="plan-table conj-table"><table><thead><tr><th>Лицо</th><th>Арабский</th><th>Транскрипция</th><th></th></tr></thead><tbody>
-        ${forms.map((form) => `<tr><td>${escapeHtml(form.person)}</td><td class="arabic" lang="ar">${escapeHtml(form.ar)}</td><td class="vocab-tr">${escapeHtml(form.tr)}</td><td>${speakButton(form.ar)}</td></tr>`).join("")}
+      <div class="plan-table conj-table"><table><thead><tr><th>Местоимение</th><th>Арабский</th><th>Транскрипция</th><th></th></tr></thead><tbody>
+        ${forms.map((form) => `<tr><td><strong class="arabic person-ar" lang="ar" dir="rtl">${escapeHtml(form.personAr || "")}</strong><br><small>${escapeHtml(form.person)}</small></td><td class="arabic" lang="ar">${escapeHtml(form.ar)}</td><td class="vocab-tr">${escapeHtml(form.tr)}</td><td>${speakButton(form.ar)}</td></tr>`).join("")}
       </tbody></table></div>
       <div class="mastery-row"><span>Освоение</span><span class="progress-track"><span class="progress-fill" style="width:${mastery}%"></span></span><small>${stat.right >= 3 ? "✓ закреплено" : "3 верных ответа"}</small></div>
     </section>
@@ -1496,8 +1520,53 @@ function referenceView() {
     const arabic = /[\u0600-\u06FF]/.test(value);
     return `<td${arabic ? ` class="arabic ref-arabic" lang="ar"` : ""}>${escapeHtml(value)}</td>`;
   };
-  return `<header class="page-head"><div><p class="eyebrow">Быстрый справочник</p><h1>Шпаргалка</h1><p>Местоимения, суффиксы, вопросы, предлоги и формулы времён</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="phrases">Разговорник</button></div></header>
+  return `<header class="page-head"><div><p class="eyebrow">Быстрый справочник</p><h1>Шпаргалка</h1><p>Местоимения, суффиксы, вопросы, предлоги и формулы времён</p></div><div class="lesson-actions"><button class="primary-button" type="button" data-route="basics">🔤 Местоимения и времена · один экран</button><button class="soft-button" type="button" data-route="grammar">🧠 Грамматика</button><button class="soft-button" type="button" data-route="basics">🔤 Местоимения и времена</button><button class="soft-button" type="button" data-route="culture">🏛 Культура</button><button class="soft-button" type="button" data-route="colors">🎨 Цвета</button><button class="soft-button" type="button" data-route="phrases">Разговорник</button></div></header>
     ${quickReference.map((section) => `<section class="lesson-section ref-section"><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.intro)}</p><div class="plan-table"><table><thead><tr>${section.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${section.rows.map((row) => `<tr>${row.map(cell).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("")}`;
+}
+
+function referenceTable(section) {
+  if (!section) return "";
+  const cell = (value) => {
+    const arabic = /[\u0600-\u06FF]/.test(value);
+    return `<td${arabic ? ` class="arabic ref-arabic" lang="ar"` : ""}>${escapeHtml(value)}</td>`;
+  };
+  return `<div class="plan-table"><table><thead><tr>${section.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${section.rows.map((row) => `<tr>${row.map(cell).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+function basicsView() {
+  const verb = verbLibrary.find((item) => item.id === basicsVerbId) || verbLibrary[0];
+  basicsVerbId = verb.id;
+  const pronouns = quickReference.find((section) => section.id === "pronouns");
+  const suffixes = quickReference.find((section) => section.id === "suffixes");
+  const jump = `<div class="tense-tabs basics-jump" aria-label="Быстрый переход">
+    <button type="button" data-basics-jump="pronouns">Местоимения</button>
+    ${verbTenses.map((tense) => `<button type="button" data-basics-jump="${tense.id}">${escapeHtml(tense.title)}</button>`).join("")}
+  </div>`;
+  const tenseSections = verbTenses.map((tense) => {
+    const forms = verb.forms[tense.id] || [];
+    return `<section class="lesson-section basics-tense" id="tense-${tense.id}">
+      <div class="section-head"><div><h2>${escapeHtml(tense.title)}</h2><p>${escapeHtml(tense.hint)}</p></div><button class="link-button" type="button" data-open-verb="${verb.id}">${escapeHtml(verb.ar)} →</button></div>
+      <div class="plan-table conj-table"><table><thead><tr><th>Местоимение</th><th>Арабский</th><th>Транскрипция</th><th></th></tr></thead><tbody>
+        ${forms.map((form) => `<tr><td><strong class="arabic person-ar" lang="ar" dir="rtl">${escapeHtml(form.personAr || "")}</strong><br><small>${escapeHtml(form.person)}</small></td><td class="arabic" lang="ar">${escapeHtml(form.ar)}</td><td class="vocab-tr">${escapeHtml(form.tr)}</td><td>${speakButton(form.ar)}</td></tr>`).join("")}
+      </tbody></table></div>
+    </section>`;
+  }).join("");
+  return `<header class="page-head"><div><p class="eyebrow">Одна страница · без лишних переходов</p><h1>Местоимения и времена</h1><p>Все местоимения и все времена одного глагола в одном месте. Выберите глагол — таблицы обновятся сразу.</p></div><div class="lesson-actions"><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button><button class="primary-button" type="button" data-route="practice">⚡ Тренажёр</button></div></header>
+    ${jump}
+    <section class="lesson-section" id="basics-pronouns">
+      <div class="section-head"><div><h2>Личные местоимения</h2><p>${escapeHtml(pronouns?.intro || "")}</p></div><span class="chip">8 форм</span></div>
+      ${referenceTable(pronouns)}
+    </section>
+    <section class="lesson-section">
+      <div class="section-head"><div><h2>Притяжательные суффиксы</h2><p>${escapeHtml(suffixes?.intro || "")}</p></div></div>
+      ${referenceTable(suffixes)}
+    </section>
+    <section class="lesson-section basics-select">
+      <div class="section-head"><div><h2>Все времена одного глагола</h2><p>${verbLibrary.length} глаголов · ${verbTenses.length} таблиц на этой странице</p></div><span class="chip">${escapeHtml(verb.ru)}</span></div>
+      <label class="sr-only" for="basicsVerb">Выберите глагол</label>
+      <select id="basicsVerb">${verbLibrary.map((item) => `<option value="${escapeHtml(item.id)}"${item.id === verb.id ? " selected" : ""}>${escapeHtml(item.ar)} · ${escapeHtml(item.ru)}</option>`).join("")}</select>
+    </section>
+    ${tenseSections}`;
 }
 
 function buildDrill(verbId = null, tense = drillTense) {
@@ -2034,7 +2103,7 @@ function grammarView() {
   const exampleCount = modules.reduce((sum, module) => sum + moduleLessons(module.id).reduce((inner, lesson) => inner + lesson.grammar.reduce((x, block) => x + block.examples.length, 0), 0), 0);
   return `<header class="page-head">
     <div><p class="eyebrow">Полный грамматический справочник</p><h1>Грамматика</h1><p>${topicCount} тем · ${exampleCount} примеров · 12 модулей · связь с уроками и глаголами</p></div>
-    <div class="lesson-actions"><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button></div>
+    <div class="lesson-actions"><button class="primary-button" type="button" data-route="basics">🔤 Местоимения и времена · один экран</button><button class="soft-button" type="button" data-route="reference">📐 Шпаргалка</button><button class="soft-button" type="button" data-route="verbs">🧩 Глаголы</button></div>
   </header>
   <div class="card grammar-toolbar">
     <input id="grammarSearch" type="search" autocomplete="off" placeholder="Найти тему: время, вопрос, отрицание…">
@@ -2197,6 +2266,7 @@ function settingsView() {
       <div class="section-head"><div><h2>Инструменты</h2><p>Дополнительные разделы работают без интернета</p></div></div>
       <div class="feature-grid">
         <button class="card feature-card" type="button" data-route="library"><span class="feature-icon">🎧</span><span class="feature-copy"><strong>Аудио и учебник</strong><small>${audioTotalCount} MP3 и ${textbookPdfCount} PDF</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
+        <button class="card feature-card" type="button" data-route="basics"><span class="feature-icon">🔤</span><span class="feature-copy"><strong>Местоимения и времена</strong><small>Всё на одном экране: 8 местоимений и 5 таблиц спряжения</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
         <button class="card feature-card" type="button" data-route="verbs"><span class="feature-icon">🧩</span><span class="feature-copy"><strong>Лаборатория глаголов</strong><small>${verbLibrary.length} глаголов и 5 времён</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
         <button class="card feature-card" type="button" data-route="phrases"><span class="feature-icon">💬</span><span class="feature-copy"><strong>Разговорник</strong><small>${allPhrases().length} фраз и избранное</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
         <button class="card feature-card" type="button" data-route="reference"><span class="feature-icon">📐</span><span class="feature-copy"><strong>Шпаргалка</strong><small>Грамматика в таблицах</small></span><span class="feature-arrow" aria-hidden="true">→</span></button>
@@ -2223,6 +2293,7 @@ function notFoundView() {
 
 function renderRoute() {
   const [route, value] = getRoute();
+  main.classList.toggle("home-route", route === "home");
   activateNav(route);
   if (route === "home") main.innerHTML = maruHomeView(maruCtx());
   else if (route === "guided") {
@@ -2246,6 +2317,7 @@ function renderRoute() {
   else if (route === "verb") main.innerHTML = verbDetailView(value);
   else if (route === "phrases") main.innerHTML = phrasebookView();
   else if (route === "reference") main.innerHTML = referenceView();
+  else if (route === "basics") main.innerHTML = basicsView();
   else if (route === "practice" && value === "listen") {
     if (!listeningSession) listeningSession = ListeningEngine.buildSession();
     main.innerHTML = listeningLabView(maruCtx(), listeningSession, listeningFeedback);
@@ -2726,7 +2798,14 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  if (target.dataset.route) routeTo(target.dataset.route);
+  if (target.dataset.basicsJump) {
+    const section = document.querySelector(`#basics-${target.dataset.basicsJump}, #tense-${target.dataset.basicsJump}`);
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  if (target.dataset.footerRoute) routeTo(target.dataset.footerRoute);
+  else if (target.dataset.route) routeTo(target.dataset.route);
   else if (target.dataset.openModule) routeTo(`module/${target.dataset.openModule}`);
   else if (target.dataset.openLesson) routeTo(`lesson/${target.dataset.openLesson}`);
   else if (target.dataset.openVerb) routeTo(`verb/${target.dataset.openVerb}`);
@@ -3127,7 +3206,10 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("change", (event) => {
-  if (event.target.id === "themeSelect") {
+  if (event.target.id === "basicsVerb") {
+    basicsVerbId = event.target.value;
+    if (getRoute()[0] === "basics") main.innerHTML = basicsView();
+  } else if (event.target.id === "themeSelect") {
     state.theme = event.target.value;
     saveState();
     setTheme();
@@ -3167,6 +3249,21 @@ document.querySelector("#searchButton").addEventListener("click", () => {
   searchInput.value = "";
   updateSearch("");
   setTimeout(() => searchInput.focus(), 80);
+});
+document.addEventListener("submit", (event) => {
+  if (event.target.id !== "qpHeroSearch") return;
+  event.preventDefault();
+  const value = document.querySelector("#qpHeroInput")?.value.trim() || "";
+  searchDialog.showModal();
+  searchInput.value = value;
+  updateSearch(value);
+  setTimeout(() => searchInput.focus(), 80);
+});
+document.querySelector("#qpThemeButton")?.addEventListener("click", () => {
+  const order = ["light", "dark", "system"];
+  state.theme = order[(order.indexOf(state.theme) + 1) % order.length] || "light";
+  saveState();
+  setTheme();
 });
 searchInput.addEventListener("input", () => updateSearch(searchInput.value));
 searchResults.addEventListener("click", (event) => {

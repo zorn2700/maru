@@ -2045,3 +2045,14 @@ html[data-maru-font="huge"] { font-size: 19px; }
 .offline-list { margin: .2rem 0; padding-left: 1.2rem; display: grid; gap: .3rem; color: var(--ink); }
 .offline-list li { line-height: 1.5; }
 .offline-card code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .72rem; color: var(--danger); }
+
+/* ============================================================
+   Местоимения и времена на одном экране
+   ============================================================ */
+
+.person-ar { display: inline-block; color: var(--navy); font-size: 1.05rem; }
+.conj-table td small { color: var(--muted); white-space: nowrap; }
+.basics-jump { position: sticky; top: 68px; z-index: 4; margin: 0 0 1rem; padding: .5rem; border-radius: 14px; background: color-mix(in srgb, var(--paper) 92%, transparent); box-shadow: var(--shadow-soft); }
+.basics-jump button { flex: 0 0 auto; }
+.basics-select select { width: 100%; max-width: 340px; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); font: inherit; }
+.basics-tense, #basics-pronouns { scroll-margin-top: 8.5rem; }
