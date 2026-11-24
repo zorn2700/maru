@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6A1B9A"/><stop offset="1" stop-color="#102A43"/></linearGradient>
+    <pattern id="p" width="52" height="52" patternUnits="userSpaceOnUse"><path d="M26 0L52 26 26 52 0 26Z" fill="none" stroke="white" stroke-opacity=".08"/></pattern>
+  </defs>
+  <rect width="1200" height="520" rx="36" fill="url(#g)"/>
+  <rect width="1200" height="520" rx="36" fill="url(#p)"/>
+  <circle cx="1010" cy="55" r="220" fill="#CE93D8" fill-opacity=".2"/>
+  <circle cx="1100" cy="430" r="250" fill="none" stroke="white" stroke-opacity=".12" stroke-width="72"/>
+  <text x="82" y="130" fill="#CE93D8" font-family="DejaVu Sans, Arial" font-size="54" font-weight="700">МОДУЛЬ 2</text>
+  <text x="80" y="250" fill="white" font-family="DejaVu Sans, Arial" font-size="70" font-weight="700">Люди и предметы</text>
+  <text x="82" y="360" fill="#FFF0C9" font-family="DejaVu Sans, Arial" font-size="92" font-weight="700">الناس</text>
+  <g transform="translate(948 178)"><rect width="170" height="170" rx="46" fill="white" fill-opacity=".16"/><text x="85" y="119" text-anchor="middle" fill="white" font-family="DejaVu Sans, Arial" font-size="98" font-weight="800">2</text></g>
+  </svg>
