@@ -50,6 +50,9 @@ import {
 } from "./maru-core.js";
 import { conversationScenarios, levelGoals } from "./maru-data.js";
 import { AchievementEngine, ArcadeEngine, QuestEngine } from "./maru-quest.js";
+import { OfflineDictionaryEngine, StoryEngine } from "./maru-extras.js";
+import { stories as storyCatalog } from "./maru-stories-data.js";
+import { offlineDictionaryView, storiesView, storyView } from "./maru-extras-views.js";
 import {
   achievementsView,
   arcadeView,
@@ -210,6 +213,11 @@ let builderSession = null;
 let builderFeedback = null;
 let achievementFilter = "all";
 
+// Maru Extras — القاموس بدون شبكة والقصص التفاعلية.
+let offlineDictionaryFilters = { query: "", kind: "all", letter: "all", favoritesOnly: false };
+let storySession = null;
+let storyFeedback = null;
+
 function activeScenarios() {
   const custom = state.maru?.content?.scenarios;
   return Array.isArray(custom) && custom.length ? custom : conversationScenarios;
@@ -245,6 +253,32 @@ function achievementsData() {
 
 function arcadeData() {
   return { calendar: ArcadeEngine.calendar(state.history || {}, 35) };
+}
+
+function offlineDictionaryData() {
+  const indexed = OfflineDictionaryEngine.index(dictionaryEntries, (entry) =>
+    wordAudioFor(entry.ar) || "");
+  return {
+    entries: OfflineDictionaryEngine.filter(indexed, {
+      ...offlineDictionaryFilters,
+      favorites: ensureMaruState(state).dictionary.favorites || [],
+    }),
+    stats: OfflineDictionaryEngine.stats(indexed),
+    letters: OfflineDictionaryEngine.letters(indexed),
+    filters: offlineDictionaryFilters,
+  };
+}
+
+function findStory(id = "") {
+  return storyCatalog.find((item) => item.id === id) || null;
+}
+
+function storiesData() {
+  const progress = ensureMaruState(state).stories || {};
+  return {
+    stories: StoryEngine.list(storyCatalog, progress),
+    storySummary: StoryEngine.summary(storyCatalog, progress),
+  };
 }
 
 function rebuildDictionary() {
@@ -447,6 +481,9 @@ const achievementDefs = [
   { id: "academy-complete", icon: "🏆", title: "Академия пройдена", desc: "Получите право на сертификат", test: () => certificateEligibility().eligible },
   { id: "reviews-400", icon: "🧠", title: "Глубокая память", desc: "400 повторений слов", test: () => state.totalReviews >= 400 },
   { id: "level-10", icon: "👑", title: "Десятый уровень", desc: "Наберите 1080 XP", test: () => state.xp >= 1080 },
+  { id: "story-first", icon: "📖", title: "Первая история", desc: "Прочитайте первую историю", test: () => (state.maru?.stories?.completed || []).length >= 1 },
+  { id: "story-three", icon: "🎭", title: "Три истории", desc: "Завершите три истории", test: () => (state.maru?.stories?.completed || []).length >= 3 },
+  { id: "offline-collector", icon: "🔎", title: "Словарь всегда с вами", desc: "Сохраните 10 слов в избранное", test: () => (state.maru?.dictionary?.favorites || []).length >= 10 },
 ];
 
 function loadState() {
@@ -1172,12 +1209,12 @@ function openPdf(path, title) {
 
 function activateNav(route) {
   let root = route;
-  if (["module", "lesson", "guided", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing", "dictionary"].includes(route)) root = "course";
+  if (["module", "lesson", "guided", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing", "dictionary", "offline-dictionary"].includes(route)) root = "course";
   else if (route === "verb") root = "course";
   else if (["phrases", "reference", "basics", "exams", "exam", "challenge", "colors", "arcade", "achievements"].includes(route)) root = "practice";
   else if (route === "quest") root = "quest";
   else if (["progress", "recordings", "certificate", "notebook", "admin", "offline"].includes(route)) root = "settings";
-  else if (route === "conversation") root = "conversation";
+  else if (["conversation", "stories", "story"].includes(route)) root = "conversation";
   nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.route === root));
   document.querySelectorAll(".qp-top-link[data-top-route]").forEach((button) => button.classList.toggle("active", button.dataset.topRoute === root));
 }
@@ -2335,6 +2372,21 @@ function renderRoute() {
   }
   else if (route === "conversation") main.innerHTML = conversationView(maruCtx());
   else if (route === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+  else if (route === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
+  else if (route === "stories") main.innerHTML = storiesView(maruCtx(storiesData()));
+  else if (route === "story") {
+    const item = findStory(value);
+    if (!item) main.innerHTML = notFoundView();
+    else {
+      if (!storySession || storySession.id !== item.id) {
+        storySession = StoryEngine.start(item);
+        storyFeedback = null;
+      }
+      const position = storyCatalog.findIndex((story) => story.id === item.id);
+      const next = storyCatalog[position + 1];
+      main.innerHTML = storyView(maruCtx({ story: next ? { ...item, nextId: next.id } : item }), storySession, storyFeedback);
+    }
+  }
   else if (route === "challenge") main.innerHTML = challengeView(maruCtx());
   else if (route === "progress") main.innerHTML = progressView(maruCtx());
   else if (route === "quest") main.innerHTML = questView(maruCtx({ quest: questData() }));
@@ -2556,6 +2608,29 @@ function renderDictation(feedback = null) {
 function renderBuilder(feedback = null) {
   builderFeedback = feedback;
   if (getRoute().join("/") === "practice/builder") main.innerHTML = builderView(maruCtx(), builderSession, builderFeedback);
+}
+
+function renderStory() {
+  if (getRoute()[0] !== "story" || !storySession) return;
+  const item = findStory(storySession.id);
+  if (!item) return;
+  if (storySession.phase === "finish" && !storySession.saved) {
+    const earned = StoryEngine.stars(storySession.score, (item.questions || []).length);
+    const progress = ensureMaruState(state).stories;
+    if (!Array.isArray(progress.completed)) progress.completed = [];
+    if (!progress.stars || typeof progress.stars !== "object") progress.stars = {};
+    if (!progress.completed.includes(item.id)) progress.completed.push(item.id);
+    progress.stars[item.id] = Math.max(Number(progress.stars[item.id] || 0), earned);
+    const learned = Array.isArray(progress.learned) ? progress.learned : [];
+    progress.learned = [...new Set([...learned, ...(item.vocab || []).map((word) => word.ar).filter(Boolean)])];
+    progress.best = Math.max(Number(progress.best || 0), progress.completed.length * 3);
+    storySession = { ...storySession, saved: true, stars: earned };
+    persistMaru();
+    awardXp(8 + earned * 2);
+  }
+  const position = storyCatalog.findIndex((story) => story.id === item.id);
+  const next = storyCatalog[position + 1];
+  main.innerHTML = storyView(maruCtx({ story: next ? { ...item, nextId: next.id } : item }), storySession, storyFeedback);
 }
 
 function advanceDictation(scored = false) {
@@ -2989,6 +3064,84 @@ document.addEventListener("click", (event) => {
   if (target.dataset.basicsJump) {
     const section = document.querySelector(`#basics-${target.dataset.basicsJump}, #tense-${target.dataset.basicsJump}`);
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  // Maru Extras — القاموس بدون شبكة
+  if (target.hasAttribute("data-od-search")) {
+    offlineDictionaryFilters.query = document.querySelector("#odQuery")?.value.trim() || "";
+    offlineDictionaryFilters.kind = document.querySelector("#odKind")?.value || "all";
+    if (getRoute()[0] === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
+    return;
+  }
+  if (target.dataset.odLetter !== undefined) {
+    offlineDictionaryFilters.letter = target.dataset.odLetter;
+    if (getRoute()[0] === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
+    return;
+  }
+  if (target.hasAttribute("data-od-favorites")) {
+    offlineDictionaryFilters.favoritesOnly = !offlineDictionaryFilters.favoritesOnly;
+    if (getRoute()[0] === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
+    return;
+  }
+  if (target.hasAttribute("data-od-clear")) {
+    offlineDictionaryFilters = { query: "", kind: "all", letter: "all", favoritesOnly: false };
+    if (getRoute()[0] === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
+    return;
+  }
+  if (target.dataset.odFav) {
+    DictionaryEngine.toggleFavorite(state.maru, target.dataset.odFav);
+    persistMaru();
+    if (getRoute()[0] === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
+    return;
+  }
+
+  // Maru Extras — القصص التفاعلية
+  if (target.dataset.storyOpen) {
+    routeTo(`story/${target.dataset.storyOpen}`);
+    return;
+  }
+  if (target.dataset.storyNextStory) {
+    routeTo(`story/${target.dataset.storyNextStory}`);
+    return;
+  }
+  if (target.hasAttribute("data-story-exit") || target.hasAttribute("data-story-list")) {
+    routeTo("stories");
+    return;
+  }
+  if (target.hasAttribute("data-story-replay")) {
+    const item = findStory(storySession?.id || getRoute()[1]);
+    if (item) {
+      storySession = StoryEngine.start(item);
+      storyFeedback = null;
+      renderStory();
+    }
+    return;
+  }
+  if (target.hasAttribute("data-story-reveal")) {
+    if (storySession) {
+      storySession = { ...storySession, revealed: true };
+      renderStory();
+    }
+    return;
+  }
+  if (target.hasAttribute("data-story-next")) {
+    const item = findStory(storySession?.id || getRoute()[1]);
+    if (item && storySession) {
+      storySession = StoryEngine.step(storySession, item);
+      storyFeedback = null;
+      renderStory();
+    }
+    return;
+  }
+  if (target.dataset.storyChoice !== undefined) {
+    const item = findStory(storySession?.id || getRoute()[1]);
+    if (!item || !storySession || storySession.phase !== "question") return;
+    const choice = Number(target.dataset.storyChoice);
+    const result = StoryEngine.answer(storySession, item, choice);
+    storySession = { ...result.session, picked: choice };
+    storyFeedback = result.feedback;
+    renderStory();
     return;
   }
 
@@ -3621,6 +3774,11 @@ document.addEventListener("keydown", (event) => {
     dictionaryFilters.historyOnly = false;
     dictionaryFilters.weakOnly = false;
     if (getRoute()[0] === "dictionary") main.innerHTML = dictionaryView(maruCtx());
+  }
+  if (event.target?.id === "odQuery" && event.key === "Enter") {
+    event.preventDefault();
+    offlineDictionaryFilters.query = event.target.value.trim();
+    if (getRoute()[0] === "offline-dictionary") main.innerHTML = offlineDictionaryView(maruCtx({ offlineDictionary: offlineDictionaryData() }));
   }
 });
 

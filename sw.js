@@ -1,7 +1,7 @@
 /* Maru 2.0 — Service Worker (PWA) */
 importScripts("./word-audio-manifest.js");
 
-const CACHE = "masri-ru-v15";
+const CACHE = "masri-ru-v16";
 const WORDS = Array.isArray(self.MARU_WORD_AUDIO) ? self.MARU_WORD_AUDIO : [];
 const LESSON_TRACKS = Array.from({ length: 12 }, (_, month) =>
   Array.from({ length: 3 }, (__, index) => `./assets/audio/lessons/lesson-m${month + 1}l${index + 1}.mp3`),
@@ -32,6 +32,9 @@ const CORE = [
   "./maru-views.js",
   "./maru-quest.js",
   "./maru-quest-views.js",
+  "./maru-extras.js",
+  "./maru-extras-views.js",
+  "./maru-stories-data.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",

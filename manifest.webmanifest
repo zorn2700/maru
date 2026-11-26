@@ -81,6 +81,18 @@
       "short_name": "Аркада",
       "url": "./#/arcade",
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Словарь без сети",
+      "short_name": "Словарь",
+      "url": "./#/offline-dictionary",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Истории",
+      "short_name": "Истории",
+      "url": "./#/stories",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

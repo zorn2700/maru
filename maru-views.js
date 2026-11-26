@@ -595,6 +595,8 @@ export function maruSettingsExtras(ctx) {
     <div class="lesson-actions">
       <button class="soft-button" type="button" data-route="notebook">📓 Дневник слов и копия</button>
       <button class="soft-button" type="button" data-route="offline">📴 Офлайн-копия курса</button>
+      <button class="soft-button" type="button" data-route="offline-dictionary">🔎 Словарь без сети</button>
+      <button class="soft-button" type="button" data-route="stories">📖 Истории</button>
       <button class="soft-button" type="button" data-export-backup>⬇ Простая копия (.json)</button>
       <button class="soft-button" type="button" data-route="admin">🛠 Редактор контента</button>
     </div>

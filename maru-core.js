@@ -13,6 +13,7 @@ import { conversationScenarios, dailyChallenges, dictionaryParadigms, listeningE
 export function createDefaultMaruState() {
   return {
     dictionary: { favorites: [], lists: {}, history: [] },
+    stories: { completed: [], stars: {}, learned: [], best: 0 },
     daily: { date: "", progress: {}, listeningMinutes: 0, conversations: 0 },
     skills: { reading: 0, listening: 0, writing: 0, speaking: 0 },
     conversation: { scenarioId: "", mode: "guided", turnIndex: 0, messages: [], finished: false },
