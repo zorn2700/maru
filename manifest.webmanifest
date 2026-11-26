@@ -69,6 +69,18 @@
       "short_name": "Тренировка",
       "url": "./#/challenge",
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Квест и аркада",
+      "short_name": "Квест",
+      "url": "./#/quest",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Игры с арабским",
+      "short_name": "Аркада",
+      "url": "./#/arcade",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

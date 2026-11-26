@@ -49,6 +49,15 @@ import {
   normalizeText as normalizeMaruText,
 } from "./maru-core.js";
 import { conversationScenarios, levelGoals } from "./maru-data.js";
+import { AchievementEngine, ArcadeEngine, QuestEngine } from "./maru-quest.js";
+import {
+  achievementsView,
+  arcadeView,
+  builderView,
+  dictationView,
+  matchGameView,
+  questView,
+} from "./maru-quest-views.js";
 import {
   adminView,
   challengeView,
@@ -192,12 +201,21 @@ let adminEditorText = null;
 let adminMessage = null;
 let offlineStats = null;
 
+// Maru Quest / Arcade — جلسات الألعاب محلية بالكامل، لا تُرسل لأي خادم.
+let matchSession = null;
+let matchFeedback = null;
+let dictationSession = null;
+let dictationFeedback = null;
+let builderSession = null;
+let builderFeedback = null;
+let achievementFilter = "all";
+
 function activeScenarios() {
   const custom = state.maru?.content?.scenarios;
   return Array.isArray(custom) && custom.length ? custom : conversationScenarios;
 }
 
-function maruCtx() {
+function maruCtx(extra = {}) {
   return {
     state,
     maru: ensureMaruState(state),
@@ -207,7 +225,26 @@ function maruCtx() {
     dictionaryEntries,
     dictionaryFilters,
     scenarios: activeScenarios(),
+    ...extra,
   };
+}
+
+function questData() {
+  const chapters = QuestEngine.chapters(modules, lessons, state, examPassed, certificateEligibility().eligible);
+  return { chapters, summary: QuestEngine.summary(chapters), next: QuestEngine.next(chapters), level: levelInfo() };
+}
+
+function achievementsData() {
+  const items = AchievementEngine.list(achievementDefs, state);
+  return {
+    achievements: items,
+    achievementSummary: AchievementEngine.summary(items),
+    achievementFilter,
+  };
+}
+
+function arcadeData() {
+  return { calendar: ArcadeEngine.calendar(state.history || {}, 35) };
 }
 
 function rebuildDictionary() {
@@ -318,7 +355,8 @@ if ("serviceWorker" in navigator) {
       offlineStats = event.data;
       if (getRoute()[0] === "offline") main.innerHTML = offlineView(maruCtx(), offlineStats);
     } else if (event.data?.type === "CACHE_DONE") {
-      setCacheStatus(`Обновлено файлов: ${event.data.ok} из ${event.data.total}`, event.data.ok === event.data.total);
+      const label = event.data.scope === "words" ? "Слов" : "Файлов";
+      setCacheStatus(`${label} обновлено: ${event.data.ok} из ${event.data.total}`, event.data.ok === event.data.total);
       postToServiceWorker("CACHE_STATUS");
     }
   });
@@ -339,7 +377,9 @@ async function importBackupFile(file) {
     Object.keys(state).forEach((key) => delete state[key]);
     Object.assign(state, restored.state);
     persistMaru();
-    setBackupStatus("Прогресс восстановлен. Обновите страницу, чтобы применить все настройки.", true);
+    setTheme();
+    renderRoute();
+    setBackupStatus("Прогресс восстановлен. Настройки применены сразу.", true);
     showToast("Резервная копия восстановлена");
   } catch (error) {
     setBackupStatus(`Не удалось восстановить: ${error.message}`, false);
@@ -572,12 +612,15 @@ function checkAchievements() {
 
 function awardXp(amount) {
   touchStreak();
+  const before = Math.floor((Number(state.xp) || 0) / 120) + 1;
   state.xp = (Number(state.xp) || 0) + amount;
+  const after = Math.floor(state.xp / 120) + 1;
   state.todayXp = (Number(state.todayXp) || 0) + amount;
   bumpHistory("xp", amount);
   pruneHistory();
   saveState();
   checkAchievements();
+  if (after > before) showLevelUp(after);
 }
 
 function vocabKey(item) {
@@ -795,6 +838,37 @@ function showToast(message) {
   toast.classList.add("show");
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+/** احتفال محلي عند ترقية المستوى — بلا مكتبات أو موارد خارجية. */
+function showLevelUp(level) {
+  const old = document.querySelector("#levelUpOverlay");
+  old?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "levelUpOverlay";
+  overlay.className = "level-up-overlay";
+  overlay.setAttribute("role", "status");
+  overlay.setAttribute("aria-live", "assertive");
+  const confetti = Array.from({ length: 20 }, (_, index) => {
+    const angle = (index / 20) * Math.PI * 2;
+    const distance = 120 + (index % 4) * 38;
+    return `<i class="level-up-confetti" style="--i:${index};--dx:${Math.round(Math.cos(angle) * distance)}px;--dy:${Math.round(Math.sin(angle) * distance - 60)}px;--rot:${index * 47}deg"></i>`;
+  }).join("");
+  overlay.innerHTML = `<div class="level-up-card">
+    <div class="level-up-rays" aria-hidden="true"></div>
+    ${confetti}
+    <p class="level-up-label">LEVEL UP · مستوى جديد</p>
+    <b>${level}</b>
+    <h2>🎉 новый уровень!</h2>
+    <p>Ваш египетский растёт вместе с вами. Продолжайте — впереди новые миры.</p>
+    <button class="primary-button level-up-close" type="button" data-level-up-close>Продолжить →</button>
+  </div>`;
+  document.body.append(overlay);
+  const close = () => { overlay.remove(); };
+  overlay.querySelector("[data-level-up-close]")?.addEventListener("click", close);
+  overlay.addEventListener("click", (event) => { if (event.target === overlay) close(); });
+  clearTimeout(showLevelUp.timer);
+  showLevelUp.timer = setTimeout(close, 5200);
 }
 
 function historyEntry(key = dayKey()) {
@@ -1096,59 +1170,12 @@ function openPdf(path, title) {
   checkAchievements();
 }
 
-function exportBackup() {
-  const payload = {
-    app: "masri-ru",
-    version: 3,
-    exported: new Date().toISOString(),
-    state,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `masri-ru-backup-${dayKey()}.json`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  showToast("Резервная копия скачана");
-}
-
-async function importBackup(file) {
-  try {
-    const parsed = JSON.parse(await file.text());
-    const saved = parsed?.state && typeof parsed.state === "object" ? parsed.state : parsed;
-    if (!saved || typeof saved !== "object") throw new Error("bad backup");
-    state = {
-      ...defaultState,
-      ...saved,
-      completed: Array.isArray(saved.completed) ? saved.completed : [],
-      wordStats: saved.wordStats && typeof saved.wordStats === "object" ? saved.wordStats : {},
-      verbStats: saved.verbStats && typeof saved.verbStats === "object" ? saved.verbStats : {},
-      favorites: Array.isArray(saved.favorites) ? saved.favorites : [],
-      achievements: Array.isArray(saved.achievements) ? saved.achievements : [],
-      history: saved.history && typeof saved.history === "object" ? saved.history : {},
-      examScores: saved.examScores && typeof saved.examScores === "object" ? saved.examScores : {},
-      writingDone: Array.isArray(saved.writingDone) ? saved.writingDone : [],
-      grammarModule: typeof saved.grammarModule === "string" ? saved.grammarModule : "all",
-      learnerName: typeof saved.learnerName === "string" ? saved.learnerName : "",
-    };
-    saveState();
-    setTheme();
-    renderRoute();
-    showToast("Прогресс восстановлен из резервной копии");
-  } catch {
-    showToast("Не удалось прочитать файл резервной копии");
-  }
-}
-
-
 function activateNav(route) {
   let root = route;
   if (["module", "lesson", "guided", "library", "media", "colors", "programs", "program", "grammar", "culture", "writing", "dictionary"].includes(route)) root = "course";
   else if (route === "verb") root = "course";
-  else if (["phrases", "reference", "basics", "exams", "exam", "challenge", "colors"].includes(route)) root = "practice";
+  else if (["phrases", "reference", "basics", "exams", "exam", "challenge", "colors", "arcade", "achievements"].includes(route)) root = "practice";
+  else if (route === "quest") root = "quest";
   else if (["progress", "recordings", "certificate", "notebook", "admin", "offline"].includes(route)) root = "settings";
   else if (route === "conversation") root = "conversation";
   nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.route === root));
@@ -1287,7 +1314,7 @@ function lessonView(lessonId) {
 
     <section class="lesson-audio-card guided-callout">
       <div><strong>🧭 Пошаговый урок</strong><small>8 шагов: слово → перевод → транскрипция → аудио → пример → вопрос → речь → тест</small></div>
-      <div class="lesson-actions"><button class="primary-button" type="button" data-guided-start="${esc(lesson.id)}">Пройти по шагам →</button></div>
+      <div class="lesson-actions"><button class="primary-button" type="button" data-guided-start="${escapeHtml(lesson.id)}">Пройти по шагам →</button></div>
     </section>
 
     ${track || chapter ? `<section class="lesson-audio-card">
@@ -2310,6 +2337,9 @@ function renderRoute() {
   else if (route === "dictionary") main.innerHTML = dictionaryView(maruCtx());
   else if (route === "challenge") main.innerHTML = challengeView(maruCtx());
   else if (route === "progress") main.innerHTML = progressView(maruCtx());
+  else if (route === "quest") main.innerHTML = questView(maruCtx({ quest: questData() }));
+  else if (route === "achievements") main.innerHTML = achievementsView(maruCtx(achievementsData()));
+  else if (route === "arcade") main.innerHTML = arcadeView(maruCtx(arcadeData()));
   else if (route === "course") main.innerHTML = courseView();
   else if (route === "module") main.innerHTML = moduleView(value);
   else if (route === "lesson") main.innerHTML = lessonView(value);
@@ -2323,6 +2353,21 @@ function renderRoute() {
     main.innerHTML = listeningLabView(maruCtx(), listeningSession, listeningFeedback);
   }
   else if (route === "practice" && value === "speak") main.innerHTML = speakingView(maruCtx(), speakIndex);
+  else if (route === "practice" && value === "match") {
+    if (!matchSession) matchSession = ArcadeEngine.buildMatch(allVocab());
+    main.innerHTML = matchGameView(maruCtx(), matchSession, matchFeedback);
+  }
+  else if (route === "practice" && value === "dictation") {
+    if (!dictationSession) dictationSession = { questions: ArcadeEngine.buildDictation(allVocab()), index: 0, score: 0, finished: false };
+    main.innerHTML = dictationView(maruCtx(), dictationSession, dictationFeedback);
+  }
+  else if (route === "practice" && value === "builder") {
+    if (!builderSession) {
+      const source = ArcadeEngine.flattenPhrases(phrasebook);
+      builderSession = { questions: ArcadeEngine.buildBuilder(source), index: 0, score: 0, selected: [], finished: false };
+    }
+    main.innerHTML = builderView(maruCtx(), builderSession, builderFeedback);
+  }
   else if (route === "practice") main.innerHTML = practiceView();
   else if (route === "notebook") main.innerHTML = notebookView(maruCtx());
   else if (route === "offline") {
@@ -2498,9 +2543,139 @@ function updateSearch(query) {
   }).join("") + `<div class="search-group-label">Найдено: ${found.length}</div>`;
 }
 
+function renderMatch(feedback = null) {
+  matchFeedback = feedback;
+  if (getRoute().join("/") === "practice/match") main.innerHTML = matchGameView(maruCtx(), matchSession, matchFeedback);
+}
+
+function renderDictation(feedback = null) {
+  dictationFeedback = feedback;
+  if (getRoute().join("/") === "practice/dictation") main.innerHTML = dictationView(maruCtx(), dictationSession, dictationFeedback);
+}
+
+function renderBuilder(feedback = null) {
+  builderFeedback = feedback;
+  if (getRoute().join("/") === "practice/builder") main.innerHTML = builderView(maruCtx(), builderSession, builderFeedback);
+}
+
+function advanceDictation(scored = false) {
+  if (!dictationSession) return;
+  if (scored) dictationSession.score = Number(dictationSession.score || 0) + 1;
+  dictationSession.index = Number(dictationSession.index || 0) + 1;
+  if (dictationSession.index >= dictationSession.questions.length) dictationSession.finished = true;
+  renderDictation(null);
+}
+
+function advanceBuilder(scored = false) {
+  if (!builderSession) return;
+  if (scored) builderSession.score = Number(builderSession.score || 0) + 1;
+  builderSession.index = Number(builderSession.index || 0) + 1;
+  builderSession.selected = [];
+  if (builderSession.index >= builderSession.questions.length) builderSession.finished = true;
+  renderBuilder(null);
+}
+
 document.addEventListener("click", (event) => {
   const target = event.target.closest("button, [data-flip-card]");
   if (!target) return;
+
+  // Maru Quest — إغلاق احتفال الترقية
+  if (target.hasAttribute("data-level-up-close")) {
+    document.querySelector("#levelUpOverlay")?.remove();
+    return;
+  }
+
+  // Maru Quest / Arcade — ألعاب تعليمية محلية بالكامل
+  if (target.dataset.achievementFilter) {
+    achievementFilter = target.dataset.achievementFilter;
+    if (getRoute()[0] === "achievements") main.innerHTML = achievementsView(maruCtx(achievementsData()));
+    return;
+  }
+  if (target.hasAttribute("data-match-new")) {
+    matchSession = ArcadeEngine.buildMatch(allVocab());
+    renderMatch(null);
+    return;
+  }
+  if (target.dataset.matchCard) {
+    const wasFinished = !!matchSession?.finished;
+    const result = ArcadeEngine.matchStep(matchSession, target.dataset.matchCard);
+    matchSession = result.session;
+    if (!wasFinished && matchSession.finished) {
+      awardXp(25);
+      checkAchievements();
+    }
+    const message = result.status === "matched" ? "✓ Верно! Пара найдена."
+      : result.status === "wrong" ? "Не совпало — попробуйте другую пару."
+        : result.status === "first" ? "Теперь найдите пару." : "";
+    renderMatch(result.status === "wrong" ? { ok: false, message, wrongPair: result.pairId } : { ok: result.status === "matched", message });
+    return;
+  }
+  if (target.hasAttribute("data-dictation-new")) {
+    dictationSession = { questions: ArcadeEngine.buildDictation(allVocab()), index: 0, score: 0, finished: false };
+    renderDictation(null);
+    return;
+  }
+  if (target.hasAttribute("data-dictation-check")) {
+    const question = dictationSession?.questions?.[dictationSession.index];
+    const input = document.querySelector("#dictationInput");
+    if (!question || !input) return;
+    const result = ArcadeEngine.checkDictation(question, input.value);
+    if (result.ok) awardXp(5);
+    renderDictation({
+      ok: result.ok,
+      keep: input.value,
+      message: result.ok ? `✓ Верно: ${result.expected}` : `Пока не совпало. Правильно: ${result.expected}`,
+    });
+    return;
+  }
+  if (target.hasAttribute("data-dictation-next")) { advanceDictation(true); return; }
+  if (target.hasAttribute("data-dictation-skip")) { advanceDictation(false); return; }
+  if (target.hasAttribute("data-dictation-hint")) {
+    const question = dictationSession?.questions?.[dictationSession.index];
+    const input = document.querySelector("#dictationInput");
+    renderDictation({ ok: false, keep: input?.value || "", message: question ? `Подсказка: ${question.hint} · ${question.ru}` : "" });
+    return;
+  }
+  if (target.hasAttribute("data-builder-new")) {
+    builderSession = { questions: ArcadeEngine.buildBuilder(ArcadeEngine.flattenPhrases(phrasebook)), index: 0, score: 0, selected: [], finished: false };
+    renderBuilder(null);
+    return;
+  }
+  if (target.dataset.builderToken !== undefined) {
+    if (!builderSession) return;
+    const selected = builderSession.selected || [];
+    const position = Number(target.dataset.builderToken);
+    if (!selected.includes(position)) builderSession.selected = [...selected, position];
+    renderBuilder(null);
+    return;
+  }
+  if (target.dataset.builderRemove !== undefined) {
+    if (!builderSession) return;
+    builderSession.selected = (builderSession.selected || []).filter((_, index) => index !== Number(target.dataset.builderRemove));
+    renderBuilder(null);
+    return;
+  }
+  if (target.hasAttribute("data-builder-undo")) {
+    if (builderSession?.selected?.length) builderSession.selected = builderSession.selected.slice(0, -1);
+    renderBuilder(null);
+    return;
+  }
+  if (target.hasAttribute("data-builder-clear")) {
+    if (builderSession) builderSession.selected = [];
+    renderBuilder(null);
+    return;
+  }
+  if (target.hasAttribute("data-builder-check")) {
+    const question = builderSession?.questions?.[builderSession.index];
+    if (!question) return;
+    const tokens = (builderSession.selected || []).map((position) => question.tokens[position]);
+    const result = ArcadeEngine.checkBuilder(question, tokens);
+    if (result.ok) awardXp(8);
+    renderBuilder({ ok: result.ok, message: result.ok ? `✓ Верно: ${result.expected}` : `Порядок пока неверный. Попробуйте ещё раз.` });
+    return;
+  }
+  if (target.hasAttribute("data-builder-next")) { advanceBuilder(true); return; }
+  if (target.hasAttribute("data-builder-skip")) { advanceBuilder(false); return; }
 
   // Maru 2.0 — тренажёр произношения
   if (target.dataset.speakRate) {
@@ -2746,13 +2921,21 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (target.hasAttribute("data-reset-progress")) {
-    if (!window.confirm("Очистить весь прогресс, словарь и настройки? Это нельзя отменить.")) return;
-    const fresh = createDefaultMaruState();
+    if (!window.confirm("Очистить учебный прогресс и словарь? Настройки интерфейса останутся.")) return;
+    const preferences = {
+      theme: state.theme, accent: state.accent, surface: state.surface,
+      audioMode: state.audioMode, audioRate: state.audioRate, audioLoop: state.audioLoop,
+      autoplayCards: state.autoplayCards, speechRate: state.speechRate,
+      showTranscription: state.showTranscription, dailyGoal: state.dailyGoal,
+    };
     Object.keys(state).forEach((key) => delete state[key]);
-    Object.assign(state, defaultState, { maru: fresh });
+    Object.assign(state, defaultState, preferences, { maru: createDefaultMaruState() });
     persistMaru();
     listeningSession = null;
     guidedSession = null;
+    matchSession = null;
+    dictationSession = null;
+    builderSession = null;
     showToast("Прогресс очищен");
     routeTo("home");
     return;
@@ -2795,6 +2978,11 @@ document.addEventListener("click", (event) => {
   if (target.hasAttribute("data-cache-download")) {
     setCacheStatus("Обновляем копию курса…");
     postToServiceWorker("CACHE_ALL");
+    return;
+  }
+  if (target.hasAttribute("data-cache-words")) {
+    setCacheStatus("Скачиваем озвученные слова…");
+    postToServiceWorker("CACHE_WORDS");
     return;
   }
 
@@ -2941,8 +3129,6 @@ document.addEventListener("click", (event) => {
         showToast("Все записи удалены");
       });
     }
-  } else if (target.hasAttribute("data-export-backup")) {
-    exportBackup();
   } else if (target.hasAttribute("data-import-backup")) {
     backupInput.click();
   } else if (target.dataset.toggleComplete) {
@@ -3133,25 +3319,6 @@ document.addEventListener("click", (event) => {
       renderRoute();
       showToast("Статистика очищена");
     }
-  } else if (target.hasAttribute("data-reset-progress")) {
-    if (confirm("Сбросить весь учебный прогресс на этом устройстве?")) {
-      const preferences = {
-        theme: state.theme,
-        accent: state.accent,
-        surface: state.surface,
-        audioMode: state.audioMode,
-        audioRate: state.audioRate,
-        audioLoop: state.audioLoop,
-        autoplayCards: state.autoplayCards,
-        speechRate: state.speechRate,
-        showTranscription: state.showTranscription,
-        dailyGoal: state.dailyGoal,
-      };
-      state = { ...defaultState, ...preferences };
-      saveState();
-      renderRoute();
-      showToast("Прогресс сброшен");
-    }
   }
 });
 
@@ -3178,6 +3345,10 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && target?.dataset?.writingInput) {
     event.preventDefault();
     document.querySelector(`[data-writing-check="${target.dataset.writingInput}"]`)?.click();
+  }
+  if (event.key === "Enter" && target?.id === "dictationInput") {
+    event.preventDefault();
+    document.querySelector("[data-dictation-check]")?.click();
   }
   if ((event.key === "Enter" || event.key === " ") && target?.id === "verbSearch") {
     event.preventDefault();
@@ -3370,7 +3541,7 @@ pdfDialog.addEventListener("close", () => {
 backupInput.addEventListener("change", async () => {
   const file = backupInput.files?.[0];
   backupInput.value = "";
-  if (file) await importBackup(file);
+  if (file) await importBackupFile(file);
 });
 
 window.addEventListener("beforeinstallprompt", (event) => {

@@ -1,0 +1,553 @@
+/* ==========================================================================
+   Maru Glow — طبقة الإبهار البصري الجديدة.
+   تُحمّل بعد quranpedia.css: حركات خفيفة، زجاجية، خريطة رحلة، ألعاب،
+   تقويم серии، واحتفال ترقية. كلها CSS خالص بلا مكتبات أو طلبات شبكية.
+   ========================================================================== */
+
+:root {
+  --glow-gold: #f1ca72;
+  --glow-deep: #0b4a31;
+  --glow-mint: #7fe0b5;
+  --glow-ink: #1d1607;
+  --glow-panel: color-mix(in srgb, var(--qp-paper, #f9f3e3) 86%, transparent);
+  --glow-line: color-mix(in srgb, var(--qp-gold, #d8a455) 38%, transparent);
+  --glow-ring: conic-gradient(var(--qp-gold) var(--quest-progress, 0%), color-mix(in srgb, var(--qp-gold) 16%, transparent) 0);
+  --glow-ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+html[data-theme="dark"] {
+  --glow-panel: color-mix(in srgb, var(--qp-paper, #141c19) 82%, transparent);
+  --glow-ink: #f6ecd2;
+}
+
+/* ---------- إدخال المشهد ---------- */
+
+@keyframes glow-view-in {
+  from { opacity: 0; transform: translateY(14px) scale(.995); }
+  to { opacity: 1; transform: none; }
+}
+
+#main > * { animation: glow-view-in .48s var(--glow-ease) both; }
+#main > *:nth-child(2) { animation-delay: .05s; }
+#main > *:nth-child(3) { animation-delay: .1s; }
+#main > *:nth-child(4) { animation-delay: .14s; }
+#main > *:nth-child(5) { animation-delay: .18s; }
+
+/* ---------- الهيرو: شفق متحرك وذرات مضيئة ---------- */
+
+.qp-hero {
+  background:
+    radial-gradient(ellipse at 14% 12%, rgba(241, 202, 114, .2), transparent 42%),
+    radial-gradient(ellipse at 88% 84%, rgba(127, 224, 181, .16), transparent 46%),
+    linear-gradient(135deg, var(--qp-hero-1), var(--qp-hero-2) 52%, var(--qp-hero-3)) !important;
+}
+
+@keyframes glow-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .55; }
+  50% { transform: translate3d(28px, -18px, 0) scale(1.12); opacity: .9; }
+}
+
+.qp-hero::after {
+  background:
+    radial-gradient(circle at 76% 22%, rgba(241, 202, 114, .22), transparent 19%),
+    radial-gradient(circle at 16% 78%, rgba(127, 224, 181, .18), transparent 24%) !important;
+  animation: glow-drift 11s ease-in-out infinite alternate !important;
+}
+
+.qp-dust b {
+  background: var(--qp-gold-light);
+  box-shadow: 0 0 14px 3px rgba(241, 202, 114, .5);
+  animation: glow-drift var(--d, 14s) ease-in-out infinite alternate;
+  animation-delay: var(--delay, 0s);
+}
+
+.qp-logo-core {
+  box-shadow: 0 0 0 1px rgba(241, 202, 114, .65), 0 0 38px rgba(241, 202, 114, .34), 0 18px 44px rgba(0, 0, 0, .3);
+}
+
+.qp-logo-orbit {
+  filter: drop-shadow(0 0 12px rgba(241, 202, 114, .3));
+}
+
+@keyframes glow-shimmer {
+  0% { background-position: -160% 0; }
+  100% { background-position: 260% 0; }
+}
+
+.continue-button {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(110deg, transparent 24%, rgba(255, 255, 255, .42) 48%, transparent 72%) !important;
+  background-size: 220% 100%;
+  animation: glow-shimmer 4.5s linear infinite;
+}
+
+.continue-button:hover { animation-play-state: paused; }
+
+.qp-cta button:not(.continue-button):hover,
+.qp-door-main:hover .qp-door-icon {
+  text-shadow: 0 0 16px rgba(241, 202, 114, .6);
+}
+
+/* ---------- الأبواب: لمسة ثلاثية الأبعاد ---------- */
+
+.qp-door {
+  transition: transform .35s var(--glow-ease), box-shadow .35s var(--glow-ease), border-color .35s;
+  transform-style: preserve-3d;
+}
+
+.qp-door:hover {
+  transform: perspective(900px) rotateX(2deg) rotateY(-2deg) translateY(-6px);
+  border-color: var(--glow-line);
+  box-shadow: 0 22px 44px rgba(60, 40, 20, .2), inset 0 1px 0 rgba(241, 202, 114, .35);
+}
+
+.qp-door::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(130deg, rgba(241, 202, 114, .16), transparent 42%);
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.qp-door:hover::after { opacity: 1; }
+
+/* ---------- عناصر مشتركة ---------- */
+
+.quest-track {
+  display: block;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--qp-gold) 14%, transparent);
+}
+
+.quest-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--qp-green), var(--qp-gold-light));
+  box-shadow: 0 0 12px rgba(241, 202, 114, .45);
+  transition: width .6s var(--glow-ease);
+}
+
+.eyebrow { letter-spacing: .08em; }
+
+/* ---------- خريطة الرحلة ---------- */
+
+.quest-head { align-items: center; }
+
+.quest-head-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.1rem; }
+
+.quest-ring,
+.achievement-hero-ring {
+  position: relative;
+  display: grid;
+  width: 138px;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--glow-ring);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--qp-gold) 8%, transparent), 0 18px 40px rgba(40, 30, 10, .18);
+}
+
+.quest-ring::before,
+.achievement-hero-ring::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--qp-paper, #f9f3e3);
+  box-shadow: inset 0 0 22px rgba(216, 164, 85, .18);
+}
+
+html[data-theme="dark"] .quest-ring::before,
+html[data-theme="dark"] .achievement-hero-ring::before { background: #141c19; }
+
+.quest-ring > span,
+.achievement-hero-ring > span { position: relative; display: grid; text-align: center; }
+.quest-ring b, .achievement-hero-ring b { color: var(--qp-emerald); font-size: 2rem; line-height: 1; }
+.quest-ring small, .achievement-hero-ring small { color: var(--qp-muted); font-size: .72rem; }
+
+.quest-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .8rem;
+  margin-bottom: 1.4rem;
+}
+
+.quest-summary > div {
+  display: grid;
+  justify-items: center;
+  gap: .15rem;
+  padding: 1rem .6rem;
+  border: 1px solid var(--glow-line);
+  border-radius: 18px;
+  background: var(--glow-panel);
+  backdrop-filter: blur(10px);
+}
+
+.quest-summary-icon { font-size: 1.4rem; }
+.quest-summary strong { color: var(--qp-emerald); font-size: 1.25rem; }
+.quest-summary small { color: var(--qp-muted); font-size: .78rem; text-align: center; }
+
+.quest-next-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  margin-bottom: 1.6rem;
+  padding: 1.3rem 1.5rem;
+  border: 1px solid var(--glow-line);
+  border-radius: 22px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--qp-green) 12%, var(--qp-paper)), var(--qp-paper));
+}
+
+.quest-next-glow {
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(241, 202, 114, .35), transparent 65%);
+  animation: glow-drift 9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.quest-next-card h2 { margin: .25rem 0; color: var(--qp-emerald); font-size: 1.35rem; }
+.quest-next-card .primary-button { position: relative; z-index: 1; flex: 0 0 auto; }
+
+@keyframes glow-star {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.35) rotate(9deg); text-shadow: 0 0 18px var(--qp-gold-light); }
+  100% { transform: scale(1); }
+}
+
+.quest-star { color: color-mix(in srgb, var(--qp-muted) 45%, transparent); font-size: 1.05rem; }
+.quest-star.on { color: var(--qp-gold); animation: glow-star .7s var(--glow-ease) both; }
+
+.quest-path { position: relative; display: grid; gap: 1.15rem; padding: 1rem 0 1rem 64px; }
+
+.quest-path-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 38px;
+  width: 3px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(to bottom, var(--qp-gold) 0 8px, transparent 8px 16px);
+  opacity: .55;
+}
+
+.quest-node { position: relative; }
+
+.quest-node-dot {
+  position: absolute;
+  top: 20px;
+  left: -51px;
+  z-index: 1;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 3px solid var(--qp-paper);
+  border-radius: 50%;
+  background: var(--node-color, var(--qp-emerald));
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--node-color, var(--qp-emerald)) 28%, transparent), 0 8px 20px rgba(0, 0, 0, .2);
+}
+
+.quest-node.locked .quest-node-dot { filter: grayscale(1); opacity: .55; }
+.quest-node.mastered .quest-node-dot { box-shadow: 0 0 0 4px rgba(241, 202, 114, .45), 0 0 26px rgba(241, 202, 114, .4); }
+
+.quest-node-card {
+  position: relative;
+  padding: 1.15rem 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--node-color, var(--qp-emerald)) 26%, var(--qp-line));
+  border-left: 5px solid var(--node-color, var(--qp-emerald));
+  border-radius: 20px;
+  background: var(--glow-panel);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--qp-shadow-soft);
+  transition: transform .3s var(--glow-ease), box-shadow .3s;
+}
+
+.quest-node-card:hover { transform: translateX(6px); box-shadow: var(--qp-shadow-hover); }
+.quest-node.locked .quest-node-card { opacity: .66; filter: saturate(.6); }
+
+.quest-node-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.quest-node-number { color: var(--qp-gold-tx); font-size: .78rem; font-weight: 700; letter-spacing: .06em; }
+.quest-node-stars { display: flex; gap: .12rem; }
+.quest-node-card h2 { margin: .3rem 0 .1rem; color: var(--qp-emerald); font-size: 1.15rem; }
+.quest-node-ar { color: var(--qp-gold-tx); font-size: 1.05rem; }
+.quest-node .quest-track { margin: .7rem 0; }
+.quest-node-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.quest-lock { color: var(--qp-muted); font-size: .82rem; }
+
+.quest-footnote { margin-top: 1.6rem; color: var(--qp-muted); font-size: .85rem; text-align: center; }
+
+/* ---------- معرض الإنجازات ---------- */
+
+.achievement-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.3rem;
+  padding: 1.2rem 1.5rem;
+  border: 1px solid var(--glow-line);
+  border-radius: 22px;
+  background: var(--glow-panel);
+}
+
+.achievement-hero > div:last-child { flex: 1; }
+.achievement-hero h2 { margin: 0 0 .6rem; color: var(--qp-emerald); }
+
+.achievement-filters { display: flex; gap: .4rem; margin-bottom: 1rem; }
+.achievement-filters button { border: 1px solid var(--glow-line); border-radius: 999px; background: transparent; padding: .45rem .9rem; cursor: pointer; color: var(--qp-muted); }
+.achievement-filters button.active { background: var(--qp-emerald); color: #fff5dc; }
+
+.achievement-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: .85rem; }
+
+.achievement-card {
+  display: grid;
+  justify-items: center;
+  gap: .35rem;
+  min-height: 184px;
+  padding: 1.1rem .8rem;
+  border: 1px solid var(--qp-line);
+  border-radius: 20px;
+  background: var(--glow-panel);
+  text-align: center;
+  transition: transform .3s var(--glow-ease), box-shadow .3s;
+}
+
+.achievement-card:hover { transform: translateY(-5px) rotate(-1deg); box-shadow: var(--qp-shadow-hover); }
+.achievement-card-icon { display: grid; width: 54px; height: 54px; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--qp-gold) 14%, transparent); font-size: 1.65rem; }
+.achievement-card strong { color: var(--qp-emerald); font-size: .95rem; }
+.achievement-card small { color: var(--qp-muted); font-size: .78rem; line-height: 1.45; }
+.achievement-card-status { margin-top: auto; font-size: .74rem; color: var(--qp-muted); }
+.achievement-card.earned { border-color: var(--glow-line); box-shadow: inset 0 0 0 1px rgba(241, 202, 114, .2), 0 10px 26px rgba(60, 40, 20, .12); }
+.achievement-card.earned .achievement-card-icon { background: rgba(241, 202, 114, .24); box-shadow: 0 0 22px rgba(241, 202, 114, .35); }
+.achievement-card.earned .achievement-card-status { color: var(--qp-green); font-weight: 700; }
+.achievement-card.locked { opacity: .62; filter: saturate(.45); }
+.achievement-card.rarity-legendary.earned { background: linear-gradient(145deg, rgba(241, 202, 114, .28), var(--qp-paper)); }
+.achievement-card.rarity-epic.earned { background: linear-gradient(145deg, rgba(127, 224, 181, .18), var(--qp-paper)); }
+
+/* ---------- Аркада ---------- */
+
+.arcade-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+
+.game-tile {
+  display: grid;
+  justify-items: start;
+  gap: .4rem;
+  padding: 1.3rem;
+  border: 1px solid var(--glow-line);
+  border-radius: 22px;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--qp-green) 12%, var(--qp-paper)), var(--qp-paper));
+  text-align: left;
+  cursor: pointer;
+  transition: transform .35s var(--glow-ease), box-shadow .35s;
+}
+
+.game-tile:hover { transform: translateY(-7px) scale(1.015); box-shadow: 0 22px 46px rgba(60, 40, 20, .2); }
+.game-tile-icon { font-size: 2.1rem; filter: drop-shadow(0 4px 10px rgba(60, 40, 20, .2)); }
+.game-tile strong { color: var(--qp-emerald); font-size: 1.1rem; }
+.game-tile-ar { color: var(--qp-gold-tx); font-size: 1rem; }
+.game-tile small { color: var(--qp-muted); line-height: 1.6; }
+.game-tile-arrow { margin-top: .35rem; color: var(--qp-green); font-weight: 700; }
+
+.streak-panel { margin-top: 1.5rem; padding: 1.3rem; border: 1px solid var(--qp-line); border-radius: 22px; background: var(--glow-panel); }
+.streak-stats { display: flex; flex-wrap: wrap; gap: 1.5rem; margin: .6rem 0 1rem; }
+.streak-stats > div { display: grid; }
+.streak-stats b { color: var(--qp-emerald); font-size: 1.6rem; line-height: 1; }
+.streak-stats small { color: var(--qp-muted); font-size: .78rem; }
+
+.calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; max-width: 520px; }
+.calendar-cell {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--qp-gold) 18%, var(--qp-line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--qp-paper) 92%, transparent);
+  color: var(--qp-muted);
+  font-size: .7rem;
+  transition: transform .25s var(--glow-ease);
+}
+.calendar-cell:hover { transform: scale(1.12); }
+.calendar-cell.level-1 { background: #dcefe1; }
+.calendar-cell.level-2 { background: #9ed6b5; color: #08301f; }
+.calendar-cell.level-3 { background: #4fa980; color: #fff; }
+.calendar-cell.level-4 { background: linear-gradient(145deg, var(--qp-green), var(--qp-gold)); color: #fff; box-shadow: 0 0 14px rgba(241, 202, 114, .35); }
+html[data-theme="dark"] .calendar-cell.level-1 { background: #1f4433; color: #d8f2e3; }
+html[data-theme="dark"] .calendar-cell.level-2 { background: #2d6a4f; color: #fff; }
+
+/* ---------- ألواح الألعاب ---------- */
+
+.game-panel { padding: 1.3rem; border: 1px solid var(--glow-line); border-radius: 24px; background: var(--glow-panel); backdrop-filter: blur(12px); }
+.game-head { margin-bottom: 1rem; }
+
+.game-hud { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin-bottom: .9rem; color: var(--qp-muted); font-size: .88rem; }
+.game-hud b { color: var(--qp-emerald); font-size: 1rem; }
+.game-hud .soft-button { margin-inline-start: auto; }
+
+.game-feedback { min-height: 1.5rem; margin: .7rem 0; font-weight: 700; }
+.game-feedback.ok { color: var(--qp-green); }
+.game-feedback.warn { color: var(--danger, #b42318); }
+
+.match-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; }
+
+.match-card {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: .2rem;
+  min-height: 82px;
+  padding: .6rem;
+  border: 1px solid var(--glow-line);
+  border-radius: 16px;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--qp-green) 8%, var(--qp-paper)), var(--qp-paper));
+  cursor: pointer;
+  transition: transform .25s var(--glow-ease), box-shadow .25s, border-color .25s;
+}
+.match-card:hover:not(:disabled) { transform: translateY(-3px) rotate(1deg); box-shadow: 0 12px 26px rgba(60, 40, 20, .16); }
+.match-card.picked { border-color: var(--qp-gold); box-shadow: 0 0 0 3px rgba(241, 202, 114, .28); transform: scale(1.03); }
+.match-card.matched { border-color: var(--qp-green); background: color-mix(in srgb, var(--qp-green) 16%, var(--qp-paper)); opacity: .78; }
+.match-card.wrong:not(.matched) { animation: glow-shake .4s ease; border-color: var(--danger, #b42318); }
+.match-card-text { font-size: 1rem; font-weight: 700; color: var(--qp-ink); }
+.match-card small { color: var(--qp-muted); font-size: .72rem; }
+
+@keyframes glow-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.game-finish { margin-top: 1.2rem; padding: 1.2rem; border: 1px dashed var(--qp-gold); border-radius: 18px; background: color-mix(in srgb, var(--qp-gold) 10%, var(--qp-paper)); text-align: center; animation: glow-view-in .5s var(--glow-ease) both; }
+.game-finish > span { font-size: 2.4rem; }
+.game-finish h2 { margin: .2rem 0; color: var(--qp-emerald); }
+
+.dictation-panel .quest-track { margin: .5rem 0 1rem; }
+.dictation-prompt { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem; padding: .9rem; border-radius: 16px; background: color-mix(in srgb, var(--qp-green) 8%, transparent); }
+.dictation-prompt p { margin: 0; }
+
+.dictation-input {
+  width: 100%;
+  min-height: 68px;
+  margin: .9rem 0;
+  padding: .8rem 1rem;
+  border: 2px solid var(--glow-line);
+  border-radius: 16px;
+  background: var(--qp-paper);
+  color: var(--qp-ink);
+  font-family: var(--font-arabic);
+  font-size: 1.6rem;
+}
+.dictation-input:focus { border-color: var(--qp-green); outline: none; box-shadow: 0 0 0 4px rgba(15, 107, 69, .12); }
+
+.builder-translation { display: grid; gap: .1rem; margin-bottom: .9rem; }
+.builder-translation strong { color: var(--qp-emerald); font-size: 1.15rem; }
+.builder-translation small { color: var(--qp-muted); }
+
+.builder-slot,
+.builder-tokens { display: flex; flex-wrap: wrap; gap: .5rem; padding: .8rem; border-radius: 16px; background: color-mix(in srgb, var(--qp-gold) 7%, transparent); }
+.builder-slot { min-height: 64px; align-content: center; border: 1px dashed var(--qp-gold); font-family: var(--font-arabic); font-size: 1.35rem; }
+.builder-slot.empty { color: var(--qp-muted); font-size: .95rem; }
+.builder-tokens { margin-top: .7rem; background: color-mix(in srgb, var(--qp-green) 7%, transparent); }
+
+.builder-selected,
+.builder-token {
+  padding: .45rem .75rem;
+  border: 1px solid var(--glow-line);
+  border-radius: 12px;
+  background: var(--qp-paper);
+  color: var(--qp-ink);
+  font-family: var(--font-arabic);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform .2s var(--glow-ease), box-shadow .2s;
+}
+.builder-token:hover:not(:disabled) { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 18px rgba(60, 40, 20, .16); }
+.builder-token.used { opacity: .3; cursor: default; }
+.builder-selected { border-color: var(--qp-green); box-shadow: 0 0 0 2px rgba(15, 107, 69, .12); }
+
+/* ---------- احتفال الترقية ---------- */
+
+.level-up-overlay { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 1rem; background: rgba(8, 30, 20, .62); backdrop-filter: blur(8px); animation: glow-fade .25s ease both; }
+@keyframes glow-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.level-up-card {
+  position: relative;
+  overflow: hidden;
+  width: min(420px, 100%);
+  padding: 2.2rem 1.5rem;
+  border: 1px solid var(--glow-gold);
+  border-radius: 28px;
+  background: radial-gradient(circle at 50% 0, rgba(241, 202, 114, .32), transparent 60%), var(--qp-paper);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .4);
+  text-align: center;
+  animation: level-pop .6s var(--glow-ease) both;
+}
+
+@keyframes level-pop {
+  from { opacity: 0; transform: scale(.7) translateY(24px) rotate(-4deg); }
+  65% { transform: scale(1.06) translateY(0) rotate(1deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.level-up-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(241, 202, 114, .22) 0 8deg, transparent 8deg 20deg); animation: glow-spin 18s linear infinite; pointer-events: none; }
+@keyframes glow-spin { to { transform: rotate(360deg); } }
+
+.level-up-card > *:not(.level-up-rays):not(.level-up-confetti) { position: relative; z-index: 2; }
+.level-up-card .level-up-label { margin: 0; color: var(--qp-gold-tx); letter-spacing: .14em; font-weight: 700; }
+.level-up-card b { display: block; margin: .3rem 0; color: var(--qp-emerald); font-size: 3.4rem; line-height: 1; text-shadow: 0 0 24px rgba(241, 202, 114, .5); }
+.level-up-card h2 { margin: .2rem 0; color: var(--qp-ink); }
+.level-up-card p:last-of-type { color: var(--qp-muted); }
+.level-up-close { margin-top: .8rem; }
+
+.level-up-confetti { position: absolute; top: 46%; left: 50%; z-index: 3; width: 8px; height: 14px; border-radius: 2px; background: hsl(calc(var(--i) * 31), 76%, 58%); animation: glow-confetti 1.5s var(--glow-ease) forwards; animation-delay: calc(var(--i) * 24ms); pointer-events: none; }
+@keyframes glow-confetti {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(0) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(.5); }
+}
+
+/* ---------- تجاوب ---------- */
+
+@media (max-width: 980px) {
+  .arcade-grid { grid-template-columns: 1fr 1fr; }
+  .quest-summary { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 700px) {
+  .quest-head { align-items: flex-start; }
+  .quest-head > div:first-child { min-width: 0; }
+  .quest-ring { width: 104px; }
+  .quest-ring b { font-size: 1.6rem; }
+  .quest-path { padding-left: 50px; gap: .9rem; }
+  .quest-path-line { left: 24px; }
+  .quest-node-dot { left: -39px; width: 34px; height: 34px; font-size: .82rem; }
+  .quest-node-card { padding: 1rem; }
+  .arcade-grid { grid-template-columns: 1fr; }
+  .achievement-hero { flex-direction: column; text-align: center; }
+  .match-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .match-card { min-height: 74px; }
+  .game-hud .soft-button { margin-inline-start: 0; }
+  .calendar-grid { gap: 4px; }
+  .calendar-cell { border-radius: 6px; font-size: .62rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #main > *, .qp-hero::after, .qp-dust b, .continue-button, .quest-next-glow,
+  .level-up-rays, .level-up-confetti, .quest-star.on, .match-card.wrong { animation: none !important; }
+  .qp-door:hover, .game-tile:hover, .quest-node-card:hover, .match-card:hover { transform: none !important; }
+}

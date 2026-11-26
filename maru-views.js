@@ -67,6 +67,7 @@ export function homeView(ctx) {
   ];
 
   const doors = [
+    { route: "quest", icon: "🗺️", title: "Maru Quest", count: "12 миров · 3 игры", desc: "Пройдите путь от первого звука до сертификата: звёзды, боссы-экзамены и мини-игры на настоящих словах курса.", links: [["quest", "Карта пути"], ["arcade", "Аркада"], ["achievements", "Достижения"]] },
     { route: "course", icon: "📖", title: "Курс по модулям", count: `${lessons.length} уроков`, desc: "От первых слов до уверенных диалогов. Аудио, карточки и пошаговые задания в одном месте.", links: [["course", "Модули"], ["programs", "Программы"], ["exams", "Экзамены"]] },
     { route: "basics", icon: "🔤", title: "Местоимения и времена", count: "8 форм · 5 времён", desc: "Все местоимения и все времена одного глагола на одном экране — без лишних переходов.", links: [["reference", "Шпаргалка"], ["verbs", "Глаголы"], ["grammar", "Грамматика"]] },
     { route: "practice", icon: "⚡", title: "Тренажёры", count: "4 режима", desc: "Карточки, умное повторение, спряжение глаголов и аудирование с обратной связью.", links: [["practice/smart", "Повторение"], ["practice/listen", "Аудирование"], ["challenge", "Вызов дня"]] },
@@ -106,6 +107,7 @@ export function homeView(ctx) {
           <span aria-hidden="true">▶</span> ${done ? "Продолжить" : "Начать"} <span class="continue-arrow" aria-hidden="true">→</span>
         </button>
         <button type="button" data-route="course">Все уроки</button>
+        <button type="button" data-route="quest">🗺 Квест</button>
         <button type="button" data-route="basics">🔤 Местоимения и времена</button>
         <button type="button" data-route="conversation">💬 Поговорить</button>
       </div>
@@ -190,6 +192,19 @@ export function homeView(ctx) {
           <small>${conversationScenarios.length} жизненных ситуаций</small>
           ${progressBar(avgSkill)}
         </button>
+      </div>
+    </section>
+
+    <section class="qp-section" aria-labelledby="qpArcadeTitle">
+      <header class="qp-section-head">
+        <span class="qp-kicker">Maru Arcade · ألعاب</span>
+        <h2 id="qpArcadeTitle">Учитесь играя</h2>
+        <p>Матч пар, диктант по настоящим MP3 и сборка египетских фраз — три короткие игры с XP и без сети.</p>
+      </header>
+      <div class="quest-next-card">
+        <div class="quest-next-glow" aria-hidden="true"></div>
+        <div><p class="eyebrow">Новое · 2026</p><h2>🗺️ Maru Quest и 🎮 Аркада</h2><p class="muted">12 миров, 36 уроков, экзамены-боссы и коллекция из 26 достижений.</p></div>
+        <div class="quest-head-actions"><button class="primary-button" type="button" data-route="quest">Открыть квест →</button><button class="soft-button" type="button" data-route="arcade">Играть</button></div>
       </div>
     </section>
 
@@ -863,10 +878,12 @@ export function offlineView(ctx, stats = null) {
     <h2>${total ? `${cached} из ${total} файлов` : "Проверьте копию"}</h2>
     ${progressBar(percent, "Готовность офлайн-копии")}
     <p class="muted">${stats?.ready ? "✓ Все основные материалы сохранены на устройстве." : total ? "Часть файлов ещё не в кэше — нажмите «Обновить копию»." : "Нажмите «Проверить», чтобы узнать, что уже сохранено."}</p>
+    ${stats?.wordTotal ? `<p class="muted small">Слова с голосом: ${stats.wordCached || 0} из ${stats.wordTotal} MP3 · ${stats.wordsReady ? "все слова доступны без сети" : "остальные скачиваются по кнопке ниже"}</p>` : ""}
     ${stats?.missing?.length ? `<p class="muted small">Не в кэше: ${stats.missing.map((path) => `<code>${esc(path)}</code>`).join(", ")}</p>` : ""}
     <div class="lesson-actions">
       <button class="primary-button" type="button" data-cache-check>🔎 Проверить копию</button>
       <button class="soft-button" type="button" data-cache-download ${online ? "" : "disabled"}>⬇ Обновить копию</button>
+      <button class="soft-button" type="button" data-cache-words ${online ? "" : "disabled"}>🔊 Скачать все слова</button>
       <button class="soft-button" type="button" data-route="library">Аудио и PDF</button>
     </div>
     <div id="cacheStatus" class="backup-status" aria-live="polite"></div>
